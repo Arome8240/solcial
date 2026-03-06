@@ -1,0 +1,125 @@
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Text } from '@/components/ui/text';
+import { router } from 'expo-router';
+import * as React from 'react';
+import { View, KeyboardAvoidingView, Platform, Pressable, ScrollView, Image, TextInput } from 'react-native';
+import { AlertCircle } from 'lucide-react-native';
+
+const AVATAR_OPTIONS = [
+  require('@/assets/images/icon.png'),
+  require('@/assets/images/icon.png'),
+  require('@/assets/images/icon.png'),
+  require('@/assets/images/icon.png'),
+  require('@/assets/images/icon.png'),
+];
+
+export default function SignUpScreen() {
+  const [fullName, setFullName] = React.useState('');
+  const [username, setUsername] = React.useState('');
+  const [bio, setBio] = React.useState('');
+  const [selectedAvatar, setSelectedAvatar] = React.useState<number | null>(null);
+  const [usernameError, setUsernameError] = React.useState(false);
+
+  const handleSetup = () => {
+    // Handle account setup
+  };
+
+  const handleBack = () => {
+    router.back();
+  };
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      className="flex-1 bg-gray-50"
+    >
+      <ScrollView className="flex-1 px-5 pt-16" showsVerticalScrollIndicator={false}>
+        <Text className="mb-2 text-3xl font-bold text-gray-900">Create an Account</Text>
+        <Text className="mb-8 text-base text-gray-500">Fill in the details below to get started.</Text>
+
+        <View className="gap-6">
+          <Input label="Full Name" placeholder="e.g John Doe" value={fullName} onChangeText={setFullName} />
+
+          <View>
+            <Input
+              label="Username"
+              placeholder="e.g Jeremy"
+              value={username}
+              onChangeText={setUsername}
+              error={usernameError ? 'Not available!' : undefined}
+            />
+            {usernameError && (
+              <>
+                <View className="absolute right-4 top-11 flex-row items-center">
+                  <AlertCircle size={20} color="#ef4444" />
+                </View>
+                <Text className="mt-1 text-sm text-gray-500">
+                  Try{' '}
+                  <Text className="font-medium text-purple-600">Jeremy201</Text> or{' '}
+                  <Text className="font-medium text-purple-600">J3remy</Text>
+                </Text>
+              </>
+            )}
+          </View>
+
+          <View>
+            <Text className="mb-2 text-sm font-medium text-gray-900">Bio (Optional)</Text>
+            <TextInput
+              placeholder="Tell us about yourself..."
+              value={bio}
+              onChangeText={setBio}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+              className="h-24 rounded-xl bg-white px-4 py-3 text-base text-gray-900"
+              placeholderTextColor="#9ca3af"
+            />
+          </View>
+
+          <View>
+            <Text className="mb-3 text-sm font-medium text-gray-900">Profile Picture (optional)</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="gap-3">
+              <Pressable
+                onPress={() => setSelectedAvatar(null)}
+                className={`mr-3 h-16 w-16 items-center justify-center rounded-2xl ${
+                  selectedAvatar === null ? 'bg-purple-100' : 'bg-gray-200'
+                }`}
+              >
+                <Image
+                  source={require('@/assets/images/icon.png')}
+                  className="h-8 w-8"
+                  style={{ tintColor: selectedAvatar === null ? '#7c3aed' : '#9ca3af' }}
+                />
+              </Pressable>
+              {AVATAR_OPTIONS.map((avatar, index) => (
+                <Pressable
+                  key={index}
+                  onPress={() => setSelectedAvatar(index)}
+                  className={`mr-3 h-16 w-16 overflow-hidden rounded-2xl ${
+                    selectedAvatar === index ? 'border-2 border-purple-600' : ''
+                  }`}
+                >
+                  <Image source={avatar} className="h-full w-full" />
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </ScrollView>
+
+      <View className="px-5 pb-12">
+        <Button
+          onPress={handleSetup}
+          className="mb-4 h-14 rounded-2xl bg-purple-600 active:bg-purple-700"
+        >
+          <Text className="text-base font-medium text-white">Setup and Continue</Text>
+        </Button>
+
+        <Pressable onPress={handleBack}>
+          <Text className="text-center text-base font-medium text-purple-600">Back</Text>
+        </Pressable>
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
