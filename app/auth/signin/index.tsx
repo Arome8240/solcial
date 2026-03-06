@@ -3,21 +3,21 @@ import { Input } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { router } from 'expo-router';
 import * as React from 'react';
-import { View, KeyboardAvoidingView, Platform, Pressable, Image } from 'react-native';
-import { AlertCircle } from 'lucide-react-native';
+import { View, KeyboardAvoidingView, Platform, Pressable, ActivityIndicator } from 'react-native';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function SignInScreen() {
-  const [username, setUsername] = React.useState('');
+  const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [showError, setShowError] = React.useState(false);
+  
+  const { signin, isSigningIn } = useAuth();
 
   const handleSignIn = () => {
-    // Handle sign in
-    router.push('/feed')
+    signin({ email, password });
   };
 
   const handleSignUp = () => {
-    router.push('/auth/signup');
+    router.push('/auth/email');
   };
 
   return (
@@ -30,7 +30,14 @@ export default function SignInScreen() {
         <Text className="mb-12 text-base text-gray-900">Sign In into your account</Text>
 
         <View className="gap-6">
-          <Input label="Username" placeholder="Jeremy Django" value={username} onChangeText={setUsername} />
+          <Input 
+            label="Email" 
+            placeholder="john@example.com" 
+            value={email} 
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
 
           <View>
             <Input
@@ -40,11 +47,6 @@ export default function SignInScreen() {
               onChangeText={setPassword}
               secureTextEntry
             />
-            {showError && (
-              <View className="absolute right-4 top-11 flex-row items-center">
-                <AlertCircle size={20} color="#ef4444" />
-              </View>
-            )}
             <Pressable className="mt-3">
               <Text className="text-sm font-medium text-purple-600">Forgot Password?</Text>
             </Pressable>
@@ -55,9 +57,14 @@ export default function SignInScreen() {
       <View className="px-5 pb-12">
         <Button
           onPress={handleSignIn}
+          disabled={isSigningIn}
           className="mb-6 h-14 rounded-2xl bg-purple-600 active:bg-purple-700"
         >
-          <Text className="text-base font-medium text-white">Sign In</Text>
+          {isSigningIn ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-base font-medium text-white">Sign In</Text>
+          )}
         </Button>
 
         <Text className="mb-4 text-center text-sm text-gray-500">Or Sign in with</Text>

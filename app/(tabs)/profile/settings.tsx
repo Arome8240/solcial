@@ -4,14 +4,16 @@ import { Icon } from '@/components/ui/icon';
 import { Grid, Users, Bell, Moon, Globe, HelpCircle, FileText, LogOut, ChevronRight } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function SettingsScreen() {
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
+  
+  const { logout } = useAuth();
 
   const handleLogout = () => {
-    // Handle logout logic
-    router.replace('/auth/signin');
+    logout();
   };
 
   return (

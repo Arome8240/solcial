@@ -15,6 +15,17 @@ import {
 } from '@expo-google-fonts/geist';
 import { Toaster } from 'sonner-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -39,13 +50,15 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={NAV_THEME.light}>
-        <StatusBar style="dark" />
-        <Stack screenOptions={{ headerShown: false}} />
-        <PortalHost />
-        <Toaster />
-      </ThemeProvider>
-    </GestureHandlerRootView>
+    <QueryClientProvider client={queryClient}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <ThemeProvider value={NAV_THEME.light}>
+          <StatusBar style="dark" />
+          <Stack screenOptions={{ headerShown: false}} />
+          <PortalHost />
+          <Toaster />
+        </ThemeProvider>
+      </GestureHandlerRootView>
+    </QueryClientProvider>
   );
 }

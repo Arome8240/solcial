@@ -1,15 +1,19 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
-import { router } from 'expo-router';
 import * as React from 'react';
-import { View, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function EmailScreen() {
   const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [username, setUsername] = React.useState('');
+  
+  const { signup, isSigningUp } = useAuth();
 
   const handleContinue = () => {
-    router.push('/auth/verify');
+    signup({ email, password, username });
   };
 
   return (
@@ -23,22 +27,46 @@ export default function EmailScreen() {
           This email will be used to recover your social account if you lose access.
         </Text>
 
-        <Input
-          placeholder="eqsplicitm@example.com"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoComplete="email"
-        />
+        <View className="gap-4">
+          <Input
+            label="Username"
+            placeholder="johndoe"
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="none"
+          />
+
+          <Input
+            label="Email"
+            placeholder="john@example.com"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+          />
+
+          <Input
+            label="Password"
+            placeholder="At least 8 characters"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+        </View>
       </View>
 
       <View className="px-5 pb-12">
         <Button
           onPress={handleContinue}
+          disabled={isSigningUp}
           className="h-14 rounded-2xl bg-purple-600 active:bg-purple-700"
         >
-          <Text className="text-base font-medium text-white">Create Account</Text>
+          {isSigningUp ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-base font-medium text-white">Create Account</Text>
+          )}
         </Button>
       </View>
     </KeyboardAvoidingView>

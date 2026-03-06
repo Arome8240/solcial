@@ -4,7 +4,7 @@ import { Text } from '@/components/ui/text';
 import { router } from 'expo-router';
 import * as React from 'react';
 import { View, KeyboardAvoidingView, Platform, Pressable, ScrollView, Image, TextInput } from 'react-native';
-import { AlertCircle } from 'lucide-react-native';
+import { toast } from 'sonner-native';
 
 const AVATAR_OPTIONS = [
   require('@/assets/images/icon.png'),
@@ -16,13 +16,13 @@ const AVATAR_OPTIONS = [
 
 export default function SignUpScreen() {
   const [fullName, setFullName] = React.useState('');
-  const [username, setUsername] = React.useState('');
   const [bio, setBio] = React.useState('');
   const [selectedAvatar, setSelectedAvatar] = React.useState<number | null>(null);
-  const [usernameError, setUsernameError] = React.useState(false);
 
-  const handleSetup = () => {
-    // Handle account setup
+  const handleSetup = async () => {
+    // Profile setup is optional, just navigate to feed
+    toast.success('Welcome to Solcial!');
+    router.replace('/(tabs)/feed');
   };
 
   const handleBack = () => {
@@ -39,29 +39,7 @@ export default function SignUpScreen() {
         <Text className="mb-8 text-base text-gray-500">Fill in the details below to get started.</Text>
 
         <View className="gap-6">
-          <Input label="Full Name" placeholder="e.g John Doe" value={fullName} onChangeText={setFullName} />
-
-          <View>
-            <Input
-              label="Username"
-              placeholder="e.g Jeremy"
-              value={username}
-              onChangeText={setUsername}
-              error={usernameError ? 'Not available!' : undefined}
-            />
-            {usernameError && (
-              <>
-                <View className="absolute right-4 top-11 flex-row items-center">
-                  <AlertCircle size={20} color="#ef4444" />
-                </View>
-                <Text className="mt-1 text-sm text-gray-500">
-                  Try{' '}
-                  <Text className="font-medium text-purple-600">Jeremy201</Text> or{' '}
-                  <Text className="font-medium text-purple-600">J3remy</Text>
-                </Text>
-              </>
-            )}
-          </View>
+          <Input label="Full Name (Optional)" placeholder="e.g John Doe" value={fullName} onChangeText={setFullName} />
 
           <View>
             <Text className="mb-2 text-sm font-medium text-gray-900">Bio (Optional)</Text>

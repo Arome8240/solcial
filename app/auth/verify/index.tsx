@@ -2,11 +2,16 @@ import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { router } from 'expo-router';
 import * as React from 'react';
-import { View, TextInput, Pressable } from 'react-native';
+import { View, TextInput, Pressable, ActivityIndicator } from 'react-native';
+import { useAuth } from '@/hooks/useAuth';
+import { storage } from '@/lib/storage';
+import { toast } from 'sonner-native';
 
 export default function VerifyScreen() {
   const [code, setCode] = React.useState(['', '', '', '', '', '']);
   const inputRefs = React.useRef<(TextInput | null)[]>([]);
+  
+  const { verifyEmail, isVerifying, resendCode, isResending } = useAuth();
 
   const handleCodeChange = (text: string, index: number) => {
     const newCode = [...code];
@@ -24,8 +29,33 @@ export default function VerifyScreen() {
     }
   };
 
-  const handleVerify = () => {
-    router.push('/auth/signup');
+  const handleVerify = async () => {
+    const verificationCode = code.join('');
+    if (verificationCode.length !== 6) {
+      toast.error('Please enter the complete code');
+      return;
+    }
+
+    const user = await storage.getUser();
+    if (!user?.tempEmail) {
+      toast.error('Email not found. Please sign up again');
+      router.replace('/auth/email');
+      return;
+    }
+
+    verifyEmail({ email: user.tempEmail, code: verificationCode });
+  };
+
+  const handleResend = async () => {
+    const user = await storage.getUser();
+    if (!user?.tempEmail) {
+      toast.error('Email not found');
+      return;
+    }
+
+    resendCode(user.tempEmail);
+    setCode(['', '', '', '', '', '']);
+    inputRefs.current[0]?.focus();
   };
 
   const handleBack = () => {
@@ -61,13 +91,24 @@ export default function VerifyScreen() {
       <View className="pb-12">
         <Button
           onPress={handleVerify}
+          disabled={isVerifying}
           className="mb-4 h-14 rounded-2xl bg-purple-600 active:bg-purple-700"
         >
-          <Text className="text-base font-medium text-white">Verify</Text>
+          {isVerifying ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-base font-medium text-white">Verify</Text>
+          )}
         </Button>
 
+        <Pressable onPress={handleResend} disabled={isResending}>
+          <Text className="mb-4 text-center text-base font-medium text-purple-600">
+            {isResending ? 'Sending...' : 'Resend Code'}
+          </Text>
+        </Pressable>
+
         <Pressable onPress={handleBack}>
-          <Text className="text-center text-base font-medium text-purple-600">Back</Text>
+          <Text className="text-center text-base font-medium text-gray-600">Back</Text>
         </Pressable>
       </View>
     </View>
