@@ -1,13 +1,21 @@
-import * as FileSystem from 'expo-file-system';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { api } from './api';
 
 export async function convertImageToBase64(uri: string): Promise<string> {
   try {
-    const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: 'base64',
-    });
+    // Manipulate image to get base64 with aggressive optimization
+    const manipResult = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width: 800 } }], // Resize to max width 800px (smaller for faster upload)
+      { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG, base64: true } // Lower compression for smaller size
+    );
+    
+    if (!manipResult.base64) {
+      throw new Error('Failed to convert image to base64');
+    }
+    
     // Add data URI prefix
-    return `data:image/jpeg;base64,${base64}`;
+    return `data:image/jpeg;base64,${manipResult.base64}`;
   } catch (error) {
     console.error('Error converting image to base64:', error);
     throw new Error('Failed to process image');
@@ -32,17 +40,15 @@ export async function uploadImage(uri: string): Promise<string> {
 
 export async function uploadMultipleImages(uris: string[]): Promise<string[]> {
   try {
-    const base64Images = await Promise.all(
-      uris.map((uri) => convertImageToBase64(uri))
-    );
+    // Upload images one by one to avoid payload size issues
+    const urls: string[] = [];
     
-    const response = await api.uploadImages(base64Images);
-    
-    if (response.error) {
-      throw new Error(response.error);
+    for (const uri of uris) {
+      const url = await uploadImage(uri);
+      urls.push(url);
     }
     
-    return (response.data as { urls: string[] }).urls;
+    return urls;
   } catch (error) {
     console.error('Error uploading images:', error);
     throw error;

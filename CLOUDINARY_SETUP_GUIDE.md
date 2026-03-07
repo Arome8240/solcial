@@ -5,7 +5,7 @@
 ### 1. Install Frontend Dependency
 ```bash
 cd solcial
-npx expo install expo-file-system
+npx expo install expo-image-manipulator
 ```
 
 ### 2. Create Cloudinary Account
