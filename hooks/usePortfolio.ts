@@ -14,3 +14,14 @@ export function usePortfolio(userId: string) {
     refetchInterval: 60000, // Refetch every minute
   });
 }
+
+export function useTokenHoldings(userId: string) {
+  const { data: portfolio } = usePortfolio(userId);
+  
+  return {
+    holdings: portfolio?.holdings || [],
+    totalValue: portfolio?.totalValue || 0,
+    totalInvested: portfolio?.totalInvested || 0,
+    isLoading: !portfolio,
+  };
+}

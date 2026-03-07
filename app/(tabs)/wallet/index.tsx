@@ -1,14 +1,19 @@
 import { View, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { ArrowUpRight, ArrowDownLeft, PieChart } from 'lucide-react-native';
+import { ArrowUpRight, ArrowDownLeft, PieChart, Coins, TrendingUp, TrendingDown } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useWallet } from '@/hooks/useWallet';
+import { useTokenHoldings } from '@/hooks/usePortfolio';
+import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import type { Transaction } from '@/types';
 
 export default function WalletScreen() {
   const { balance, walletAddress, isLoadingBalance, refetchBalance, transactions, isLoadingTransactions, fetchNextPage, hasNextPage, isFetchingNextPage } = useWallet();
+  const { user } = useAuth();
+  const typedUser = user as { id?: string } | undefined;
+  const { holdings, totalValue, isLoading: isLoadingHoldings } = useTokenHoldings(typedUser?.id || '');
 
   const formatTime = (date: string) => {
     try {
@@ -96,6 +101,60 @@ export default function WalletScreen() {
                 <Text className="font-semibold">Devnet</Text>
               </View>
             </View>
+
+            {/* Token Holdings */}
+            {isLoadingHoldings ? (
+              <View className="items-center py-4">
+                <ActivityIndicator size="small" color="#9333ea" />
+              </View>
+            ) : holdings.length > 0 ? (
+              <>
+                <View className="mt-2">
+                  <Text className="text-sm font-semibold text-muted-foreground">Post Tokens</Text>
+                </View>
+                {holdings.map((holding) => (
+                  <TouchableOpacity
+                    key={holding.id}
+                    onPress={() => router.push(`/post/${holding.post.id}`)}
+                    className="flex-row items-center justify-between rounded-2xl bg-card p-4"
+                  >
+                    <View className="flex-row items-center gap-3">
+                      <View className="h-12 w-12 items-center justify-center rounded-full bg-purple-100">
+                        <Icon as={Coins} size={20} className="text-purple-600" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="font-semibold" numberOfLines={1}>
+                          {holding.post.content.slice(0, 30)}...
+                        </Text>
+                        <Text className="text-sm text-muted-foreground">
+                          {holding.amount} tokens
+                        </Text>
+                      </View>
+                    </View>
+                    <View className="items-end">
+                      <Text className="font-semibold">
+                        {holding.currentValue.toFixed(4)} SOL
+                      </Text>
+                      <View className="flex-row items-center gap-1">
+                        <Icon 
+                          as={holding.profitLoss >= 0 ? TrendingUp : TrendingDown} 
+                          size={12} 
+                          className={holding.profitLoss >= 0 ? "text-green-600" : "text-red-600"}
+                        />
+                        <Text className={`text-xs ${holding.profitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {holding.profitLossPercentage >= 0 ? '+' : ''}{holding.profitLossPercentage.toFixed(1)}%
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+                <View className="mt-2 rounded-2xl bg-purple-50 p-4">
+                  <Text className="text-center text-sm text-purple-700">
+                    Total Token Value: {totalValue.toFixed(4)} SOL
+                  </Text>
+                </View>
+              </>
+            ) : null}
           </View>
         </View>
 
