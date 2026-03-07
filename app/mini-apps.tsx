@@ -99,9 +99,9 @@ export default function MiniAppsScreen() {
             {upcomingApps.map((app) => (
               <View
                 key={app.id}
-                className="overflow-hidden rounded-2xl bg-primary"
+                className="overflow-hidden rounded-2xl bg-card"
               >
-                <View className={`bg-gradient-to-r ${app.gradient} p-4`}>
+                <View className="bg-purple-600 dark:bg-purple-700 p-4">
                   <View className="flex-row items-center gap-3">
                     <View className="h-14 w-14 items-center justify-center rounded-2xl bg-white/20">
                       <Icon as={app.icon} size={28} className="text-white" />
@@ -112,10 +112,10 @@ export default function MiniAppsScreen() {
                     </View>
                   </View>
                 </View>
-                <View className="flex-row items-center justify-between bg-white p-4">
+                <View className="flex-row items-center justify-between bg-card p-4">
                   <Text className="text-sm text-muted-foreground">Status</Text>
-                  <View className="rounded-full bg-yellow-100 px-3 py-1">
-                    <Text className="text-xs font-medium text-yellow-700">In Development</Text>
+                  <View className="rounded-full bg-yellow-100 dark:bg-yellow-900 px-3 py-1">
+                    <Text className="text-xs font-medium text-yellow-700 dark:text-yellow-300">In Development</Text>
                   </View>
                 </View>
               </View>

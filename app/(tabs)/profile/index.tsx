@@ -48,7 +48,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Profile Card */}
-        <View className="mx-4 mt-6 rounded-3xl bg-white p-6">
+        <View className="mx-4 mt-6 rounded-3xl bg-card p-6">
           <View className="flex-row items-start justify-between">
             {typedUser?.avatar ? (
               <Image 
@@ -56,8 +56,8 @@ export default function ProfileScreen() {
                 className="h-24 w-24 rounded-full"
               />
             ) : (
-              <View className="h-24 w-24 items-center justify-center rounded-full bg-purple-200">
-                <Text className="text-3xl font-bold text-purple-600">
+              <View className="h-24 w-24 items-center justify-center rounded-full bg-purple-200 dark:bg-purple-900">
+                <Text className="text-3xl font-bold text-purple-600 dark:text-purple-300">
                   {typedUser?.name?.charAt(0)?.toUpperCase() || typedUser?.username?.charAt(0)?.toUpperCase() || '?'}
                 </Text>
               </View>
@@ -89,7 +89,7 @@ export default function ProfileScreen() {
           </View>
 
           {/* Wallet Address */}
-          <View className="mt-4 rounded-2xl bg-gray-50 p-4">
+          <View className="mt-4 rounded-2xl bg-gray-50 dark:bg-gray-800 p-4">
             <Text className="text-sm text-muted-foreground">Wallet Address</Text>
             <View className="mt-1 flex-row items-center justify-between">
               <Text className="text-lg font-bold">
@@ -171,7 +171,7 @@ export default function ProfileScreen() {
               ) : (
                 <>
                   {/* Portfolio Summary */}
-                  <View className="mb-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 p-6">
+                  <View className="mb-4 rounded-2xl bg-purple-600 dark:bg-purple-700 p-6">
                     <Text className="text-sm text-white/80">Total Portfolio Value</Text>
                     <Text className="mt-1 text-3xl font-bold text-white">
                       {portfolio.totalValue.toFixed(4)} SOL

@@ -1,7 +1,7 @@
 import { View, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator, Modal, TextInput, Pressable, Image, Switch } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { Heart, MessageCircle, Repeat2, Search, Bell, Settings, X, Eye, EyeOff, Copy, ArrowUpRight, ArrowDownLeft, RefreshCw, Sparkles, Gamepad2, ArrowRight, Circle, ImagePlus, Coins, DollarSign, User } from 'lucide-react-native';
+import { Heart, MessageCircle, Search, Bell, Settings, X, Eye, EyeOff, Copy, ArrowUpRight, ArrowDownLeft, RefreshCw, Sparkles, Gamepad2, ArrowRight, Circle, ImagePlus, Coins, DollarSign, User } from 'lucide-react-native';
 import { usePosts } from '@/hooks/usePosts';
 import { useWallet } from '@/hooks/useWallet';
 import { router } from 'expo-router';
@@ -238,9 +238,9 @@ export default function FeedScreen() {
         {/* Mini Apps Section */}
         <TouchableOpacity 
           onPress={() => router.push('/mini-apps')}
-          className="mx-4 mt-4 overflow-hidden rounded-2xl bg-primary"
+          className="mx-4 mt-4 overflow-hidden rounded-2xl bg-purple-600 dark:bg-purple-700"
         >
-          <View className="bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 p-6">
+          <View className="p-6">
             <View className="flex-row items-center justify-between">
               <View className="flex-1">
                 <View className="flex-row items-center gap-2">
