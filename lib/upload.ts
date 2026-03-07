@@ -28,7 +28,13 @@ export async function uploadImage(uri: string): Promise<string> {
     const response = await api.uploadImage(base64Image);
     
     if (response.error) {
+      console.error('Upload API error:', response.error);
       throw new Error(response.error);
+    }
+    
+    if (!response.data) {
+      console.error('No data in response:', response);
+      throw new Error('No URL returned from server');
     }
     
     return (response.data as { url: string }).url;
