@@ -87,6 +87,15 @@ class ApiClient {
   async getProfile() {
     return this.request('/auth/profile');
   }
+
+  // Health check
+  async checkHealth() {
+    return this.request('/health');
+  }
+
+  async checkDetailedHealth() {
+    return this.request('/health/detailed');
+  }
 }
 
 export const api = new ApiClient();
