@@ -317,6 +317,21 @@ class ApiClient {
     });
   }
 
+  // ==================== Upload ====================
+  async uploadImage(image: string) {
+    return this.request('/upload/image', {
+      method: 'POST',
+      body: JSON.stringify({ image }),
+    });
+  }
+
+  async uploadImages(images: string[]) {
+    return this.request('/upload/images', {
+      method: 'POST',
+      body: JSON.stringify({ images }),
+    });
+  }
+
   // ==================== Health ====================
   async checkHealth() {
     return this.request('/health');

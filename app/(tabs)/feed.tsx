@@ -11,6 +11,7 @@ import type { Post } from '@/types';
 import * as Clipboard from 'expo-clipboard';
 import { toast } from 'sonner-native';
 import * as ImagePicker from 'expo-image-picker';
+import { uploadMultipleImages } from '@/lib/upload';
 
 export default function FeedScreen() {
   const { posts, isLoadingFeed, fetchNextPage, hasNextPage, isFetchingNextPage, refetchFeed, createPost, isCreatingPost, likePost, unlikePost, tipPost, isTippingPost, buyToken, isBuyingToken } = usePosts();
@@ -27,12 +28,30 @@ export default function FeedScreen() {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [tipAmount, setTipAmount] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
 
-  const handleCreatePost = () => {
+  const handleCreatePost = async () => {
     if (!postContent.trim()) return;
+    
+    let imageUrls: string[] = [];
+    
+    // Upload images to Cloudinary if any
+    if (postImages.length > 0) {
+      setIsUploadingImages(true);
+      try {
+        imageUrls = await uploadMultipleImages(postImages);
+        toast.success('Images uploaded!');
+      } catch (error) {
+        toast.error('Failed to upload images');
+        setIsUploadingImages(false);
+        return;
+      }
+      setIsUploadingImages(false);
+    }
+    
     createPost({ 
       content: postContent,
-      images: postImages,
+      images: imageUrls,
       isTokenized,
       tokenSupply: isTokenized ? parseInt(tokenSupply) : undefined,
       tokenPrice: isTokenized ? parseFloat(tokenPrice) : undefined,
@@ -431,11 +450,11 @@ export default function FeedScreen() {
               <Text className="text-lg font-bold">Create Post</Text>
               <TouchableOpacity 
                 onPress={handleCreatePost}
-                disabled={!postContent.trim() || isCreatingPost}
-                className={`rounded-full px-4 py-2 ${postContent.trim() ? 'bg-purple-600' : 'bg-gray-300'}`}
+                disabled={!postContent.trim() || isCreatingPost || isUploadingImages}
+                className={`rounded-full px-4 py-2 ${postContent.trim() && !isUploadingImages ? 'bg-purple-600' : 'bg-gray-300'}`}
               >
-                <Text className={`font-semibold ${postContent.trim() ? 'text-white' : 'text-gray-500'}`}>
-                  {isCreatingPost ? 'Posting...' : 'Post'}
+                <Text className={`font-semibold ${postContent.trim() && !isUploadingImages ? 'text-white' : 'text-gray-500'}`}>
+                  {isUploadingImages ? 'Uploading...' : isCreatingPost ? 'Posting...' : 'Post'}
                 </Text>
               </TouchableOpacity>
             </View>

@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import type { User } from '@/types';
 import * as ImagePicker from 'expo-image-picker';
+import { uploadImage } from '@/lib/upload';
 
 export default function EditProfileScreen() {
   const { user, isLoadingUser } = useAuth();
@@ -21,6 +22,7 @@ export default function EditProfileScreen() {
   const [showImageOptions, setShowImageOptions] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [errors, setErrors] = useState({ name: '', bio: '' });
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   // Initialize form with user data
   useEffect(() => {
@@ -113,7 +115,7 @@ export default function EditProfileScreen() {
     toast.success('Photo removed');
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validateInputs()) {
       return;
     }
@@ -133,8 +135,23 @@ export default function EditProfileScreen() {
       updates.bio = bio.trim();
     }
 
+    // Upload avatar to Cloudinary if changed and is a local URI
     if (avatar !== (typedUser?.avatar || null)) {
-      updates.avatar = avatar || '';
+      if (avatar && avatar.startsWith('file://')) {
+        setIsUploadingAvatar(true);
+        try {
+          const uploadedUrl = await uploadImage(avatar);
+          updates.avatar = uploadedUrl;
+          toast.success('Avatar uploaded!');
+        } catch (error) {
+          toast.error('Failed to upload avatar');
+          setIsUploadingAvatar(false);
+          return;
+        }
+        setIsUploadingAvatar(false);
+      } else {
+        updates.avatar = avatar || '';
+      }
     }
 
     updateProfile(updates);
@@ -338,18 +355,18 @@ export default function EditProfileScreen() {
           
           <TouchableOpacity
             onPress={handleSave}
-            disabled={isUpdating || !hasChanges}
+            disabled={isUpdating || !hasChanges || isUploadingAvatar}
             className={`flex-1 items-center rounded-2xl py-4 ${
-              isUpdating || !hasChanges ? 'bg-gray-300' : 'bg-purple-600'
+              isUpdating || !hasChanges || isUploadingAvatar ? 'bg-gray-300' : 'bg-purple-600'
             }`}
           >
-            {isUpdating ? (
+            {isUpdating || isUploadingAvatar ? (
               <ActivityIndicator size="small" color="#ffffff" />
             ) : (
               <Text className={`text-lg font-semibold ${
                 hasChanges ? 'text-white' : 'text-gray-500'
               }`}>
-                Save Changes
+                {isUploadingAvatar ? 'Uploading...' : 'Save Changes'}
               </Text>
             )}
           </TouchableOpacity>
