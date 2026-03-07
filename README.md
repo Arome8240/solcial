@@ -1,34 +1,61 @@
-# Minimal Template
+# Solcial - Social Payment App
 
-This is a [React Native](https://reactnative.dev/) project built with [Expo](https://expo.dev/) and [React Native Reusables](https://reactnativereusables.com).
+A React Native social payment application built with Expo, featuring Solana blockchain integration for peer-to-peer payments.
 
-It was initialized using the following command:
+## Live Backend
 
-```bash
-npx @react-native-reusables/cli@latest init -t solcial
-```
+The app is connected to a live backend API:
+- **API URL**: https://solcial-backend.onrender.com/api
+- **Status**: Check at https://solcial-backend.onrender.com/api/health
+- **Network**: Solana Devnet
+
+See [API_TESTING.md](./API_TESTING.md) for detailed testing instructions.
+
+## Features
+
+- 🔐 Email-based authentication with verification codes
+- 💰 Custodial Solana wallet (auto-created on signup)
+- 💸 Send and receive SOL payments
+- 📱 QR code scanning for payments
+- 💬 Chat with payment integration
+- 👤 User profiles and settings
+- 📊 Social feed
+- 🎨 Beautiful UI with NativeWind (Tailwind CSS)
 
 ## Getting Started
 
-To run the development server:
+### Prerequisites
 
+- Node.js 18+ installed
+- pnpm installed (`npm install -g pnpm`)
+- Expo CLI (`npm install -g expo-cli`)
+- iOS Simulator (Mac) or Android Emulator
+
+### Installation
+
+1. Install dependencies:
 ```bash
-    npm run dev
-    # or
-    yarn dev
-    # or
-    pnpm dev
-    # or
-    bun dev
+pnpm install
 ```
 
-This will start the Expo Dev Server. Open the app in:
+2. Start the development server:
+```bash
+pnpm start
+```
 
+3. Open the app:
 - **iOS**: press `i` to launch in the iOS simulator _(Mac only)_
 - **Android**: press `a` to launch in the Android emulator
 - **Web**: press `w` to run in a browser
 
-You can also scan the QR code using the [Expo Go](https://expo.dev/go) app on your device. This project fully supports running in Expo Go for quick testing on physical devices.
+You can also scan the QR code using the [Expo Go](https://expo.dev/go) app on your device.
+
+### Testing the App
+
+1. **Sign Up**: Create a new account with email and password
+2. **Verify Email**: Check backend logs for the 6-digit verification code
+3. **Sign In**: Use your credentials to access the app
+4. **Explore**: Your wallet is automatically created with 2 SOL on devnet!
 
 ## Adding components
 
