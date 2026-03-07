@@ -9,15 +9,20 @@ import { toast } from 'sonner-native';
 
 export default function VerifyScreen() {
   const [code, setCode] = React.useState(['', '', '', '', '', '']);
+  const [focusedIndex, setFocusedIndex] = React.useState<number | null>(null);
   const inputRefs = React.useRef<(TextInput | null)[]>([]);
   
   const { verifyEmail, isVerifying, resendCode, isResending } = useAuth();
 
   const handleCodeChange = (text: string, index: number) => {
+    // Only allow numbers
+    if (text && !/^\d+$/.test(text)) return;
+    
     const newCode = [...code];
     newCode[index] = text;
     setCode(newCode);
 
+    // Auto-focus next input
     if (text && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -69,7 +74,7 @@ export default function VerifyScreen() {
         A six-digit code was sent to your email, enter it below to confirm your account.
       </Text>
 
-      <View className="mb-auto flex-row justify-between gap-2">
+      <View className="mb-auto flex-row justify-center gap-2">
         {code.map((digit, index) => (
           <TextInput
             key={index}
@@ -79,11 +84,16 @@ export default function VerifyScreen() {
             value={digit}
             onChangeText={(text) => handleCodeChange(text, index)}
             onKeyPress={(e) => handleKeyPress(e, index)}
+            onFocus={() => setFocusedIndex(index)}
+            onBlur={() => setFocusedIndex(null)}
             keyboardType="number-pad"
             maxLength={1}
-            className="h-16 w-14 rounded-xl bg-white text-center text-xl font-semibold text-gray-900"
-            placeholder="--"
+            className={`h-14 w-12 rounded-xl bg-white text-center text-lg font-semibold text-gray-900 border-2 ${
+              focusedIndex === index ? 'border-purple-600' : 'border-transparent'
+            }`}
+            placeholder="0"
             placeholderTextColor="#d1d5db"
+            autoFocus={index === 0}
           />
         ))}
       </View>

@@ -56,7 +56,7 @@ export default function RootLayout() {
           <StatusBar style="dark" />
           <Stack screenOptions={{ headerShown: false}} />
           <PortalHost />
-          <Toaster />
+          <Toaster richColors />
         </ThemeProvider>
       </GestureHandlerRootView>
     </QueryClientProvider>
