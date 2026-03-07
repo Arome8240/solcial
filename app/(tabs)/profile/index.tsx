@@ -1,21 +1,23 @@
 import { View, ScrollView, TouchableOpacity, Modal, ActivityIndicator, Image } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { Settings, MoreVertical, Copy, Share, Edit, CloudOff } from 'lucide-react-native';
+import { Settings, MoreVertical, Copy, Share, Edit, CloudOff, TrendingUp, TrendingDown, Coins } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import * as Clipboard from 'expo-clipboard';
 import { toast } from 'sonner-native';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserPosts } from '@/hooks/usePosts';
+import { usePortfolio } from '@/hooks/usePortfolio';
 import type { User, Post } from '@/types';
 
-const tabs = ['Posts', 'Replies', 'Likes', 'Collections'];
+const tabs = ['Posts', 'Portfolio', 'Replies', 'Likes'];
 
 export default function ProfileScreen() {
   const { user, isLoadingUser } = useAuth();
   const typedUser = user as User | undefined;
   const { posts, isLoading: isLoadingPosts } = useUserPosts(typedUser?.username || '');
+  const { data: portfolio, isLoading: isLoadingPortfolio } = usePortfolio(typedUser?.id || '');
   const [activeTab, setActiveTab] = useState('Posts');
   const [showMenu, setShowMenu] = useState(false);
 
@@ -151,8 +153,111 @@ export default function ProfileScreen() {
             </View>
           )}
 
+          {/* Portfolio Content */}
+          {activeTab === 'Portfolio' && (
+            <View className="px-4 py-4">
+              {isLoadingPortfolio ? (
+                <View className="items-center py-20">
+                  <ActivityIndicator size="large" color="#9333ea" />
+                </View>
+              ) : !portfolio || portfolio.holdings.length === 0 ? (
+                <View className="items-center py-20">
+                  <Icon as={Coins} size={64} className="text-muted-foreground" />
+                  <Text className="mt-4 text-muted-foreground">No token holdings yet</Text>
+                  <Text className="mt-2 text-center text-sm text-muted-foreground">
+                    Buy post tokens to start building your portfolio
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  {/* Portfolio Summary */}
+                  <View className="mb-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 p-6">
+                    <Text className="text-sm text-white/80">Total Portfolio Value</Text>
+                    <Text className="mt-1 text-3xl font-bold text-white">
+                      {portfolio.totalValue.toFixed(4)} SOL
+                    </Text>
+                    <View className="mt-3 flex-row items-center gap-2">
+                      <Icon 
+                        as={portfolio.totalProfitLoss >= 0 ? TrendingUp : TrendingDown} 
+                        size={16} 
+                        className={portfolio.totalProfitLoss >= 0 ? "text-green-300" : "text-red-300"}
+                      />
+                      <Text className={`font-semibold ${portfolio.totalProfitLoss >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                        {portfolio.totalProfitLoss >= 0 ? '+' : ''}{portfolio.totalProfitLoss.toFixed(4)} SOL
+                      </Text>
+                      <Text className={`text-sm ${portfolio.totalProfitLoss >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                        ({portfolio.totalProfitLossPercentage >= 0 ? '+' : ''}{portfolio.totalProfitLossPercentage.toFixed(2)}%)
+                      </Text>
+                    </View>
+                    <View className="mt-2 flex-row gap-4">
+                      <View>
+                        <Text className="text-xs text-white/60">Invested</Text>
+                        <Text className="text-sm font-semibold text-white">
+                          {portfolio.totalInvested.toFixed(4)} SOL
+                        </Text>
+                      </View>
+                      <View>
+                        <Text className="text-xs text-white/60">Holdings</Text>
+                        <Text className="text-sm font-semibold text-white">
+                          {portfolio.holdings.length} posts
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* Holdings List */}
+                  {portfolio.holdings.map((holding) => (
+                    <View key={holding.id} className="mb-3 rounded-2xl bg-card p-4">
+                      <View className="flex-row items-start justify-between">
+                        <View className="flex-1">
+                          <Text className="font-semibold" numberOfLines={2}>
+                            {holding.post.content}
+                          </Text>
+                          <Text className="mt-1 text-sm text-muted-foreground">
+                            by @{holding.post.author.username}
+                          </Text>
+                        </View>
+                        <View className="ml-2 items-end">
+                          <View className="flex-row items-center gap-1">
+                            <Icon 
+                              as={holding.profitLoss >= 0 ? TrendingUp : TrendingDown} 
+                              size={14} 
+                              className={holding.profitLoss >= 0 ? "text-green-600" : "text-red-600"}
+                            />
+                            <Text className={`text-sm font-semibold ${holding.profitLoss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {holding.profitLossPercentage >= 0 ? '+' : ''}{holding.profitLossPercentage.toFixed(1)}%
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                      
+                      <View className="mt-3 flex-row gap-4">
+                        <View>
+                          <Text className="text-xs text-muted-foreground">Tokens</Text>
+                          <Text className="font-semibold">{holding.amount}</Text>
+                        </View>
+                        <View>
+                          <Text className="text-xs text-muted-foreground">Avg Price</Text>
+                          <Text className="font-semibold">{holding.purchasePrice.toFixed(4)}</Text>
+                        </View>
+                        <View>
+                          <Text className="text-xs text-muted-foreground">Current</Text>
+                          <Text className="font-semibold">{holding.currentPrice.toFixed(4)}</Text>
+                        </View>
+                        <View>
+                          <Text className="text-xs text-muted-foreground">Value</Text>
+                          <Text className="font-semibold">{holding.currentValue.toFixed(4)} SOL</Text>
+                        </View>
+                      </View>
+                    </View>
+                  ))}
+                </>
+              )}
+            </View>
+          )}
+
           {/* Other tabs empty state */}
-          {activeTab !== 'Posts' && (
+          {(activeTab === 'Replies' || activeTab === 'Likes') && (
             <View className="items-center py-20">
               <Icon as={CloudOff} size={64} className="text-muted-foreground" />
               <Text className="mt-4 text-muted-foreground">Nothing here yet</Text>

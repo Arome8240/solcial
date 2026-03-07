@@ -118,6 +118,7 @@ export default function WalletScreen() {
               transactions.map((tx: Transaction) => (
                 <TouchableOpacity
                   key={tx.signature}
+                  onPress={() => router.push(`/transaction/${tx.signature}`)}
                   className="mb-3 flex-row items-center justify-between rounded-2xl bg-card p-4"
                 >
                   <View className="flex-row items-center gap-3">

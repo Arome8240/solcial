@@ -5,7 +5,6 @@ import { ThemeProvider } from '@react-navigation/native';
 import { PortalHost } from '@rn-primitives/portal';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme } from 'nativewind';
 import {
   Geist_400Regular,
   Geist_500Medium,
@@ -16,6 +15,8 @@ import {
 import { Toaster } from 'sonner-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useThemeStore, useThemeSync } from '@/store/useThemeStore';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -32,8 +33,9 @@ export {
   ErrorBoundary,
 } from 'expo-router';
 
-export default function RootLayout() {
-  const { setColorScheme } = useColorScheme();
+function RootLayoutContent() {
+  const { theme } = useThemeSync();
+  const { loadTheme, isLoading } = useThemeStore();
   
   const [isFontsLoaded] = useFonts({
     Geist_400Regular,
@@ -42,23 +44,31 @@ export default function RootLayout() {
     Geist_700Bold,
   });
 
-  // Force light mode
-  setColorScheme('light');
+  // Load saved theme preference on mount
+  useEffect(() => {
+    loadTheme();
+  }, []);
 
-  if (!isFontsLoaded) {
+  if (!isFontsLoaded || isLoading) {
     return null;
   }
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider value={theme === 'dark' ? NAV_THEME.dark : NAV_THEME.light}>
+        <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
+        <Stack screenOptions={{ headerShown: false}} />
+        <PortalHost />
+        <Toaster richColors />
+      </ThemeProvider>
+    </GestureHandlerRootView>
+  );
+}
+
+export default function RootLayout() {
+  return (
     <QueryClientProvider client={queryClient}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <ThemeProvider value={NAV_THEME.light}>
-          <StatusBar style="dark" />
-          <Stack screenOptions={{ headerShown: false}} />
-          <PortalHost />
-          <Toaster richColors />
-        </ThemeProvider>
-      </GestureHandlerRootView>
+      <RootLayoutContent />
     </QueryClientProvider>
   );
 }

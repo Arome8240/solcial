@@ -28,8 +28,14 @@ export interface Post {
   likesCount: number;
   commentsCount: number;
   sharesCount: number;
+  tipsCount: number;
+  totalTipsAmount: number;
   isLiked: boolean;
   isTokenized: boolean;
+  tokenMintAddress?: string;
+  tokenSupply: number;
+  tokenPrice: number;
+  tokenHolders: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -106,4 +112,46 @@ export interface PaymentQR {
   amount: number | null;
   label: string;
   message: string;
+}
+
+// Notification types
+export interface Notification {
+  id: string;
+  recipient: string;
+  sender: {
+    _id: string;
+    username: string;
+    name?: string;
+    avatar?: string;
+  };
+  type: 'like' | 'comment' | 'follow' | 'tip' | 'token_purchase' | 'mention';
+  post?: {
+    _id: string;
+    content: string;
+  };
+  message: string;
+  isRead: boolean;
+  amount?: number;
+  createdAt: string;
+}
+
+// Portfolio types
+export interface PortfolioHolding {
+  id: string;
+  post: Post;
+  amount: number;
+  purchasePrice: number;
+  currentPrice: number;
+  totalInvested: number;
+  currentValue: number;
+  profitLoss: number;
+  profitLossPercentage: number;
+}
+
+export interface Portfolio {
+  totalValue: number;
+  totalInvested: number;
+  totalProfitLoss: number;
+  totalProfitLossPercentage: number;
+  holdings: PortfolioHolding[];
 }

@@ -5,15 +5,20 @@ import { Grid, Users, Bell, Moon, Globe, HelpCircle, FileText, LogOut, ChevronRi
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useThemeStore } from '@/store/useThemeStore';
 
 export default function SettingsScreen() {
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const { theme, toggleTheme } = useThemeStore();
   
   const { logout } = useAuth();
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handleThemeToggle = async () => {
+    await toggleTheme();
   };
 
   return (
@@ -92,12 +97,12 @@ export default function SettingsScreen() {
             <View className="flex-1">
               <Text className="font-semibold">Dark Mode</Text>
               <Text className="text-sm text-muted-foreground">
-                Password, 2FA, and wallet security
+                {theme === 'dark' ? 'Dark theme enabled' : 'Light theme enabled'}
               </Text>
             </View>
             <Switch
-              value={darkMode}
-              onValueChange={setDarkMode}
+              value={theme === 'dark'}
+              onValueChange={handleThemeToggle}
               trackColor={{ false: '#d1d5db', true: '#9333ea' }}
               thumbColor="#ffffff"
             />

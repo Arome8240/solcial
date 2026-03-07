@@ -109,10 +109,16 @@ class ApiClient {
   }
 
   // ==================== Posts ====================
-  async createPost(content: string, images?: string[]) {
+  async createPost(data: { 
+    content: string; 
+    images?: string[]; 
+    isTokenized?: boolean;
+    tokenSupply?: number;
+    tokenPrice?: number;
+  }) {
     return this.request('/posts', {
       method: 'POST',
-      body: JSON.stringify({ content, images }),
+      body: JSON.stringify(data),
     });
   }
 
@@ -261,6 +267,53 @@ class ApiClient {
     return this.request('/payments/request', {
       method: 'POST',
       body: JSON.stringify({ fromUsername, amount, memo }),
+    });
+  }
+
+  // ==================== Post Tokens ====================
+  async buyPostToken(postId: string, amount: number) {
+    return this.request(`/posts/${postId}/buy-token`, {
+      method: 'POST',
+      body: JSON.stringify({ amount }),
+    });
+  }
+
+  async tipPost(postId: string, amount: number, message?: string) {
+    return this.request(`/posts/${postId}/tip`, {
+      method: 'POST',
+      body: JSON.stringify({ amount, message }),
+    });
+  }
+
+  async getPostTips(postId: string, page: number = 1, limit: number = 20) {
+    return this.request(`/posts/${postId}/tips?page=${page}&limit=${limit}`);
+  }
+
+  async getUserPortfolio(userId: string) {
+    return this.request(`/posts/portfolio/${userId}`);
+  }
+
+  // ==================== Notifications ====================
+  async getNotifications(page: number = 1, limit: number = 20) {
+    return this.request(`/notifications?page=${page}&limit=${limit}`);
+  }
+
+  async getUnreadCount() {
+    return this.request('/notifications/unread-count');
+  }
+
+  async markNotificationAsRead(id: string) {
+    return this.request(`/notifications/${id}/read`, { method: 'PATCH' });
+  }
+
+  async markAllNotificationsAsRead() {
+    return this.request('/notifications/read-all', { method: 'PATCH' });
+  }
+
+  async registerPushToken(pushToken: string) {
+    return this.request('/notifications/register-token', {
+      method: 'POST',
+      body: JSON.stringify({ pushToken }),
     });
   }
 

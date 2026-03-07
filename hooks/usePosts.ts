@@ -29,8 +29,14 @@ export function usePosts() {
 
   // Create post
   const createPostMutation = useMutation({
-    mutationFn: async ({ content, images }: { content: string; images?: string[] }) => {
-      const response = await api.createPost(content, images);
+    mutationFn: async (data: { 
+      content: string; 
+      images?: string[];
+      isTokenized?: boolean;
+      tokenSupply?: number;
+      tokenPrice?: number;
+    }) => {
+      const response = await api.createPost(data);
       if (response.error) throw new Error(response.error);
       return response.data;
     },
@@ -89,6 +95,40 @@ export function usePosts() {
     },
   });
 
+  // Buy post token
+  const buyTokenMutation = useMutation({
+    mutationFn: async ({ postId, amount }: { postId: string; amount: number }) => {
+      const response = await api.buyPostToken(postId, amount);
+      if (response.error) throw new Error(response.error);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      toast.success('Tokens purchased!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+
+  // Tip post
+  const tipPostMutation = useMutation({
+    mutationFn: async ({ postId, amount, message }: { postId: string; amount: number; message?: string }) => {
+      const response = await api.tipPost(postId, amount, message);
+      if (response.error) throw new Error(response.error);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      toast.success('Tip sent!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+
   const posts = feedData?.pages.flat() || [];
 
   return {
@@ -103,6 +143,10 @@ export function usePosts() {
     likePost: likePostMutation.mutate,
     unlikePost: unlikePostMutation.mutate,
     deletePost: deletePostMutation.mutate,
+    buyToken: buyTokenMutation.mutate,
+    isBuyingToken: buyTokenMutation.isPending,
+    tipPost: tipPostMutation.mutate,
+    isTippingPost: tipPostMutation.isPending,
   };
 }
 
