@@ -20,29 +20,23 @@ ExpoNotifications.setNotificationHandler({
 
 export function useNotifications() {
   const queryClient = useQueryClient();
-  const notificationListener = useRef<any>();
-  const responseListener = useRef<any>();
 
   // Register for push notifications
   useEffect(() => {
     registerForPushNotificationsAsync();
 
     // Listen for notifications
-    notificationListener.current = ExpoNotifications.addNotificationReceivedListener((notification) => {
+    const subscription1 = ExpoNotifications.addNotificationReceivedListener((notification) => {
       console.log('Notification received:', notification);
     });
 
-    responseListener.current = ExpoNotifications.addNotificationResponseReceivedListener((response) => {
+    const subscription2 = ExpoNotifications.addNotificationResponseReceivedListener((response) => {
       console.log('Notification response:', response);
     });
 
     return () => {
-      if (notificationListener.current) {
-        ExpoNotifications.removeNotificationSubscription(notificationListener.current);
-      }
-      if (responseListener.current) {
-        ExpoNotifications.removeNotificationSubscription(responseListener.current);
-      }
+      subscription1.remove();
+      subscription2.remove();
     };
   }, []);
 
@@ -104,7 +98,7 @@ export function useNotifications() {
   });
 
   const notifications = notificationsData?.pages.flat() || [];
-  const unreadCount = unreadData?.count || 0;
+  const unreadCount = (unreadData as { count?: number })?.count || 0;
 
   return {
     notifications,

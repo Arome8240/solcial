@@ -8,14 +8,15 @@ import { usePost } from '@/hooks/usePosts';
 import { useComments } from '@/hooks/useComments';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
-import type { Comment } from '@/types';
+import type { Comment, Post } from '@/types';
 import { toast } from 'sonner-native';
 
 export default function PostDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: post, isLoading } = usePost(id || '');
+  const { data: postData, isLoading } = usePost(id || '');
+  const post = postData as Post | undefined;
   const { user } = useAuth();
-  const { comments, isLoadingComments, createComment, isCreatingComment } = useComments(id || '');
+  const { comments, isLoading: isLoadingComments, createComment, isCreatingComment } = useComments(id || '');
   const [commentText, setCommentText] = useState('');
   const [showTipModal, setShowTipModal] = useState(false);
   const [showBuyTokenModal, setShowBuyTokenModal] = useState(false);
@@ -32,7 +33,7 @@ export default function PostDetailsScreen() {
 
   const handleCreateComment = () => {
     if (!commentText.trim()) return;
-    createComment({ postId: id || '', content: commentText });
+    createComment({ content: commentText });
     setCommentText('');
   };
 
@@ -233,7 +234,7 @@ export default function PostDetailsScreen() {
               <Text className="mt-1 text-sm text-muted-foreground">Be the first to comment!</Text>
             </View>
           ) : (
-            comments.map((comment: Comment) => (
+            (comments as Comment[]).map((comment: Comment) => (
               <View key={comment.id} className="border-b border-border p-4">
                 <View className="flex-row gap-3">
                   <TouchableOpacity onPress={() => navigateToProfile(comment.author.username)}>

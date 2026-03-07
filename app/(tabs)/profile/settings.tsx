@@ -3,15 +3,28 @@ import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { Grid, Users, Bell, Moon, Globe, HelpCircle, FileText, LogOut, ChevronRight } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useThemeStore } from '@/store/useThemeStore';
+import * as ExpoNotifications from 'expo-notifications';
+import Constants from 'expo-constants';
+import { Platform } from 'react-native';
+import { api } from '@/lib/api';
+import { toast } from 'sonner-native';
 
 export default function SettingsScreen() {
-  const [notifications, setNotifications] = useState(true);
+  const [notifications, setNotifications] = useState(false);
   const { theme, toggleTheme } = useThemeStore();
-  
   const { logout } = useAuth();
+
+  useEffect(() => {
+    checkNotificationStatus();
+  }, []);
+
+  const checkNotificationStatus = async () => {
+    const { status } = await ExpoNotifications.getPermissionsAsync();
+    setNotifications(status === 'granted');
+  };
 
   const handleLogout = () => {
     logout();
@@ -19,6 +32,60 @@ export default function SettingsScreen() {
 
   const handleThemeToggle = async () => {
     await toggleTheme();
+  };
+
+  const handleNotificationToggle = async (value: boolean) => {
+    if (value) {
+      // Request permission and register token
+      const { status: existingStatus } = await ExpoNotifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      
+      if (existingStatus !== 'granted') {
+        const { status } = await ExpoNotifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      
+      if (finalStatus !== 'granted') {
+        toast.error('Failed to get push notification permissions');
+        setNotifications(false);
+        return;
+      }
+
+      // Set up notification channel for Android
+      if (Platform.OS === 'android') {
+        await ExpoNotifications.setNotificationChannelAsync('default', {
+          name: 'default',
+          importance: ExpoNotifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#9333ea',
+        });
+      }
+
+      // Get push token
+      try {
+        const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+        const token = (await ExpoNotifications.getExpoPushTokenAsync({ projectId })).data;
+        
+        // Register token with backend
+        const response = await api.registerPushToken(token);
+        if (response.error) {
+          toast.error('Failed to register push token');
+          setNotifications(false);
+          return;
+        }
+        
+        setNotifications(true);
+        toast.success('Notifications enabled!');
+      } catch (error) {
+        console.error('Error getting push token:', error);
+        toast.error('Failed to enable notifications');
+        setNotifications(false);
+      }
+    } else {
+      // Disable notifications
+      setNotifications(false);
+      toast.success('Notifications disabled');
+    }
   };
 
   return (
@@ -80,11 +147,13 @@ export default function SettingsScreen() {
             </View>
             <View className="flex-1">
               <Text className="font-semibold">Notifications</Text>
-              <Text className="text-sm text-muted-foreground">Push notifications enabled</Text>
+              <Text className="text-sm text-muted-foreground">
+                {notifications ? 'Push notifications enabled' : 'Push notifications disabled'}
+              </Text>
             </View>
             <Switch
               value={notifications}
-              onValueChange={setNotifications}
+              onValueChange={handleNotificationToggle}
               trackColor={{ false: '#d1d5db', true: '#9333ea' }}
               thumbColor="#ffffff"
             />

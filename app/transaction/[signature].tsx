@@ -27,7 +27,7 @@ export default function TransactionDetailsScreen() {
     try {
       const response = await api.getTransactionDetails(signature);
       if (response.data) {
-        setTransaction(response.data);
+        setTransaction(response.data as Transaction);
       }
     } catch (error) {
       console.error('Error loading transaction:', error);
