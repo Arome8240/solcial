@@ -1,21 +1,36 @@
-import { View, ScrollView, TouchableOpacity } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Share, Platform } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { ArrowLeft, QrCode, Copy } from 'lucide-react-native';
+import { ArrowLeft, Copy, Share2, Download } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import QRCode from 'react-native-qrcode-svg';
 import { toast } from 'sonner-native';
 import * as Clipboard from 'expo-clipboard';
+import { useWallet } from '@/hooks/useWallet';
 
 export default function ReceiveMoneyScreen() {
+  const { walletAddress, balance } = useWallet();
   const [showAddress, setShowAddress] = useState(false);
-  const walletAddress = '9xQeW...kJ7P';
-  const fullWalletAddress = '9xQeWkJ7P8sN3mK4vL2hR6tY1uZ5wX7cB9dF0gH3jM';
 
   const copyToClipboard = async () => {
-    await Clipboard.setStringAsync(fullWalletAddress);
-    toast.success('Address copied to clipboard');
+    if (walletAddress) {
+      await Clipboard.setStringAsync(walletAddress);
+      toast.success('Address copied to clipboard');
+    }
+  };
+
+  const shareAddress = async () => {
+    if (!walletAddress) return;
+    
+    try {
+      await Share.share({
+        message: `Send SOL to my wallet:\n${walletAddress}`,
+        title: 'My Solana Wallet Address',
+      });
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
   };
 
   return (
@@ -26,7 +41,13 @@ export default function ReceiveMoneyScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <Icon as={ArrowLeft} size={24} className="text-foreground" />
           </TouchableOpacity>
-          <Text className="text-2xl font-bold">Receive Money</Text>
+          <Text className="text-2xl font-bold">Receive SOL</Text>
+        </View>
+
+        {/* Balance Display */}
+        <View className="mx-4 mt-6 rounded-2xl bg-purple-50 p-4">
+          <Text className="text-sm text-muted-foreground">Current Balance</Text>
+          <Text className="mt-1 text-2xl font-bold text-purple-600">{balance.toFixed(4)} SOL</Text>
         </View>
 
         {/* QR Code Section */}
@@ -34,26 +55,56 @@ export default function ReceiveMoneyScreen() {
           {showAddress ? (
             <View className="w-full items-center rounded-3xl bg-card p-6">
               <Text className="text-sm text-muted-foreground">Your Wallet Address</Text>
-              <Text className="mt-2 text-2xl font-bold">{walletAddress}</Text>
-              <TouchableOpacity 
-                onPress={copyToClipboard}
-                className="mt-4 flex-row items-center gap-2 rounded-xl bg-purple-600 px-6 py-3"
-              >
-                <Icon as={Copy} size={20} className="text-white" />
-                <Text className="font-semibold text-white">Copy Address</Text>
-              </TouchableOpacity>
+              <View className="mt-4 w-full rounded-2xl bg-gray-50 p-4">
+                <Text className="break-all font-mono text-sm text-foreground">
+                  {walletAddress}
+                </Text>
+              </View>
+              
+              <View className="mt-6 w-full flex-row gap-3">
+                <TouchableOpacity 
+                  onPress={copyToClipboard}
+                  className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-purple-600 py-3"
+                >
+                  <Icon as={Copy} size={18} className="text-white" />
+                  <Text className="font-semibold text-white">Copy</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  onPress={shareAddress}
+                  className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-purple-600 py-3"
+                >
+                  <Icon as={Share2} size={18} className="text-white" />
+                  <Text className="font-semibold text-white">Share</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           ) : (
             <View className="items-center rounded-3xl bg-card p-8">
-              <View className="rounded-2xl bg-white p-4">
-                <QRCode
-                  value={fullWalletAddress}
-                  size={240}
-                  backgroundColor="white"
-                  color="black"
-                />
+              <View className="rounded-2xl bg-white p-6 shadow-lg">
+                {walletAddress ? (
+                  <QRCode
+                    value={walletAddress}
+                    size={240}
+                    backgroundColor="white"
+                    color="black"
+                  />
+                ) : (
+                  <View className="h-60 w-60 items-center justify-center">
+                    <Text className="text-muted-foreground">Loading...</Text>
+                  </View>
+                )}
               </View>
-              <Text className="mt-4 text-sm text-muted-foreground">Scan to send payment</Text>
+              <Text className="mt-6 text-center text-sm text-muted-foreground">
+                Scan this QR code to send SOL to this wallet
+              </Text>
+              
+              {/* Wallet Address Preview */}
+              <View className="mt-4 rounded-xl bg-gray-50 px-4 py-2">
+                <Text className="font-mono text-xs text-muted-foreground">
+                  {walletAddress?.slice(0, 12)}...{walletAddress?.slice(-12)}
+                </Text>
+              </View>
             </View>
           )}
         </View>
@@ -62,29 +113,82 @@ export default function ReceiveMoneyScreen() {
         <View className="mt-6 px-4">
           <TouchableOpacity
             onPress={() => setShowAddress(!showAddress)}
-            className="flex-row items-center justify-center gap-2 rounded-2xl bg-purple-600 py-4"
+            className="items-center rounded-2xl bg-purple-100 py-4"
           >
-            <Icon as={QrCode} size={20} className="text-white" />
-            <Text className="font-semibold text-white">
-              {showAddress ? 'Show QR Code' : 'Show QR Code'}
+            <Text className="font-semibold text-purple-600">
+              {showAddress ? 'Show QR Code' : 'Show Full Address'}
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* How to Receive */}
+        {/* Quick Actions */}
         <View className="mt-6 px-4">
+          <View className="flex-row gap-3">
+            <TouchableOpacity 
+              onPress={copyToClipboard}
+              className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl border-2 border-purple-600 py-3"
+            >
+              <Icon as={Copy} size={18} className="text-purple-600" />
+              <Text className="font-semibold text-purple-600">Copy Address</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              onPress={shareAddress}
+              className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl bg-purple-600 py-3"
+            >
+              <Icon as={Share2} size={18} className="text-white" />
+              <Text className="font-semibold text-white">Share</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* How to Receive */}
+        <View className="mt-6 px-4 pb-6">
           <View className="rounded-2xl border-2 border-purple-200 bg-purple-50 p-6">
-            <Text className="text-lg font-semibold">How to Receive</Text>
-            <View className="mt-3 gap-2">
-              <Text className="text-sm text-muted-foreground">
-                1. Share your wallet address or QR code
-              </Text>
-              <Text className="text-sm text-muted-foreground">
-                2. Sender enters amount and confirms.
-              </Text>
-              <Text className="text-sm text-muted-foreground">
-                3. Funds arrive in seconds on Solana.
-              </Text>
+            <Text className="text-lg font-semibold text-purple-900">How to Receive SOL</Text>
+            <View className="mt-4 gap-3">
+              <View className="flex-row gap-3">
+                <View className="h-6 w-6 items-center justify-center rounded-full bg-purple-600">
+                  <Text className="text-xs font-bold text-white">1</Text>
+                </View>
+                <Text className="flex-1 text-sm text-muted-foreground">
+                  Share your wallet address or QR code with the sender
+                </Text>
+              </View>
+              
+              <View className="flex-row gap-3">
+                <View className="h-6 w-6 items-center justify-center rounded-full bg-purple-600">
+                  <Text className="text-xs font-bold text-white">2</Text>
+                </View>
+                <Text className="flex-1 text-sm text-muted-foreground">
+                  Sender enters the amount and confirms the transaction
+                </Text>
+              </View>
+              
+              <View className="flex-row gap-3">
+                <View className="h-6 w-6 items-center justify-center rounded-full bg-purple-600">
+                  <Text className="text-xs font-bold text-white">3</Text>
+                </View>
+                <Text className="flex-1 text-sm text-muted-foreground">
+                  Funds arrive in your wallet within seconds on Solana
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Network Info */}
+          <View className="mt-4 rounded-2xl bg-gray-50 p-4">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-sm text-muted-foreground">Network</Text>
+              <Text className="text-sm font-medium">Solana Devnet</Text>
+            </View>
+            <View className="mt-2 flex-row items-center justify-between">
+              <Text className="text-sm text-muted-foreground">Transaction Speed</Text>
+              <Text className="text-sm font-medium">~400ms</Text>
+            </View>
+            <View className="mt-2 flex-row items-center justify-between">
+              <Text className="text-sm text-muted-foreground">Network Fee</Text>
+              <Text className="text-sm font-medium">~0.000005 SOL</Text>
             </View>
           </View>
         </View>

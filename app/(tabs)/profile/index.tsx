@@ -1,4 +1,4 @@
-import { View, ScrollView, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Modal, ActivityIndicator, Image } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { Settings, MoreVertical, Copy, Share, Edit, CloudOff } from 'lucide-react-native';
@@ -48,7 +48,18 @@ export default function ProfileScreen() {
         {/* Profile Card */}
         <View className="mx-4 mt-6 rounded-3xl bg-white p-6">
           <View className="flex-row items-start justify-between">
-            <View className="h-24 w-24 rounded-full bg-purple-200" />
+            {typedUser?.avatar ? (
+              <Image 
+                source={{ uri: typedUser.avatar }} 
+                className="h-24 w-24 rounded-full"
+              />
+            ) : (
+              <View className="h-24 w-24 items-center justify-center rounded-full bg-purple-200">
+                <Text className="text-3xl font-bold text-purple-600">
+                  {typedUser?.name?.charAt(0)?.toUpperCase() || typedUser?.username?.charAt(0)?.toUpperCase() || '?'}
+                </Text>
+              </View>
+            )}
             <TouchableOpacity onPress={() => setShowMenu(true)}>
               <Icon as={MoreVertical} size={24} className="text-foreground" />
             </TouchableOpacity>
@@ -91,7 +102,7 @@ export default function ProfileScreen() {
 
         {/* Tabs */}
         <View className="mt-6 bg-background">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4 py-2">
             {tabs.map((tab) => (
               <TouchableOpacity
                 key={tab}

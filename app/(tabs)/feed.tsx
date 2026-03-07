@@ -1,19 +1,22 @@
-import { View, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator, Modal, TextInput } from 'react-native';
+import { View, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator, Modal, TextInput, Pressable } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { Heart, MessageCircle, Repeat2, Search, Bell, Settings, X } from 'lucide-react-native';
+import { Heart, MessageCircle, Repeat2, Search, Bell, Settings, X, Eye, EyeOff, Copy, ArrowUpRight, ArrowDownLeft, RefreshCw, Sparkles, Gamepad2, ArrowRight, Circle } from 'lucide-react-native';
 import { usePosts } from '@/hooks/usePosts';
 import { useWallet } from '@/hooks/useWallet';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import type { Post } from '@/types';
+import * as Clipboard from 'expo-clipboard';
+import { toast } from 'sonner-native';
 
 export default function FeedScreen() {
   const { posts, isLoadingFeed, fetchNextPage, hasNextPage, isFetchingNextPage, refetchFeed, createPost, isCreatingPost, likePost, unlikePost } = usePosts();
-  const { balance, walletAddress } = useWallet();
+  const { balance, walletAddress, isLoadingBalance, refetchBalance } = useWallet();
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [postContent, setPostContent] = useState('');
+  const [showBalance, setShowBalance] = useState(true);
 
   const handleCreatePost = () => {
     if (!postContent.trim()) return;
@@ -37,6 +40,18 @@ export default function FeedScreen() {
       return '';
     }
   };
+
+  const copyAddress = async () => {
+    if (walletAddress) {
+      await Clipboard.setStringAsync(walletAddress);
+      toast.success('Address copied!');
+    }
+  };
+
+  const handleRefreshBalance = async () => {
+    await refetchBalance();
+    toast.success('Balance refreshed!');
+  };
   return (
     <View className="flex-1 bg-background">
       <ScrollView 
@@ -54,47 +69,120 @@ export default function FeedScreen() {
         scrollEventThrottle={400}
       >
         {/* Balance Card */}
-        <View className="mx-4 mt-4 rounded-3xl bg-gradient-to-br from-purple-600 to-purple-800 p-6">
-          <View className="flex-row items-start justify-between">
-            <View>
-              <Text className="text-sm text-purple-200">Total Balance</Text>
-              <Text className="text-4xl font-bold text-white">{balance.toFixed(2)} SOL</Text>
-              <Text className="text-sm text-purple-200">{walletAddress?.slice(0, 8)}...</Text>
+        <View className="mx-4 mt-4 overflow-hidden rounded-3xl bg-purple-600 shadow-lg">
+          {/* Gradient Background */}
+          <View className="p-6">
+            <View className="flex-row items-start justify-between">
+              <View className="flex-1">
+                <View className="flex-row items-center gap-2">
+                  <Text className="text-sm text-purple-200">Total Balance</Text>
+                  <TouchableOpacity 
+                    onPress={() => setShowBalance(!showBalance)}
+                    className="rounded-full p-1"
+                  >
+                    <Icon as={showBalance ? Eye : EyeOff} size={16} className="text-purple-200" />
+                  </TouchableOpacity>
+                </View>
+                
+                {isLoadingBalance ? (
+                  <ActivityIndicator size="large" color="#ffffff" className="mt-2" />
+                ) : (
+                  <Text className="mt-1 text-4xl font-bold text-white">
+                    {showBalance ? `${balance.toFixed(4)} SOL` : '••••••'}
+                  </Text>
+                )}
+                
+                <Pressable onPress={copyAddress} className="mt-2 flex-row items-center gap-2 rounded-lg p-1">
+                  <Text className="text-sm text-purple-200">
+                    {walletAddress?.slice(0, 8)}...{walletAddress?.slice(-6)}
+                  </Text>
+                  <Icon as={Copy} size={14} className="text-purple-200" />
+                </Pressable>
+              </View>
+              
+              <View className="flex-row gap-2">
+                <TouchableOpacity 
+                  onPress={handleRefreshBalance}
+                  disabled={isLoadingBalance}
+                  className="h-10 w-10 items-center justify-center rounded-full bg-white/20"
+                >
+                  <Icon as={RefreshCw} size={18} className="text-white" />
+                </TouchableOpacity>
+                <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-full bg-white/20">
+                  <Icon as={Bell} size={18} className="text-white" />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  onPress={() => router.push('/profile/settings')}
+                  className="h-10 w-10 items-center justify-center rounded-full bg-white/20"
+                >
+                  <Icon as={Settings} size={18} className="text-white" />
+                </TouchableOpacity>
+              </View>
             </View>
-            <View className="flex-row gap-3">
-              <TouchableOpacity className="h-10 w-10 items-center justify-center rounded-full bg-white/20">
-                <Icon as={Bell} size={20} className="text-white" />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                onPress={() => router.push('/profile/settings')}
-                className="h-10 w-10 items-center justify-center rounded-full bg-white/20"
-              >
-                <Icon as={Settings} size={20} className="text-white" />
-              </TouchableOpacity>
-            </View>
-          </View>
 
-          <View className="mt-6 flex-row items-end justify-between">
-            <View>
-              <Text className="text-sm text-purple-200">Network</Text>
-              <Text className="text-2xl font-bold text-white">Solana Devnet</Text>
+            {/* Quick Actions */}
+            <View className="mt-6 flex-row gap-3">
+              <TouchableOpacity
+                onPress={() => router.push('/wallet/send')}
+                className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-white py-3.5 shadow-sm"
+              >
+                <Icon as={ArrowUpRight} size={18} className="text-purple-600" />
+                <Text className="font-semibold text-purple-600">Send</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={() => router.push('/wallet/receive')}
+                className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-purple-700 py-3.5 shadow-sm"
+              >
+                <Icon as={ArrowDownLeft} size={18} className="text-white" />
+                <Text className="font-semibold text-white">Receive</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={() => router.push('/wallet')}
+                className="flex-1 items-center justify-center rounded-xl bg-purple-700 py-3.5 shadow-sm"
+              >
+                <Text className="font-semibold text-white">Wallet</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Network Badge */}
+            <View className="mt-4 flex-row items-center gap-2 self-start rounded-full bg-white/10 px-3 py-1.5">
+              <Icon as={Circle} size={8} className="text-green-400" fill="#4ade80" />
+              <Text className="text-xs font-medium text-white">Solana Devnet</Text>
             </View>
           </View>
         </View>
 
         {/* Mini Apps Section */}
-        <View className="mx-4 mt-4 rounded-2xl bg-gradient-to-r from-purple-100 to-orange-100 p-4">
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-2">
-              <Text className="text-2xl">✨</Text>
-              <View>
-                <Text className="font-semibold">Explore Mini Apps</Text>
-                <Text className="text-xs text-muted-foreground">Swap, mint, games & more</Text>
+        <TouchableOpacity 
+          onPress={() => router.push('/mini-apps')}
+          className="mx-4 mt-4 overflow-hidden rounded-2xl bg-primary"
+        >
+          <View className="bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 p-6">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1">
+                <View className="flex-row items-center gap-2">
+                  <Icon as={Sparkles} size={24} className="text-white" />
+                  <Text className="text-xl font-bold text-white">Mini Apps</Text>
+                </View>
+                <Text className="mt-2 text-sm text-white/90">
+                  Swap, mint NFTs, play games & more
+                </Text>
+                <View className="mt-3 flex-row items-center gap-2">
+                  <View className="rounded-full bg-white/20 px-3 py-1">
+                    <Text className="text-xs font-medium text-white">Coming Soon</Text>
+                  </View>
+                  <Icon as={ArrowRight} size={14} className="text-white/80" />
+                </View>
+              </View>
+              
+              <View className="h-16 w-16 items-center justify-center rounded-2xl bg-white/20">
+                <Icon as={Gamepad2} size={32} className="text-white" />
               </View>
             </View>
-            <Text className="text-3xl">🪙</Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Feed Header */}
         <View className="mt-6 flex-row items-center justify-between px-4">

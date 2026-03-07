@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { toast } from 'sonner-native';
+import type { User } from '@/types';
 
 export function useProfile() {
   const queryClient = useQueryClient();
@@ -22,9 +23,17 @@ export function useProfile() {
     },
   });
 
+  // Search users function
+  const searchUsers = async (query: string): Promise<User[]> => {
+    const response = await api.searchUsers(query);
+    if (response.error) throw new Error(response.error);
+    return (response.data || []) as User[];
+  };
+
   return {
     updateProfile: updateProfileMutation.mutate,
     isUpdating: updateProfileMutation.isPending,
+    searchUsers,
   };
 }
 
