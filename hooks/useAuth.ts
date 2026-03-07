@@ -20,6 +20,32 @@ interface VerifyEmailData {
   code: string;
 }
 
+interface User {
+  id: string;
+  email: string;
+  username: string;
+  name?: string;
+  bio?: string;
+  avatar?: string;
+  walletAddress: string;
+  emailVerified: boolean;
+  followersCount: number;
+  followingCount: number;
+  postsCount: number;
+  createdAt: string;
+  tempEmail?: string;
+}
+
+interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+interface VerifyResponse {
+  message: string;
+  user: User;
+}
+
 export function useAuth() {
   const queryClient = useQueryClient();
 
@@ -47,7 +73,7 @@ export function useAuth() {
     mutationFn: async (data: SignupData) => {
       const response = await api.signup(data.email, data.password, data.username);
       if (response.error) throw new Error(response.error);
-      return response.data;
+      return response.data as AuthResponse;
     },
     onSuccess: async (data) => {
       await storage.saveToken(data.token);
@@ -67,7 +93,7 @@ export function useAuth() {
     mutationFn: async (data: SigninData) => {
       const response = await api.signin(data.email, data.password);
       if (response.error) throw new Error(response.error);
-      return response.data;
+      return response.data as AuthResponse;
     },
     onSuccess: async (data) => {
       await storage.saveToken(data.token);
@@ -87,7 +113,7 @@ export function useAuth() {
     mutationFn: async (data: VerifyEmailData) => {
       const response = await api.verifyEmail(data.email, data.code);
       if (response.error) throw new Error(response.error);
-      return response.data;
+      return response.data as VerifyResponse;
     },
     onSuccess: async (data) => {
       queryClient.setQueryData(['user'], data.user);
