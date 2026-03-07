@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { toast } from 'sonner-native';
-import type { WalletBalance } from '@/types';
+import type { WalletBalance, Transaction } from '@/types';
 
 export function useWallet() {
   const queryClient = useQueryClient();
@@ -25,17 +25,17 @@ export function useWallet() {
     isFetchingNextPage,
     isLoading: isLoadingTransactions,
     refetch: refetchTransactions,
-  } = useInfiniteQuery({
+  } = useInfiniteQuery<Transaction[]>({
     queryKey: ['wallet', 'transactions'],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await api.getTransactions(pageParam, 20);
+      const response = await api.getTransactions(pageParam as number, 20);
       if (response.error) throw new Error(response.error);
-      return response.data;
+      return response.data as Transaction[];
     },
     getNextPageParam: (lastPage, pages) => {
       return Array.isArray(lastPage) && lastPage.length === 20 ? pages.length + 1 : undefined;
     },
-    initialPageParam: 1,
+    initialPageParam: 1 as number,
   });
 
   // Send SOL

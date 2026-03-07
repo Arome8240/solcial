@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { toast } from 'sonner-native';
+import type { Post } from '@/types';
 
 export function usePosts() {
   const queryClient = useQueryClient();
@@ -13,17 +14,17 @@ export function usePosts() {
     isFetchingNextPage,
     isLoading: isLoadingFeed,
     refetch: refetchFeed,
-  } = useInfiniteQuery({
+  } = useInfiniteQuery<Post[]>({
     queryKey: ['posts', 'feed'],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await api.getFeed(pageParam, 20);
+      const response = await api.getFeed(pageParam as number, 20);
       if (response.error) throw new Error(response.error);
-      return response.data || [];
+      return (response.data || []) as Post[];
     },
     getNextPageParam: (lastPage, pages) => {
       return Array.isArray(lastPage) && lastPage.length === 20 ? pages.length + 1 : undefined;
     },
-    initialPageParam: 1,
+    initialPageParam: 1 as number,
   });
 
   // Create post
@@ -124,17 +125,17 @@ export function useUserPosts(username: string) {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-  } = useInfiniteQuery({
+  } = useInfiniteQuery<Post[]>({
     queryKey: ['posts', 'user', username],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await api.getUserPosts(username, pageParam, 20);
+      const response = await api.getUserPosts(username, pageParam as number, 20);
       if (response.error) throw new Error(response.error);
-      return response.data;
+      return response.data as Post[];
     },
     getNextPageParam: (lastPage, pages) => {
       return Array.isArray(lastPage) && lastPage.length === 20 ? pages.length + 1 : undefined;
     },
-    initialPageParam: 1,
+    initialPageParam: 1 as number,
     enabled: !!username,
   });
 

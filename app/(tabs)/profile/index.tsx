@@ -1,4 +1,4 @@
-import { View, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { Settings, MoreVertical, Copy, Share, Edit, CloudOff } from 'lucide-react-native';
@@ -6,19 +6,33 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import * as Clipboard from 'expo-clipboard';
 import { toast } from 'sonner-native';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserPosts } from '@/hooks/usePosts';
+import type { User, Post } from '@/types';
 
 const tabs = ['Posts', 'Replies', 'Likes', 'Collections'];
 
 export default function ProfileScreen() {
+  const { user, isLoadingUser } = useAuth();
+  const typedUser = user as User | undefined;
+  const { posts, isLoading: isLoadingPosts } = useUserPosts(typedUser?.username || '');
   const [activeTab, setActiveTab] = useState('Posts');
   const [showMenu, setShowMenu] = useState(false);
-  const walletAddress = '9xQeW...kJ7P';
-  const fullWalletAddress = '9xQeWkJ7P8sN3mK4vL2hR6tY1uZ5wX7cB9dF0gH3jM';
 
   const copyAddress = async () => {
-    await Clipboard.setStringAsync(fullWalletAddress);
-    toast.success('Address copied to clipboard');
+    if (typedUser?.walletAddress) {
+      await Clipboard.setStringAsync(typedUser.walletAddress);
+      toast.success('Address copied to clipboard');
+    }
   };
+
+  if (isLoadingUser) {
+    return (
+      <View className="flex-1 items-center justify-center bg-purple-600">
+        <ActivityIndicator size="large" color="#ffffff" />
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-purple-600">
@@ -41,22 +55,22 @@ export default function ProfileScreen() {
           </View>
 
           <View className="mt-4">
-            <Text className="text-2xl font-bold">Crypto Beast</Text>
-            <Text className="text-muted-foreground">@crypto_beast</Text>
-            <Text className="mt-2">Building the future of web 3 🚀</Text>
+            <Text className="text-2xl font-bold">{typedUser?.name || typedUser?.username}</Text>
+            <Text className="text-muted-foreground">@{typedUser?.username}</Text>
+            <Text className="mt-2">{typedUser?.bio || 'No bio yet'}</Text>
           </View>
 
           <View className="mt-4 flex-row gap-6">
             <View>
-              <Text className="text-xl font-bold">2</Text>
+              <Text className="text-xl font-bold">{typedUser?.followingCount || 0}</Text>
               <Text className="text-sm text-muted-foreground">Following</Text>
             </View>
             <View>
-              <Text className="text-xl font-bold">2</Text>
+              <Text className="text-xl font-bold">{typedUser?.followersCount || 0}</Text>
               <Text className="text-sm text-muted-foreground">Followers</Text>
             </View>
             <View>
-              <Text className="text-xl font-bold">0</Text>
+              <Text className="text-xl font-bold">{typedUser?.postsCount || 0}</Text>
               <Text className="text-sm text-muted-foreground">Posts</Text>
             </View>
           </View>
@@ -65,7 +79,9 @@ export default function ProfileScreen() {
           <View className="mt-4 rounded-2xl bg-gray-50 p-4">
             <Text className="text-sm text-muted-foreground">Wallet Address</Text>
             <View className="mt-1 flex-row items-center justify-between">
-              <Text className="text-lg font-bold">{walletAddress}</Text>
+              <Text className="text-lg font-bold">
+                {typedUser?.walletAddress?.slice(0, 8)}...{typedUser?.walletAddress?.slice(-4)}
+              </Text>
               <TouchableOpacity onPress={copyAddress}>
                 <Icon as={Copy} size={20} className="text-purple-600" />
               </TouchableOpacity>
@@ -95,11 +111,42 @@ export default function ProfileScreen() {
             ))}
           </ScrollView>
 
-          {/* Empty State */}
-          <View className="items-center py-20">
-            <Icon as={CloudOff} size={64} className="text-muted-foreground" />
-            <Text className="mt-4 text-muted-foreground">No post yet</Text>
-          </View>
+          {/* Posts Content */}
+          {activeTab === 'Posts' && (
+            <View className="px-4 py-4">
+              {isLoadingPosts ? (
+                <View className="items-center py-20">
+                  <ActivityIndicator size="large" color="#9333ea" />
+                </View>
+              ) : posts.length === 0 ? (
+                <View className="items-center py-20">
+                  <Icon as={CloudOff} size={64} className="text-muted-foreground" />
+                  <Text className="mt-4 text-muted-foreground">No posts yet</Text>
+                </View>
+              ) : (
+                posts.map((post: Post) => (
+                  <View key={post.id} className="mb-4 rounded-2xl bg-card p-4">
+                    <Text className="text-sm text-muted-foreground">
+                      {new Date(post.createdAt).toLocaleDateString()}
+                    </Text>
+                    <Text className="mt-2">{post.content}</Text>
+                    <View className="mt-3 flex-row gap-4">
+                      <Text className="text-sm text-muted-foreground">{post.likesCount} likes</Text>
+                      <Text className="text-sm text-muted-foreground">{post.commentsCount} comments</Text>
+                    </View>
+                  </View>
+                ))
+              )}
+            </View>
+          )}
+
+          {/* Other tabs empty state */}
+          {activeTab !== 'Posts' && (
+            <View className="items-center py-20">
+              <Icon as={CloudOff} size={64} className="text-muted-foreground" />
+              <Text className="mt-4 text-muted-foreground">Nothing here yet</Text>
+            </View>
+          )}
         </View>
       </ScrollView>
 

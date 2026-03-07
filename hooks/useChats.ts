@@ -1,17 +1,18 @@
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { toast } from 'sonner-native';
+import type { Chat, Message } from '@/types';
 
 export function useChats() {
   const queryClient = useQueryClient();
 
   // Get all chats
-  const { data: chats, isLoading, refetch } = useQuery({
+  const { data: chats, isLoading, refetch } = useQuery<Chat[]>({
     queryKey: ['chats'],
     queryFn: async () => {
       const response = await api.getChats();
       if (response.error) throw new Error(response.error);
-      return response.data;
+      return response.data as Chat[];
     },
     refetchInterval: 10000, // Refetch every 10 seconds for new messages
   });
@@ -51,17 +52,17 @@ export function useMessages(chatId: string) {
     isFetchingNextPage,
     isLoading,
     refetch,
-  } = useInfiniteQuery({
+  } = useInfiniteQuery<Message[]>({
     queryKey: ['messages', chatId],
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await api.getMessages(chatId, pageParam, 50);
+      const response = await api.getMessages(chatId, pageParam as number, 50);
       if (response.error) throw new Error(response.error);
-      return response.data;
+      return response.data as Message[];
     },
     getNextPageParam: (lastPage, pages) => {
       return Array.isArray(lastPage) && lastPage.length === 50 ? pages.length + 1 : undefined;
     },
-    initialPageParam: 1,
+    initialPageParam: 1 as number,
     enabled: !!chatId,
     refetchInterval: 5000, // Refetch every 5 seconds for new messages
   });
