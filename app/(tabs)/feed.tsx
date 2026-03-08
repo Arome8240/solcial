@@ -1,7 +1,7 @@
-import { View, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator, Modal, TextInput, Pressable, Image, Switch } from 'react-native';
+import { View, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator, Modal, TextInput, Pressable, Image, Switch, ImageBackground } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { Heart, MessageCircle, Search, Bell, X, Eye, EyeOff, Copy, ArrowUpRight, ArrowDownLeft, RefreshCw, Sparkles, Gamepad2, ArrowRight, Circle, ImagePlus, Coins, DollarSign, User } from 'lucide-react-native';
+import { Heart, MessageCircle, Search, Bell, X, Eye, EyeOff, Copy, ArrowUpRight, ArrowDownLeft, RefreshCw, Sparkles, ArrowRight, Circle, ImagePlus, Coins, DollarSign, User } from 'lucide-react-native';
 import { usePosts } from '@/hooks/usePosts';
 import { useWallet } from '@/hooks/useWallet';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -174,8 +174,13 @@ export default function FeedScreen() {
       >
         {/* Balance Card */}
         <View className="overflow-hidden rounded-b-3xl bg-purple-600 shadow-lg">
-          <View className="p-6">
-            <View className="flex-row items-start justify-between">
+          <ImageBackground
+            source={require('@/assets/images/wrapper.png')}
+            resizeMode="cover"
+            imageStyle={{ opacity: 0.1 }}
+          >
+            <View className="p-6">
+              <View className="flex-row items-start justify-between">
               <View className="flex-1">
                 <View className="flex-row items-center gap-2">
                   <Text className="text-sm text-purple-200">Total Balance</Text>
@@ -252,20 +257,26 @@ export default function FeedScreen() {
               <Icon as={Circle} size={8} className="text-green-400" fill="#4ade80" />
               <Text className="text-xs font-medium text-white">Solana Devnet</Text>
             </View>
-          </View>
+            </View>
+          </ImageBackground>
         </View>
 
         {/* Mini Apps Section */}
         <TouchableOpacity 
           onPress={() => router.push('/mini-apps')}
-          className="mx-4 mt-4 overflow-hidden rounded-2xl bg-purple-600 dark:bg-purple-700"
+          className="mx-4 mt-4 relative overflow-hidden rounded-2xl bg-purple-600 dark:bg-purple-700"
         >
+          <Image source={require('@/assets/images/ec1.png')} className='absolute w-[57px] h-[57px] bottom-0 left-0'/>
+          <Image source={require('@/assets/images/ec3.png')} className='absolute w-[57px] h-[57px] -bottom-8 right-[120px] rounded-full'/>
+          <Image source={require('@/assets/images/ec3.png')} className='absolute w-[19px] h-[19px] bottom-2 right-[160px] rounded-full'/>
+          <Image source={require('@/assets/images/ec3.png')} className='absolute w-[19px] h-[19px] top-2 right-[160px] rounded-full'/>
+          <Image source={require('@/assets/images/ec2.png')} className='absolute w-[95px] rounded-full h-[95px] -top-16 left-10'/>
           <View className="p-6">
             <View className="flex-row items-center justify-between">
               <View className="flex-1">
                 <View className="flex-row items-center gap-2">
                   <Icon as={Sparkles} size={24} className="text-white" />
-                  <Text className="text-xl font-bold text-white">Mini Apps</Text>
+                  <Text className="text-xl font-bold text-white">Explore Mini Apps</Text>
                 </View>
                 <Text className="mt-2 text-sm text-white/90">
                   Swap, mint, games & more

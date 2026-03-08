@@ -17,7 +17,7 @@ export function useChats() {
     queryFn: async () => {
       const response = await api.getChats();
       if (response.error) throw new Error(response.error);
-      console.log('Chats',response.data)
+      //console.log('Chats',response.data)
       return response.data as Chat[];
     },
   });
