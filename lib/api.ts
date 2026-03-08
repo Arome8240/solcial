@@ -108,6 +108,14 @@ class ApiClient {
     return this.request(`/users?q=${encodeURIComponent(query)}&limit=${limit}`);
   }
 
+  async searchPosts(query: string, page: number = 1, limit: number = 20) {
+    return this.request(`/posts/search/posts?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`);
+  }
+
+  async searchTokens(query: string, page: number = 1, limit: number = 20) {
+    return this.request(`/posts/search/tokens?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`);
+  }
+
   // ==================== Posts ====================
   async createPost(data: { 
     content: string; 

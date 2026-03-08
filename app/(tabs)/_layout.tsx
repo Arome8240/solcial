@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, Wallet, Send, MessageCircle, User } from 'lucide-react-native';
+import { Home, Wallet, Send, MessageCircle, User, Search } from 'lucide-react-native';
 
 export default function TabsLayout() {
   return (
@@ -18,6 +18,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="search"
+        options={{
+          title: 'Search',
+          tabBarIcon: ({ color, size }) => <Search size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="wallet"
         options={{
           title: 'Wallet',
@@ -29,7 +36,9 @@ export default function TabsLayout() {
         name="pay"
         options={{
           title: 'Pay',
-          tabBarIcon: ({ color, size }) => <Send size={size} color={color} />, href:null        }}
+          tabBarIcon: ({ color, size }) => <Send size={size} color={color} />, 
+          href: null
+        }}
       />
       <Tabs.Screen
         name="chats"
