@@ -7,7 +7,7 @@ import { useState } from 'react';
 import * as Clipboard from 'expo-clipboard';
 import { toast } from 'sonner-native';
 import { useAuth } from '@/hooks/useAuth';
-import { useUserPosts } from '@/hooks/usePosts';
+import { useUserPosts, useUserComments, useUserLikes } from '@/hooks/usePosts';
 import { usePortfolio } from '@/hooks/usePortfolio';
 import { useUserProfile } from '@/hooks/useProfile';
 import { useFollows, useCheckFollowing } from '@/hooks/useFollows';
@@ -34,6 +34,8 @@ export default function ProfileScreen() {
   );
   
   const { posts, isLoading: isLoadingPosts } = useUserPosts(targetUsername, !!targetUsername);
+  const { comments, isLoading: isLoadingComments } = useUserComments(targetUsername, !!targetUsername);
+  const { posts: likedPosts, isLoading: isLoadingLikes } = useUserLikes(targetUsername, !!targetUsername);
   
   // Determine which user to display and get their ID
   const displayUser = (isOwnProfile ? typedCurrentUser : profileUser) as User | undefined;
@@ -57,7 +59,9 @@ export default function ProfileScreen() {
     try {
       // Invalidate all relevant queries to refetch data
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['user-posts', targetUsername] }),
+        queryClient.invalidateQueries({ queryKey: ['posts', 'user', targetUsername] }),
+        queryClient.invalidateQueries({ queryKey: ['user-comments', targetUsername] }),
+        queryClient.invalidateQueries({ queryKey: ['user-likes', targetUsername] }),
         queryClient.invalidateQueries({ queryKey: ['portfolio', displayUserId] }),
         queryClient.invalidateQueries({ queryKey: ['user-profile', targetUsername] }),
         queryClient.invalidateQueries({ queryKey: ['check-following', displayUserId] }),
@@ -426,11 +430,125 @@ export default function ProfileScreen() {
             </View>
           )}
 
-          {/* Other tabs empty state */}
-          {(activeTab === 'Replies' || activeTab === 'Likes') && (
-            <View className="items-center py-20">
-              <Icon as={CloudOff} size={64} className="text-muted-foreground" />
-              <Text className="mt-4 text-muted-foreground">Nothing here yet</Text>
+          {/* Replies Content */}
+          {activeTab === 'Replies' && (
+            <View className="px-4 py-4">
+              {isLoadingComments ? (
+                <View className="items-center py-20">
+                  <ActivityIndicator size="large" color="#9333ea" />
+                </View>
+              ) : !comments || comments.length === 0 ? (
+                <View className="items-center py-20">
+                  <Icon as={CloudOff} size={64} className="text-muted-foreground" />
+                  <Text className="mt-4 text-muted-foreground">No comments yet</Text>
+                </View>
+              ) : (
+                comments.map((comment: any) => (
+                  <TouchableOpacity 
+                    key={comment.id} 
+                    onPress={() => router.push(`/post/${comment.post.id}`)}
+                    className="mb-4 rounded-2xl bg-card p-4"
+                  >
+                    <View className="flex-row items-center gap-3 mb-3">
+                      {comment.author?.avatar ? (
+                        <Image 
+                          source={{ uri: comment.author.avatar }} 
+                          className="h-10 w-10 rounded-full"
+                        />
+                      ) : (
+                        <View className="h-10 w-10 items-center justify-center rounded-full bg-purple-200 dark:bg-purple-900">
+                          <Text className="text-sm font-bold text-purple-600 dark:text-purple-300">
+                            {comment.author?.name?.charAt(0)?.toUpperCase() || comment.author?.username?.charAt(0)?.toUpperCase() || '?'}
+                          </Text>
+                        </View>
+                      )}
+                      <View className="flex-1">
+                        <Text className="font-semibold">{comment.author?.name || comment.author?.username}</Text>
+                        <Text className="text-xs text-muted-foreground">
+                          Replied to @{comment.post?.author?.username}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text className="mb-2">{comment.content}</Text>
+                    <View className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <Text className="text-sm text-muted-foreground" numberOfLines={2}>
+                        {comment.post?.content}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ))
+              )}
+            </View>
+          )}
+
+          {/* Likes Content */}
+          {activeTab === 'Likes' && (
+            <View className="px-4 py-4">
+              {isLoadingLikes ? (
+                <View className="items-center py-20">
+                  <ActivityIndicator size="large" color="#9333ea" />
+                </View>
+              ) : !likedPosts || likedPosts.length === 0 ? (
+                <View className="items-center py-20">
+                  <Icon as={CloudOff} size={64} className="text-muted-foreground" />
+                  <Text className="mt-4 text-muted-foreground">No liked posts yet</Text>
+                </View>
+              ) : (
+                likedPosts.map((post: Post) => (
+                  <TouchableOpacity 
+                    key={post.id} 
+                    onPress={() => router.push(`/post/${post.id}`)}
+                    className="mb-4 rounded-2xl bg-card p-4"
+                  >
+                    <View className="flex-row items-center gap-3 mb-3">
+                      {post.author?.avatar ? (
+                        <Image 
+                          source={{ uri: post.author.avatar }} 
+                          className="h-10 w-10 rounded-full"
+                        />
+                      ) : (
+                        <View className="h-10 w-10 items-center justify-center rounded-full bg-purple-200 dark:bg-purple-900">
+                          <Text className="text-sm font-bold text-purple-600 dark:text-purple-300">
+                            {post.author?.name?.charAt(0)?.toUpperCase() || post.author?.username?.charAt(0)?.toUpperCase() || '?'}
+                          </Text>
+                        </View>
+                      )}
+                      <View className="flex-1">
+                        <Text className="font-semibold">{post.author?.name || post.author?.username}</Text>
+                        <Text className="text-xs text-muted-foreground">
+                          @{post.author?.username} · {new Date(post.createdAt).toLocaleDateString()}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text className="mb-3">{post.content}</Text>
+                    {post.images && post.images.length > 0 && (
+                      <View className="mb-3 flex-row flex-wrap gap-2">
+                        {post.images.slice(0, 4).map((img, idx) => (
+                          <Image
+                            key={idx}
+                            source={{ uri: img }}
+                            className={`rounded-xl ${
+                              post.images.length === 1
+                                ? 'h-64 w-full'
+                                : post.images.length === 2
+                                ? 'h-48 w-[48%]'
+                                : 'h-32 w-[48%]'
+                            }`}
+                            resizeMode="cover"
+                          />
+                        ))}
+                      </View>
+                    )}
+                    <View className="flex-row gap-4">
+                      <Text className="text-sm text-muted-foreground">{post.likesCount || 0} likes</Text>
+                      <Text className="text-sm text-muted-foreground">{post.commentsCount || 0} comments</Text>
+                      {post.isTokenized && (
+                        <Text className="text-sm text-purple-600 font-semibold">🪙 Tokenized</Text>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                ))
+              )}
             </View>
           )}
         </View>

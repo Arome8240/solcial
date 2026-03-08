@@ -341,14 +341,13 @@ export default function PostDetailsScreen() {
                 <Text className="text-center font-semibold">Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => {
-                  toast.success('Tip sent!');
-                  setShowTipModal(false);
-                  setTipAmount('');
-                }}
+                onPress={handleTip}
+                disabled={isTippingPost}
                 className="flex-1 rounded-xl bg-green-600 py-3"
               >
-                <Text className="text-center font-semibold text-white">Send Tip</Text>
+                <Text className="text-center font-semibold text-white">
+                  {isTippingPost ? 'Sending...' : 'Send Tip'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
