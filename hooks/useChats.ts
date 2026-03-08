@@ -11,16 +11,30 @@ export function useChats() {
   const { user } = useAuth();
   const typedUser = user as User | undefined;
 
+  console.log('[useChats] Current user:', typedUser?.id, typedUser?.username);
+
   // Get all chats
-  const { data: chats, isLoading, refetch } = useQuery<Chat[]>({
+  const { data: chats, isLoading, refetch, error } = useQuery<Chat[]>({
     queryKey: ['chats'],
     queryFn: async () => {
+      console.log('[useChats] Fetching chats...');
       const response = await api.getChats();
-      if (response.error) throw new Error(response.error);
-      //console.log('Chats',response.data)
+      console.log('[useChats] Raw response:', response);
+      
+      if (response.error) {
+        console.error('[useChats] API error:', response.error);
+        throw new Error(response.error);
+      }
+      
+      console.log('[useChats] Chats response:', JSON.stringify(response.data, null, 2));
       return response.data as Chat[];
     },
   });
+
+  // Log any query errors
+  if (error) {
+    console.error('[useChats] Query error:', error);
+  }
 
   // Subscribe to real-time chat updates
   useEffect(() => {
@@ -70,6 +84,7 @@ export function useChat(chatId: string) {
     queryFn: async () => {
       const response = await api.getChat(chatId);
       if (response.error) throw new Error(response.error);
+      console.log('[useChat] Chat response:', JSON.stringify(response.data, null, 2));
       return response.data as Chat;
     },
     enabled: !!chatId,

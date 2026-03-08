@@ -25,6 +25,11 @@ export default function ChatsScreen() {
   const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  // Debug logging
+  console.log('[ChatsScreen] Chats count:', chats?.length || 0);
+  console.log('[ChatsScreen] Is loading:', isLoading);
+  console.log('[ChatsScreen] First chat:', chats?.[0]);
+
   const formatTime = (date: string) => {
     try {
       return formatDistanceToNow(new Date(date), { addSuffix: false }).replace('about ', '');

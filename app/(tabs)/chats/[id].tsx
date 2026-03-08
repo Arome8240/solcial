@@ -17,6 +17,12 @@ export default function ChatScreen() {
   const [tipAmount, setTipAmount] = useState('');
   const scrollViewRef = useRef<ScrollView>(null);
 
+  // Debug logging
+  console.log('[ChatScreen] Chat ID:', id);
+  console.log('[ChatScreen] Chat data:', chat);
+  console.log('[ChatScreen] Is loading chat:', isLoadingChat);
+  console.log('[ChatScreen] Messages count:', messages?.length || 0);
+
   useEffect(() => {
     if (messages.length > 0) {
       scrollViewRef.current?.scrollToEnd({ animated: true });
