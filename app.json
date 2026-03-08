@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/appicon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,7 +17,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "icon": "./assets/images/not.png"
     },
     "android": {
       "edgeToEdgeEnabled": true,
@@ -25,7 +26,11 @@
         "foregroundImage": "./assets/images/appicon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.arome.dev.solcial"
+      "package": "com.arome.dev.solcial",
+      "notification": {
+        "icon": "./assets/images/not.png",
+        "color": "#ffffff"
+      }
     },
     "web": {
       "bundler": "metro",
