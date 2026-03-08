@@ -6,6 +6,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useRef, useEffect } from 'react';
 import { useMessages, useChat } from '@/hooks/useChats';
 import type { Message } from '@/types';
+import { PusherStatus } from '@/components/PusherStatus';
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -80,6 +81,7 @@ export default function ChatScreen() {
             @{otherParticipant?.username || 'user'}
           </Text>
         </View>
+        <PusherStatus compact />
       </View>
 
       {/* Messages */}

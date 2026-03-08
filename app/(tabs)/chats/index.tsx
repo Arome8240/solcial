@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { useChats } from '@/hooks/useChats';
 import { formatDistanceToNow } from 'date-fns';
 import type { Chat } from '@/types';
+import { PusherStatus } from '@/components/PusherStatus';
 
 export default function ChatsScreen() {
   const { chats, isLoading, refetch } = useChats();
@@ -29,7 +30,10 @@ export default function ChatsScreen() {
       >
         {/* Header */}
         <View className="px-4 pt-12">
-          <Text className="text-3xl font-bold">Messages</Text>
+          <View className="flex-row items-center justify-between">
+            <Text className="text-3xl font-bold">Messages</Text>
+            <PusherStatus compact showDetails />
+          </View>
         </View>
 
         {/* Search */}

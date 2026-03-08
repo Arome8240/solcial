@@ -53,6 +53,16 @@ function RootLayoutContent() {
     loadTheme();
   }, []);
 
+  // Initialize Pusher test in development mode
+  useEffect(() => {
+    if (__DEV__) {
+      // Dynamically import and run Pusher test
+      import('@/scripts/test-pusher').catch((error) => {
+        console.error('Failed to load Pusher test script:', error);
+      });
+    }
+  }, []);
+
   // Check onboarding status and redirect if needed
   useEffect(() => {
     async function checkOnboarding() {
