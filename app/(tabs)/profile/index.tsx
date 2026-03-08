@@ -44,11 +44,28 @@ export default function ProfileScreen() {
   const { followUser, unfollowUser } = useFollows();
   const { data: followingData } = useCheckFollowing(isOwnProfile ? '' : displayUserId);
   const { createChat, isCreatingChat } = useChats();
+  const queryClient = useQueryClient();
   
   const [activeTab, setActiveTab] = useState('Posts');
   const [showMenu, setShowMenu] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const isFollowingUser = (followingData as { isFollowing?: boolean })?.isFollowing || false;
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      // Invalidate all relevant queries to refetch data
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['user-posts', targetUsername] }),
+        queryClient.invalidateQueries({ queryKey: ['portfolio', displayUserId] }),
+        queryClient.invalidateQueries({ queryKey: ['user-profile', targetUsername] }),
+        queryClient.invalidateQueries({ queryKey: ['check-following', displayUserId] }),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const navigateToProfile = (username: string) => {
     if (username === typedCurrentUser?.username) {
@@ -101,7 +118,18 @@ export default function ProfileScreen() {
 
   return (
     <View className="flex-1 bg-purple-600">
-      <ScrollView className="flex-1">
+      <ScrollView 
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor="#ffffff"
+            colors={['#9333ea']}
+          />
+        }
+      >
         {/* Header */}
         <View className="flex-row items-center justify-between px-4 pt-12">
           {!isOwnProfile ? (
