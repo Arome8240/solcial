@@ -45,5 +45,5 @@ google-services.json
 GoogleService-Info.plist
 
 #native build
-android/
-ios/
+# android/
+# ios/
