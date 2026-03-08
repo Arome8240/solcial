@@ -1,34 +1,70 @@
 import { View, ScrollView, TouchableOpacity, Modal, ActivityIndicator, Image } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { Settings, MoreVertical, Copy, Share, Edit, CloudOff, TrendingUp, TrendingDown, Coins } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { Settings, MoreVertical, Copy, Share, Edit, CloudOff, TrendingUp, TrendingDown, Coins, ArrowLeft, UserPlus, UserMinus } from 'lucide-react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import * as Clipboard from 'expo-clipboard';
 import { toast } from 'sonner-native';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserPosts } from '@/hooks/usePosts';
 import { usePortfolio } from '@/hooks/usePortfolio';
+import { useUserProfile } from '@/hooks/useProfile';
+import { useFollows, useCheckFollowing } from '@/hooks/useFollows';
 import type { User, Post } from '@/types';
 
 const tabs = ['Posts', 'Portfolio', 'Replies', 'Likes'];
 
 export default function ProfileScreen() {
-  const { user, isLoadingUser } = useAuth();
-  const typedUser = user as User | undefined;
-  const { posts, isLoading: isLoadingPosts } = useUserPosts(typedUser?.username || '');
-  const { data: portfolio, isLoading: isLoadingPortfolio } = usePortfolio(typedUser?.id || '');
+  const { username: queryUsername } = useLocalSearchParams<{ username?: string }>();
+  const { user: currentUser, isLoadingUser } = useAuth();
+  const typedCurrentUser = currentUser as User | undefined;
+  
+  // If username is provided, fetch that user's profile, otherwise show current user
+  // Also check if the queried username matches current user's username
+  const isOwnProfile = !queryUsername || queryUsername === typedCurrentUser?.username;
+  const targetUsername = isOwnProfile ? (typedCurrentUser?.username || '') : (queryUsername || '');
+  
+  // Only fetch other user's profile if it's not own profile
+  const { data: profileUser, isLoading: isLoadingProfile } = useUserProfile(
+    targetUsername,
+    !isOwnProfile // Only fetch if viewing another user's profile
+  );
+  
+  const { posts, isLoading: isLoadingPosts } = useUserPosts(targetUsername);
+  
+  // Determine which user to display and get their ID
+  const displayUser = (isOwnProfile ? typedCurrentUser : profileUser) as User | undefined;
+  const displayUserId = displayUser?.id || '';
+  
+  // Fetch portfolio and follow status using the display user's ID
+  const { data: portfolio, isLoading: isLoadingPortfolio } = usePortfolio(displayUserId);
+  const { followUser, unfollowUser } = useFollows();
+  const { data: followingData } = useCheckFollowing(isOwnProfile ? '' : displayUserId);
+  
   const [activeTab, setActiveTab] = useState('Posts');
   const [showMenu, setShowMenu] = useState(false);
 
+  const isFollowingUser = (followingData as { isFollowing?: boolean })?.isFollowing || false;
+
+  const handleFollowToggle = () => {
+    if (!displayUserId) return;
+    
+    if (isFollowingUser) {
+      unfollowUser(displayUserId);
+    } else {
+      followUser(displayUserId);
+    }
+  };
+
   const copyAddress = async () => {
-    if (typedUser?.walletAddress) {
-      await Clipboard.setStringAsync(typedUser.walletAddress);
+    if (displayUser?.walletAddress) {
+      await Clipboard.setStringAsync(displayUser.walletAddress);
       toast.success('Address copied to clipboard');
     }
   };
 
-  if (isLoadingUser) {
+  if (isLoadingUser || isLoadingProfile) {
     return (
       <View className="flex-1 items-center justify-center bg-purple-600">
         <ActivityIndicator size="large" color="#ffffff" />
@@ -41,49 +77,69 @@ export default function ProfileScreen() {
       <ScrollView className="flex-1">
         {/* Header */}
         <View className="flex-row items-center justify-between px-4 pt-12">
-          <Text className="text-2xl font-bold text-white">Profile</Text>
-          <TouchableOpacity onPress={() => router.push('/profile/settings')}>
-            <Icon as={Settings} size={24} className="text-white" />
-          </TouchableOpacity>
+          {!isOwnProfile ? (
+            <TouchableOpacity onPress={() => router.back()}>
+              <Icon as={ArrowLeft} size={24} className="text-white" />
+            </TouchableOpacity>
+          ) : (
+            <Text className="text-2xl font-bold text-white">Profile</Text>
+          )}
+          {isOwnProfile && (
+            <TouchableOpacity onPress={() => router.push('/profile/settings')}>
+              <Icon as={Settings} size={24} className="text-white" />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Profile Card */}
         <View className="mx-4 mt-6 rounded-3xl bg-card p-6">
           <View className="flex-row items-start justify-between">
-            {typedUser?.avatar ? (
+            {displayUser?.avatar ? (
               <Image 
-                source={{ uri: typedUser.avatar }} 
+                source={{ uri: displayUser.avatar }} 
                 className="h-24 w-24 rounded-full"
               />
             ) : (
               <View className="h-24 w-24 items-center justify-center rounded-full bg-purple-200 dark:bg-purple-900">
                 <Text className="text-3xl font-bold text-purple-600 dark:text-purple-300">
-                  {typedUser?.name?.charAt(0)?.toUpperCase() || typedUser?.username?.charAt(0)?.toUpperCase() || '?'}
+                  {displayUser?.name?.charAt(0)?.toUpperCase() || displayUser?.username?.charAt(0)?.toUpperCase() || '?'}
                 </Text>
               </View>
             )}
-            <TouchableOpacity onPress={() => setShowMenu(true)}>
-              <Icon as={MoreVertical} size={24} className="text-foreground" />
-            </TouchableOpacity>
+            {isOwnProfile ? (
+              <TouchableOpacity onPress={() => setShowMenu(true)}>
+                <Icon as={MoreVertical} size={24} className="text-foreground" />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity 
+                onPress={handleFollowToggle}
+                className={`flex-row items-center gap-2 rounded-full px-4 py-2 ${isFollowingUser ? 'bg-gray-200 dark:bg-gray-700' : 'bg-purple-600'}`}
+              >
+                <Icon as={isFollowingUser ? UserMinus : UserPlus} size={18} className={isFollowingUser ? "text-foreground" : "text-white"} />
+                <Text className={`font-semibold ${isFollowingUser ? 'text-foreground' : 'text-white'}`}>
+                  {isFollowingUser ? 'Unfollow' : 'Follow'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           <View className="mt-4">
-            <Text className="text-2xl font-bold">{typedUser?.name || typedUser?.username}</Text>
-            <Text className="text-muted-foreground">@{typedUser?.username}</Text>
-            <Text className="mt-2">{typedUser?.bio || 'No bio yet'}</Text>
+            <Text className="text-2xl font-bold">{displayUser?.name || displayUser?.username}</Text>
+            <Text className="text-muted-foreground">@{displayUser?.username}</Text>
+            <Text className="mt-2">{displayUser?.bio || 'No bio yet'}</Text>
           </View>
 
           <View className="mt-4 flex-row gap-6">
             <View>
-              <Text className="text-xl font-bold">{typedUser?.followingCount || 0}</Text>
+              <Text className="text-xl font-bold">{displayUser?.followingCount || 0}</Text>
               <Text className="text-sm text-muted-foreground">Following</Text>
             </View>
             <View>
-              <Text className="text-xl font-bold">{typedUser?.followersCount || 0}</Text>
+              <Text className="text-xl font-bold">{displayUser?.followersCount || 0}</Text>
               <Text className="text-sm text-muted-foreground">Followers</Text>
             </View>
             <View>
-              <Text className="text-xl font-bold">{typedUser?.postsCount || 0}</Text>
+              <Text className="text-xl font-bold">{displayUser?.postsCount || 0}</Text>
               <Text className="text-sm text-muted-foreground">Posts</Text>
             </View>
           </View>
@@ -93,7 +149,7 @@ export default function ProfileScreen() {
             <Text className="text-sm text-muted-foreground">Wallet Address</Text>
             <View className="mt-1 flex-row items-center justify-between">
               <Text className="text-lg font-bold">
-                {typedUser?.walletAddress?.slice(0, 8)}...{typedUser?.walletAddress?.slice(-4)}
+                {displayUser?.walletAddress?.slice(0, 8)}...{displayUser?.walletAddress?.slice(-4)}
               </Text>
               <TouchableOpacity onPress={copyAddress}>
                 <Icon as={Copy} size={20} className="text-purple-600" />

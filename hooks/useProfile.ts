@@ -37,7 +37,7 @@ export function useProfile() {
   };
 }
 
-export function useUserProfile(username: string) {
+export function useUserProfile(username: string, enabled: boolean = true) {
   return useQuery({
     queryKey: ['user', 'profile', username],
     queryFn: async () => {
@@ -45,7 +45,7 @@ export function useUserProfile(username: string) {
       if (response.error) throw new Error(response.error);
       return response.data;
     },
-    enabled: !!username,
+    enabled: !!username && enabled,
   });
 }
 
