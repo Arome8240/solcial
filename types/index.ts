@@ -124,7 +124,7 @@ export interface Notification {
     name?: string;
     avatar?: string;
   };
-  type: 'like' | 'comment' | 'follow' | 'tip' | 'token_purchase' | 'mention';
+  type: 'like' | 'comment' | 'follow' | 'tip' | 'token_purchase' | 'mention' | 'payment_received';
   post?: {
     _id: string;
     content: string;
@@ -132,6 +132,7 @@ export interface Notification {
   message: string;
   isRead: boolean;
   amount?: number;
+  signature?: string;
   createdAt: string;
 }
 

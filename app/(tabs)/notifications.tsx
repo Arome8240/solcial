@@ -19,6 +19,7 @@ export default function NotificationsScreen() {
       case 'follow':
         return <Icon as={UserPlus} size={20} className="text-green-600" />;
       case 'tip':
+      case 'payment_received':
         return <Icon as={DollarSign} size={20} className="text-green-600" />;
       case 'token_purchase':
         return <Icon as={Coins} size={20} className="text-purple-600" />;
@@ -41,7 +42,10 @@ export default function NotificationsScreen() {
     }
     
     // Navigate based on notification type
-    if (notification.post) {
+    if (notification.type === 'payment_received' && notification.signature) {
+      // Navigate to transaction details page
+      router.push(`/transaction/${notification.signature}`);
+    } else if (notification.post) {
       router.push(`/post/${notification.post._id}`);
     } else if (notification.type === 'follow') {
       router.push(`/(tabs)/profile?username=${notification.sender.username}`);
