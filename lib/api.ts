@@ -130,6 +130,14 @@ class ApiClient {
     return this.request(`/posts/user/${username}?page=${page}&limit=${limit}`);
   }
 
+  async getUserComments(username: string, page: number = 1, limit: number = 20) {
+    return this.request(`/posts/user/${username}/comments?page=${page}&limit=${limit}`);
+  }
+
+  async getUserLikes(username: string, page: number = 1, limit: number = 20) {
+    return this.request(`/posts/user/${username}/likes?page=${page}&limit=${limit}`);
+  }
+
   async getPost(id: string) {
     return this.request(`/posts/${id}`);
   }

@@ -17,7 +17,7 @@ export default function PostDetailsScreen() {
   const post = postData as Post | undefined;
   const { user } = useAuth();
   const { comments, isLoading: isLoadingComments, createComment, isCreatingComment } = useComments(id || '');
-  const { buyToken, isBuyingToken } = usePosts();
+  const { buyToken, isBuyingToken, likePost, unlikePost, tipPost, isTippingPost } = usePosts();
   const [commentText, setCommentText] = useState('');
   const [showTipModal, setShowTipModal] = useState(false);
   const [showBuyTokenModal, setShowBuyTokenModal] = useState(false);
@@ -34,6 +34,27 @@ export default function PostDetailsScreen() {
     buyToken({ postId: post.id, amount });
     setShowBuyTokenModal(false);
     setBuyAmount('');
+  };
+
+  const handleLike = () => {
+    if (!post) return;
+    if (post.isLiked) {
+      unlikePost(post.id);
+    } else {
+      likePost(post.id);
+    }
+  };
+
+  const handleTip = () => {
+    if (!tipAmount || !post) return;
+    const amount = parseFloat(tipAmount);
+    if (amount <= 0) {
+      toast.error('Invalid amount');
+      return;
+    }
+    tipPost({ postId: post.id, amount });
+    setShowTipModal(false);
+    setTipAmount('');
   };
 
   const formatTime = (date: string) => {

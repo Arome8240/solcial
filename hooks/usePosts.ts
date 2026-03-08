@@ -194,3 +194,67 @@ export function useUserPosts(username: string, enabled: boolean = true) {
     isFetchingNextPage,
   };
 }
+
+export function useUserComments(username: string, enabled: boolean = true) {
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ['user-comments', username],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await api.getUserComments(username, pageParam as number, 20);
+      if (response.error) throw new Error(response.error);
+      return response.data;
+    },
+    getNextPageParam: (lastPage, pages) => {
+      return Array.isArray(lastPage) && lastPage.length === 20 ? pages.length + 1 : undefined;
+    },
+    initialPageParam: 1 as number,
+    enabled: !!username && enabled,
+  });
+
+  const comments = data?.pages.flat() || [];
+
+  return {
+    comments,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  };
+}
+
+export function useUserLikes(username: string, enabled: boolean = true) {
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery<Post[]>({
+    queryKey: ['user-likes', username],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await api.getUserLikes(username, pageParam as number, 20);
+      if (response.error) throw new Error(response.error);
+      return response.data as Post[];
+    },
+    getNextPageParam: (lastPage, pages) => {
+      return Array.isArray(lastPage) && lastPage.length === 20 ? pages.length + 1 : undefined;
+    },
+    initialPageParam: 1 as number,
+    enabled: !!username && enabled,
+  });
+
+  const posts = data?.pages.flat() || [];
+
+  return {
+    posts,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  };
+}
