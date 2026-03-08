@@ -1,4 +1,4 @@
-import { View, ScrollView, TouchableOpacity, Modal, ActivityIndicator, Image } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Modal, ActivityIndicator, Image, RefreshControl } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { Settings, MoreVertical, Copy, Share, Edit, CloudOff, TrendingUp, TrendingDown, Coins, ArrowLeft, UserPlus, UserMinus, MessageCircle } from 'lucide-react-native';
@@ -12,6 +12,7 @@ import { usePortfolio } from '@/hooks/usePortfolio';
 import { useUserProfile } from '@/hooks/useProfile';
 import { useFollows, useCheckFollowing } from '@/hooks/useFollows';
 import { useChats } from '@/hooks/useChats';
+import { useQueryClient } from '@tanstack/react-query';
 import type { User, Post } from '@/types';
 
 const tabs = ['Posts', 'Portfolio', 'Replies', 'Likes'];
@@ -29,10 +30,10 @@ export default function ProfileScreen() {
   // Only fetch other user's profile if it's not own profile
   const { data: profileUser, isLoading: isLoadingProfile } = useUserProfile(
     targetUsername,
-    !isOwnProfile // Only fetch if viewing another user's profile
+    !isOwnProfile && !!targetUsername // Only fetch if viewing another user's profile and have username
   );
   
-  const { posts, isLoading: isLoadingPosts } = useUserPosts(targetUsername);
+  const { posts, isLoading: isLoadingPosts } = useUserPosts(targetUsername, !!targetUsername);
   
   // Determine which user to display and get their ID
   const displayUser = (isOwnProfile ? typedCurrentUser : profileUser) as User | undefined;

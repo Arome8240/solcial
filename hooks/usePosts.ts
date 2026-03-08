@@ -163,7 +163,7 @@ export function usePost(postId: string) {
   });
 }
 
-export function useUserPosts(username: string) {
+export function useUserPosts(username: string, enabled: boolean = true) {
   const {
     data,
     fetchNextPage,
@@ -181,7 +181,7 @@ export function useUserPosts(username: string) {
       return Array.isArray(lastPage) && lastPage.length === 20 ? pages.length + 1 : undefined;
     },
     initialPageParam: 1 as number,
-    enabled: !!username,
+    enabled: !!username && enabled,
   });
 
   const posts = data?.pages.flat() || [];
