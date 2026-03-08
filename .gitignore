@@ -41,8 +41,8 @@ expo-env.d.ts
 # @end expo-cli
 
 # Firebase config files (contain sensitive keys)
-google-services.json
-GoogleService-Info.plist
+# google-services.json
+# GoogleService-Info.plist
 
 #native build
 # android/
