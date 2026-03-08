@@ -85,7 +85,7 @@ export default function HelpSupportScreen() {
 
         {/* Search */}
         <View className="mt-6 px-4">
-          <View className="flex-row items-center gap-3 rounded-2xl bg-card px-4 py-3">
+          <View className="flex-row items-center gap-3 rounded-2xl border-2 border-border bg-background px-4 py-3">
             <Icon as={Search} size={20} className="text-muted-foreground" />
             <TextInput
               value={searchQuery}

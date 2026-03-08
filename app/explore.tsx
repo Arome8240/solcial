@@ -50,7 +50,7 @@ export default function ExploreScreen() {
       </View>
 
       {/* Search Bar */}
-      <View className="mx-4 mt-4 flex-row items-center gap-2 rounded-xl bg-muted px-4 py-3">
+      <View className="mx-4 mt-4 flex-row items-center gap-2 rounded-xl border-2 border-border bg-background px-4 py-3">
         <Icon as={Search} size={20} className="text-muted-foreground" />
         <TextInput
           placeholder="Search posts, users..."

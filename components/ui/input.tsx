@@ -2,6 +2,7 @@ import { cn } from '@/lib/utils';
 import * as React from 'react';
 import { TextInput, View, Text, Pressable } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
+import { useColorScheme } from 'nativewind';
 
 interface InputProps extends React.ComponentPropsWithoutRef<typeof TextInput> {
   label?: string;
@@ -13,21 +14,24 @@ const Input = React.forwardRef<React.ElementRef<typeof TextInput>, InputProps>(
     const [isFocused, setIsFocused] = React.useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = React.useState(false);
     const isPassword = secureTextEntry === true;
+    const { colorScheme } = useColorScheme();
+    const isDark = colorScheme === 'dark';
 
     return (
       <View className="gap-2">
-        {label && <Text className="text-sm font-medium text-gray-900">{label}</Text>}
+        {label && <Text className="text-sm font-medium text-foreground">{label}</Text>}
         <View className="relative">
           <TextInput
             ref={ref}
             className={cn(
-              'h-14 rounded-xl bg-white px-4 text-base text-gray-900 border-2',
-              isFocused ? 'border-purple-600' : 'border-transparent',
+              'h-14 rounded-xl px-4 text-base border-2',
+              'bg-background text-foreground',
+              isFocused ? 'border-purple-600' : 'border-border',
               error && 'border-red-500',
               isPassword && 'pr-12',
               className
             )}
-            placeholderTextColor="#9ca3af"
+            placeholderTextColor={isDark ? '#6b7280' : '#9ca3af'}
             secureTextEntry={isPassword && !isPasswordVisible}
             onFocus={(e) => {
               setIsFocused(true);
@@ -45,9 +49,9 @@ const Input = React.forwardRef<React.ElementRef<typeof TextInput>, InputProps>(
               className="absolute right-4 top-0 h-14 justify-center"
             >
               {isPasswordVisible ? (
-                <EyeOff size={20} color="#9ca3af" />
+                <EyeOff size={20} color={isDark ? '#9ca3af' : '#6b7280'} />
               ) : (
-                <Eye size={20} color="#9ca3af" />
+                <Eye size={20} color={isDark ? '#9ca3af' : '#6b7280'} />
               )}
             </Pressable>
           )}
