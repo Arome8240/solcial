@@ -19,6 +19,7 @@ export function usePosts() {
     queryFn: async ({ pageParam = 1 }) => {
       const response = await api.getFeed(pageParam as number, 20);
       if (response.error) throw new Error(response.error);
+      console.log(response.data)
       return (response.data || []) as Post[];
     },
     getNextPageParam: (lastPage, pages) => {
@@ -54,6 +55,7 @@ export function usePosts() {
     mutationFn: async (postId: string) => {
       const response = await api.likePost(postId);
       if (response.error) throw new Error(response.error);
+      
       return response.data;
     },
     onSuccess: () => {
