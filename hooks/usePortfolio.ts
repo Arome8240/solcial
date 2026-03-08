@@ -16,12 +16,13 @@ export function usePortfolio(userId: string) {
 }
 
 export function useTokenHoldings(userId: string) {
-  const { data: portfolio } = usePortfolio(userId);
+  const { data: portfolio, refetch, isLoading } = usePortfolio(userId);
   
   return {
     holdings: portfolio?.holdings || [],
     totalValue: portfolio?.totalValue || 0,
     totalInvested: portfolio?.totalInvested || 0,
-    isLoading: !portfolio,
+    isLoading,
+    refetch,
   };
 }

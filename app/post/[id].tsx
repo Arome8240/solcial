@@ -4,7 +4,7 @@ import { Icon } from '@/components/ui/icon';
 import { ArrowLeft, Heart, MessageCircle, Share, User, Coins, DollarSign, Send } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { usePost } from '@/hooks/usePosts';
+import { usePost, usePosts } from '@/hooks/usePosts';
 import { useComments } from '@/hooks/useComments';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
@@ -17,11 +17,24 @@ export default function PostDetailsScreen() {
   const post = postData as Post | undefined;
   const { user } = useAuth();
   const { comments, isLoading: isLoadingComments, createComment, isCreatingComment } = useComments(id || '');
+  const { buyToken, isBuyingToken } = usePosts();
   const [commentText, setCommentText] = useState('');
   const [showTipModal, setShowTipModal] = useState(false);
   const [showBuyTokenModal, setShowBuyTokenModal] = useState(false);
   const [tipAmount, setTipAmount] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
+
+  const handleBuyToken = () => {
+    if (!buyAmount || !post) return;
+    const amount = parseInt(buyAmount);
+    if (amount <= 0) {
+      toast.error('Invalid amount');
+      return;
+    }
+    buyToken({ postId: post.id, amount });
+    setShowBuyTokenModal(false);
+    setBuyAmount('');
+  };
 
   const formatTime = (date: string) => {
     try {
@@ -353,17 +366,16 @@ export default function PostDetailsScreen() {
                 onPress={() => setShowBuyTokenModal(false)}
                 className="flex-1 rounded-xl border border-border py-3"
               >
-                <Text className="text-center font-semibold">Cancel</Text>
+                <Text className="text-center font-semibold">Cancel</Text> 
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => {
-                  toast.success('Tokens purchased!');
-                  setShowBuyTokenModal(false);
-                  setBuyAmount('');
-                }}
+                onPress={handleBuyToken}
+                disabled={isBuyingToken}
                 className="flex-1 rounded-xl bg-purple-600 py-3"
               >
-                <Text className="text-center font-semibold text-white">Buy Tokens</Text>
+                <Text className="text-center font-semibold text-white">
+                  {isBuyingToken ? 'Buying...' : 'Buy Tokens'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

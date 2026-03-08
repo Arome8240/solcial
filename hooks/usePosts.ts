@@ -105,6 +105,7 @@ export function usePosts() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
+      queryClient.invalidateQueries({ queryKey: ['portfolio'] });
       toast.success('Tokens purchased!');
     },
     onError: (error: Error) => {

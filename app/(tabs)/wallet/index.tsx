@@ -7,13 +7,17 @@ import { useWallet } from '@/hooks/useWallet';
 import { useTokenHoldings } from '@/hooks/usePortfolio';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
-import type { Transaction } from '@/types';
+import type { Transaction, User } from '@/types';
 
 export default function WalletScreen() {
   const { balance, walletAddress, isLoadingBalance, refetchBalance, transactions, isLoadingTransactions, fetchNextPage, hasNextPage, isFetchingNextPage } = useWallet();
   const { user } = useAuth();
-  const typedUser = user as { id?: string } | undefined;
-  const { holdings, totalValue, isLoading: isLoadingHoldings } = useTokenHoldings(typedUser?.id || '');
+  const userId = (user as User)?.id || '';
+  const { holdings, totalValue, isLoading: isLoadingHoldings, refetch: refetchHoldings } = useTokenHoldings(userId);
+
+  const handleRefresh = async () => {
+    await Promise.all([refetchBalance(), refetchHoldings()]);
+  };
 
   const formatTime = (date: string) => {
     try {
@@ -29,7 +33,7 @@ export default function WalletScreen() {
         showsVerticalScrollIndicator={false}
         className="flex-1"
         refreshControl={
-          <RefreshControl refreshing={isLoadingBalance} onRefresh={refetchBalance} />
+          <RefreshControl refreshing={isLoadingBalance} onRefresh={handleRefresh} />
         }
         onScroll={({ nativeEvent }) => {
           const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
