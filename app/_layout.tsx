@@ -15,10 +15,12 @@ import {
 import { Toaster } from 'sonner-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useThemeStore, useThemeSync } from '@/store/useThemeStore';
 import { usePathname } from 'expo-router';
 import { storage } from '@/lib/storage';
+import * as Notifications from 'expo-notifications';
+import * as Linking from 'expo-linking';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -28,6 +30,17 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 minutes
     },
   },
+});
+
+// Configure notification handler
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
 });
 
 export {
@@ -40,6 +53,8 @@ function RootLayoutContent() {
   const { loadTheme, isLoading } = useThemeStore();
   const pathname = usePathname();
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
+  const notificationListener = useRef<Notifications.Subscription | null>(null);
+  const responseListener = useRef<Notifications.Subscription | null>(null);
   
   const [isFontsLoaded] = useFonts({
     Geist_400Regular,
@@ -51,7 +66,106 @@ function RootLayoutContent() {
   // Load saved theme preference on mount
   useEffect(() => {
     loadTheme();
+  }, [loadTheme]);
+
+  // Handle notification interactions (deep linking)
+  useEffect(() => {
+    // Handle notification received while app is foregrounded
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      console.log('Notification received:', notification);
+    });
+
+    // Handle notification tapped/clicked
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      const data = response.notification.request.content.data;
+      console.log('Notification tapped with data:', data);
+      
+      // Navigate based on notification data
+      handleNotificationNavigation(data);
+    });
+
+    return () => {
+      if (notificationListener.current) {
+        notificationListener.current.remove();
+      }
+      if (responseListener.current) {
+        responseListener.current.remove();
+      }
+    };
   }, []);
+
+  // Handle deep links from URLs
+  useEffect(() => {
+    // Handle initial URL when app is opened from a link
+    const handleInitialURL = async () => {
+      const initialUrl = await Linking.getInitialURL();
+      if (initialUrl) {
+        handleDeepLink(initialUrl);
+      }
+    };
+
+    handleInitialURL();
+
+    // Handle URLs when app is already open
+    const subscription = Linking.addEventListener('url', ({ url }) => {
+      handleDeepLink(url);
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  // Parse and handle deep link URLs
+  const handleDeepLink = (url: string) => {
+    const { hostname, path, queryParams } = Linking.parse(url);
+    console.log('Deep link:', { hostname, path, queryParams });
+
+    if (!path) return;
+
+    // Handle different deep link paths
+    if (path.startsWith('transaction/')) {
+      const signature = path.replace('transaction/', '');
+      router.push(`/transaction/${signature}`);
+    } else if (path.startsWith('post/')) {
+      const postId = path.replace('post/', '');
+      router.push(`/post/${postId}`);
+    } else if (path.startsWith('profile/')) {
+      const username = path.replace('profile/', '');
+      router.push(`/(tabs)/profile?username=${username}`);
+    } else if (path.startsWith('chat/')) {
+      const chatId = path.replace('chat/', '');
+      router.push(`/(tabs)/chats/${chatId}`);
+    } else if (path === 'notifications') {
+      router.push('/(tabs)/notifications');
+    }
+  };
+
+  // Handle navigation from notification data
+  const handleNotificationNavigation = (data: any) => {
+    if (!data) return;
+
+    // Payment received notification
+    if (data.signature) {
+      router.push(`/transaction/${data.signature}`);
+    }
+    // Post notification (like, comment)
+    else if (data.postId) {
+      router.push(`/post/${data.postId}`);
+    }
+    // Follow notification
+    else if (data.username) {
+      router.push(`/(tabs)/profile?username=${data.username}`);
+    }
+    // Chat notification
+    else if (data.chatId) {
+      router.push(`/(tabs)/chats/${data.chatId}`);
+    }
+    // Default to notifications page
+    else {
+      router.push('/(tabs)/notifications');
+    }
+  };
 
   // Initialize Pusher test in development mode
   useEffect(() => {
@@ -67,7 +181,6 @@ function RootLayoutContent() {
   useEffect(() => {
     async function checkOnboarding() {
       const hasCompleted = await storage.hasCompletedOnboarding();
-      const token = await storage.getToken();
       
       // If onboarding not completed and not on onboarding/auth screens, redirect
       if (!hasCompleted && !pathname.startsWith('/onboarding') && !pathname.startsWith('/auth')) {
