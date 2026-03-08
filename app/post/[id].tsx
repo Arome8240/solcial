@@ -207,10 +207,14 @@ export default function PostDetailsScreen() {
           <View className="mt-4 flex-row gap-3 border-t border-border pt-4">
             <TouchableOpacity 
               onPress={handleLike}
-              className="flex-1 flex-row items-center justify-center gap-2 rounded-xl border border-border py-3"
+              className={`flex-1 flex-row items-center justify-center gap-2 rounded-xl py-3 ${
+                post.isLiked ? 'bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900' : 'border border-border'
+              }`}
             >
               <Icon as={Heart} size={20} className={post.isLiked ? "text-red-600" : "text-foreground"} />
-              <Text className="font-semibold">{post.isLiked ? 'Liked' : 'Like'}</Text>
+              <Text className={`font-semibold ${post.isLiked ? 'text-red-600' : 'text-foreground'}`}>
+                {post.isLiked ? 'Liked' : 'Like'}
+              </Text>
             </TouchableOpacity>
             
             <TouchableOpacity 

@@ -154,15 +154,17 @@ export default function ExploreScreen() {
                 <View className="flex-row items-center gap-6">
                   <TouchableOpacity 
                     onPress={() => handleLike(post.id, post.isLiked)}
-                    className="flex-row items-center gap-1"
+                    className={`flex-row items-center gap-1 rounded-full px-3 py-1.5 ${
+                      post.isLiked ? 'bg-purple-50 dark:bg-purple-950' : ''
+                    }`}
                   >
                     <Icon 
                       as={Heart} 
                       size={20} 
-                      className={post.isLiked ? "text-red-500" : "text-muted-foreground"}
-                      fill={post.isLiked ? "#ef4444" : "none"}
+                      className={post.isLiked ? "text-purple-600" : "text-muted-foreground"}
+                      fill={post.isLiked ? "#9333ea" : "none"}
                     />
-                    <Text className={post.isLiked ? "text-red-500" : "text-muted-foreground"}>
+                    <Text className={`${post.isLiked ? 'text-purple-600 font-semibold' : 'text-muted-foreground'}`}>
                       {post.likesCount || 0}
                     </Text>
                   </TouchableOpacity>

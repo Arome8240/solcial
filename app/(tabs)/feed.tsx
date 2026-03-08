@@ -371,15 +371,19 @@ export default function FeedScreen() {
                     <View className="mt-3 flex-row flex-wrap gap-4">
                       <TouchableOpacity 
                         onPress={() => handleLike(post.id, post.isLiked)}
-                        className="flex-row items-center gap-1"
+                        className={`flex-row items-center gap-1 rounded-full px-3 py-1.5 ${
+                          post.isLiked ? 'bg-purple-50 dark:bg-purple-950' : ''
+                        }`}
                       >
                         <Icon 
                           as={Heart} 
                           size={18} 
-                          className={post.isLiked ? "text-red-600" : "text-muted-foreground"}
-                          fill={post.isLiked ? "#dc2626" : "none"}
+                          className={post.isLiked ? "text-purple-600" : "text-muted-foreground"}
+                          fill={post.isLiked ? "#9333ea" : "none"}
                         />
-                        <Text className="text-sm text-muted-foreground">{post.likesCount}</Text>
+                        <Text className={`text-sm ${post.isLiked ? 'text-purple-600 font-semibold' : 'text-muted-foreground'}`}>
+                          {post.likesCount}
+                        </Text>
                       </TouchableOpacity>
                       
                       <View className="flex-row items-center gap-1">
