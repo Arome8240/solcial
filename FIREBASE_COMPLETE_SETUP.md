@@ -47,21 +47,29 @@ Firebase Cloud Messaging has been configured for your Solcial app. Follow these 
 6. **Place it in `solcial/` folder** (root, next to app.json)
 7. Click "Next" → "Continue to console"
 
-### 4. Get Firebase Server Key
+### 4. Get Firebase Service Account
 
 1. In Firebase Console, click gear icon → "Project settings"
-2. Go to "Cloud Messaging" tab
-3. Under "Cloud Messaging API (Legacy)", find "Server key"
-4. **Copy this key**
+2. Go to "Service accounts" tab
+3. Click "Generate new private key"
+4. Click "Generate key" - this downloads a JSON file
+5. **Rename it to `firebase-service-account.json`**
+6. **Place it in `solcial-backend/` folder** (root, next to package.json)
 
-### 5. Update Backend Environment
+### 5. Alternative: Use Environment Variable (for Render/Heroku)
 
-Add to `solcial-backend/.env`:
+If you can't upload files to your hosting platform:
+
+1. Open the `firebase-service-account.json` file
+2. Copy the entire JSON content
+3. Add to `solcial-backend/.env`:
 
 ```env
-# Firebase Cloud Messaging
-FIREBASE_SERVER_KEY=your_server_key_from_step_4
+# Firebase Service Account (entire JSON as string)
+FIREBASE_SERVICE_ACCOUNT='{"type":"service_account","project_id":"your-project",...}'
 ```
+
+Note: Use single quotes and paste the entire JSON on one line.
 
 ### 6. Build Your App
 
@@ -103,7 +111,8 @@ solcial/
     └── firebase.ts              # ← FCM helper
 
 solcial-backend/
-├── .env                         # ← Add FIREBASE_SERVER_KEY
+├── firebase-service-account.json # ← Add this (service account)
+├── .env                         # ← Or add FIREBASE_SERVICE_ACCOUNT
 └── src/modules/firebase/
     ├── firebase.service.ts      # ← Send notifications
     └── firebase.module.ts       # ← Module
@@ -113,7 +122,8 @@ solcial-backend/
 
 - [ ] `google-services.json` is in `.gitignore`
 - [ ] `GoogleService-Info.plist` is in `.gitignore`
-- [ ] `FIREBASE_SERVER_KEY` is in `.env` (not committed)
+- [ ] `firebase-service-account.json` is in `.gitignore`
+- [ ] `FIREBASE_SERVICE_ACCOUNT` is in `.env` (not committed)
 - [ ] Firebase config files are NOT in git
 
 ## 🐛 Troubleshooting
@@ -122,8 +132,9 @@ solcial-backend/
 - This is normal for local dev (`npx expo start`)
 - Build with EAS to enable notifications
 
-### "FIREBASE_SERVER_KEY not found"
-- Add it to `solcial-backend/.env`
+### "Firebase service account not found"
+- Add `firebase-service-account.json` to `solcial-backend/`
+- Or add `FIREBASE_SERVICE_ACCOUNT` to `.env`
 - Restart backend server
 
 ### Notifications not received
@@ -150,5 +161,5 @@ solcial-backend/
 1. Complete steps 1-5 above
 2. Build your app with EAS
 3. Test notifications
-4. Deploy backend to Render with new env var
+4. Deploy backend to Render with service account
 5. Enjoy working push notifications! 🎉

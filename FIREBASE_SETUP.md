@@ -37,21 +37,35 @@ This guide will help you set up Firebase Cloud Messaging (FCM) for push notifica
 7. Place it in the root of your `solcial/` folder
 8. Click "Next" and "Continue to console"
 
-## Step 4: Enable Cloud Messaging
+## Step 4: Get Firebase Service Account
 
 1. In Firebase Console, go to "Project settings" (gear icon)
-2. Go to "Cloud Messaging" tab
-3. Under "Cloud Messaging API (Legacy)", note your "Server key"
-4. Copy this server key - you'll need it for the backend
+2. Go to "Service accounts" tab
+3. Click "Generate new private key"
+4. Click "Generate key" - this downloads a JSON file
+5. Rename it to `firebase-service-account.json`
+6. Place it in the root of your `solcial-backend/` folder
 
-## Step 5: Update Backend Environment Variables
+## Step 5: Update Backend Configuration
 
-Add to your `solcial-backend/.env`:
+### Option A: Use Service Account File (Recommended)
+
+Place `firebase-service-account.json` in `solcial-backend/` folder (already done in step 4).
+
+### Option B: Use Environment Variable (for Render/Heroku)
+
+If you can't upload files to your hosting platform:
+
+1. Open the `firebase-service-account.json` file
+2. Copy the entire JSON content
+3. Add to `solcial-backend/.env`:
 
 ```env
-# Firebase Cloud Messaging
-FIREBASE_SERVER_KEY=your_server_key_here
+# Firebase Service Account (entire JSON as string)
+FIREBASE_SERVICE_ACCOUNT='{"type":"service_account","project_id":"your-project",...}'
 ```
+
+Note: Use single quotes and paste the entire JSON on one line.
 
 ## Step 6: Build Your App
 
@@ -88,8 +102,9 @@ eas build --profile production --platform ios
    - Firebase console: `com.arome.dev.solcial`
    - app.json: `com.arome.dev.solcial`
 
-3. **Check backend has Firebase server key:**
-   - Environment variable `FIREBASE_SERVER_KEY` is set
+3. **Check backend has Firebase service account:**
+   - File `firebase-service-account.json` exists in `solcial-backend/`
+   - Or environment variable `FIREBASE_SERVICE_ACCOUNT` is set
 
 4. **Rebuild the app:**
    - Config changes require a new build
@@ -108,9 +123,10 @@ Push notifications require a production or development build with EAS. They won'
 ## Security Notes
 
 - Never commit `google-services.json` or `GoogleService-Info.plist` to git
+- Never commit `firebase-service-account.json` to git
 - These files are already in `.gitignore`
-- Keep your Firebase server key secure
-- Use environment variables for sensitive keys
+- Keep your Firebase service account secure
+- Use environment variables for sensitive keys on hosting platforms
 
 ## Additional Resources
 
