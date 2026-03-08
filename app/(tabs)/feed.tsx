@@ -271,7 +271,7 @@ export default function FeedScreen() {
           <Image source={require('@/assets/images/ec3.png')} className='absolute w-[19px] h-[19px] bottom-2 right-[160px] rounded-full'/>
           <Image source={require('@/assets/images/ec3.png')} className='absolute w-[19px] h-[19px] top-2 right-[160px] rounded-full'/>
           <Image source={require('@/assets/images/ec2.png')} className='absolute w-[95px] rounded-full h-[95px] -top-16 left-10'/>
-          <View className="p-6">
+          <View className="p-3">
             <View className="flex-row items-center justify-between">
               <View className="flex-1">
                 <View className="flex-row items-center gap-2">

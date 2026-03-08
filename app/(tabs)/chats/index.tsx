@@ -87,15 +87,23 @@ export default function ChatsScreen() {
           </View>
         </View>
 
-        {/* Search */}
+        {/* Search and New Message Button */}
         <View className="mt-6 px-4">
-          <View className="flex-row items-center gap-3 rounded-2xl border-2 border-border bg-background px-4 py-3">
-            <Icon as={Search} size={20} className="text-muted-foreground" />
-            <TextInput
-              placeholder="Search messages"
-              placeholderTextColor="#9ca3af"
-              className="flex-1 text-base text-foreground"
-            />
+          <View className="flex-row items-center gap-3">
+            <View className="flex-1 flex-row items-center gap-3 rounded-2xl border-2 border-border bg-background px-4 py-3">
+              <Icon as={Search} size={20} className="text-muted-foreground" />
+              <TextInput
+                placeholder="Search messages"
+                placeholderTextColor="#9ca3af"
+                className="flex-1 text-base text-foreground"
+              />
+            </View>
+            <TouchableOpacity 
+              onPress={() => setShowNewMessageModal(true)}
+              className="h-12 w-12 items-center justify-center rounded-2xl bg-purple-600"
+            >
+              <Icon as={Plus} size={20} className="text-white" />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -149,14 +157,6 @@ export default function ChatsScreen() {
           )}
         </View>
       </ScrollView>
-
-      {/* Floating New Message Button */}
-      <TouchableOpacity 
-        onPress={() => setShowNewMessageModal(true)}
-        className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-purple-600 shadow-lg"
-      >
-        <Icon as={Plus} size={24} className="text-white" />
-      </TouchableOpacity>
 
       {/* New Message Modal */}
       <Modal

@@ -33,15 +33,8 @@ export async function getFCMToken(): Promise<string | null> {
       });
     }
 
-    // Get the token
-    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-    
-    if (!projectId) {
-      console.warn('EAS project ID not found. Push notifications require EAS Build.');
-      return null;
-    }
-
-    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
+    // Get the native FCM token (not Expo token)
+    const tokenData = await Notifications.getDevicePushTokenAsync();
     console.log('FCM Token:', tokenData.data);
     
     return tokenData.data;
