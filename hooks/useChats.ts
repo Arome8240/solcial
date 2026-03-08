@@ -17,6 +17,7 @@ export function useChats() {
     queryFn: async () => {
       const response = await api.getChats();
       if (response.error) throw new Error(response.error);
+      console.log('Chats',response.data)
       return response.data as Chat[];
     },
   });
@@ -43,6 +44,7 @@ export function useChats() {
     mutationFn: async (participantId: string) => {
       const response = await api.createChat(participantId);
       if (response.error) throw new Error(response.error);
+      
       return response.data;
     },
     onSuccess: () => {
@@ -92,6 +94,7 @@ export function useMessages(chatId: string) {
     queryFn: async ({ pageParam = 1 }) => {
       const response = await api.getMessages(chatId, pageParam as number, 50);
       if (response.error) throw new Error(response.error);
+      //console.log(response.data)
       return response.data as Message[];
     },
     getNextPageParam: (lastPage, pages) => {
