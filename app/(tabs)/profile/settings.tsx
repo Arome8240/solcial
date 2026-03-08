@@ -79,6 +79,13 @@ export default function SettingsScreen() {
       // Get push token
       try {
         const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+        
+        if (!projectId) {
+          toast.error('Push notifications require EAS Build');
+          setNotifications(false);
+          return;
+        }
+        
         const token = (await ExpoNotifications.getExpoPushTokenAsync({ projectId })).data;
         
         // Register token with backend
@@ -91,9 +98,15 @@ export default function SettingsScreen() {
         
         setNotifications(true);
         toast.success('Notifications enabled!');
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error getting push token:', error);
-        toast.error('Failed to enable notifications');
+        
+        if (__DEV__) {
+          toast.error('Push notifications not available in dev build');
+        } else {
+          toast.error('Failed to enable notifications');
+        }
+        
         setNotifications(false);
       }
     } else {

@@ -54,7 +54,18 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": ["expo-router", "expo-font"],
+    "plugins": [
+      "expo-router", 
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/not.png",
+          "color": "#ffffff",
+          "sounds": []
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     },

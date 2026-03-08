@@ -140,13 +140,27 @@ async function registerForPushNotificationsAsync() {
 
   try {
     const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+    
+    if (!projectId) {
+      console.warn('EAS project ID not found. Push notifications require EAS Build.');
+      return;
+    }
+    
     token = (await ExpoNotifications.getExpoPushTokenAsync({ projectId })).data;
     console.log('Push token:', token);
 
     // Register token with backend
     await api.registerPushToken(token);
-  } catch (error) {
-    console.error('Error getting push token:', error);
+  } catch (error: any) {
+    // In development builds without proper credentials, this will fail
+    if (__DEV__) {
+      console.log('Push notifications not available in development build.');
+      console.log('To enable push notifications:');
+      console.log('1. Build with EAS: eas build --profile development --platform android');
+      console.log('2. Or use Expo Go for testing');
+    } else {
+      console.error('Error getting push token:', error?.message || error);
+    }
   }
 
   return token;
