@@ -23,11 +23,11 @@ export default function SignInScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-gray-50"
+      className="flex-1 bg-background"
     >
       <View className="flex-1 px-5 pt-16">
-        <Text className="mb-2 text-3xl font-bold text-gray-900">Welcome Back!</Text>
-        <Text className="mb-12 text-base text-gray-900">Sign In into your account</Text>
+        <Text className="mb-2 text-3xl font-bold text-foreground">Welcome Back!</Text>
+        <Text className="mb-12 text-base text-foreground">Sign In into your account</Text>
 
         <View className="gap-6">
           <Input 
@@ -68,7 +68,7 @@ export default function SignInScreen() {
         </Button>
 
         <View className="flex-row justify-center">
-          <Text className="text-sm text-gray-900">Don't have an account? </Text>
+          <Text className="text-sm text-muted-foreground">Don't have an account? </Text>
           <Pressable onPress={handleSignUp}>
             <Text className="text-sm font-medium text-purple-600">Sign Up</Text>
           </Pressable>

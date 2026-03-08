@@ -3,7 +3,7 @@ import '@/global.css';
 import { NAV_THEME } from '@/lib/theme';
 import { ThemeProvider } from '@react-navigation/native';
 import { PortalHost } from '@rn-primitives/portal';
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import {
   Geist_400Regular,
@@ -15,9 +15,10 @@ import {
 import { Toaster } from 'sonner-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useThemeStore, useThemeSync } from '@/store/useThemeStore';
 import { usePathname } from 'expo-router';
+import { storage } from '@/lib/storage';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -38,6 +39,7 @@ function RootLayoutContent() {
   const { theme } = useThemeSync();
   const { loadTheme, isLoading } = useThemeStore();
   const pathname = usePathname();
+  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
   
   const [isFontsLoaded] = useFonts({
     Geist_400Regular,
@@ -51,7 +53,26 @@ function RootLayoutContent() {
     loadTheme();
   }, []);
 
-  if (!isFontsLoaded || isLoading) {
+  // Check onboarding status and redirect if needed
+  useEffect(() => {
+    async function checkOnboarding() {
+      const hasCompleted = await storage.hasCompletedOnboarding();
+      const token = await storage.getToken();
+      
+      // If onboarding not completed and not on onboarding/auth screens, redirect
+      if (!hasCompleted && !pathname.startsWith('/onboarding') && !pathname.startsWith('/auth')) {
+        router.replace('/onboarding');
+      }
+      
+      setIsCheckingOnboarding(false);
+    }
+    
+    if (isFontsLoaded && !isLoading) {
+      checkOnboarding();
+    }
+  }, [isFontsLoaded, isLoading, pathname]);
+
+  if (!isFontsLoaded || isLoading || isCheckingOnboarding) {
     return null;
   }
 

@@ -32,17 +32,17 @@ export default function SignUpScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-gray-50"
+      className="flex-1 bg-background"
     >
       <ScrollView className="flex-1 px-5 pt-16" showsVerticalScrollIndicator={false}>
-        <Text className="mb-2 text-3xl font-bold text-gray-900">Create an Account</Text>
-        <Text className="mb-8 text-base text-gray-500">Fill in the details below to get started.</Text>
+        <Text className="mb-2 text-3xl font-bold text-foreground">Create an Account</Text>
+        <Text className="mb-8 text-base text-muted-foreground">Fill in the details below to get started.</Text>
 
         <View className="gap-6">
           <Input label="Full Name (Optional)" placeholder="e.g John Doe" value={fullName} onChangeText={setFullName} />
 
           <View>
-            <Text className="mb-2 text-sm font-medium text-gray-900">Bio (Optional)</Text>
+            <Text className="mb-2 text-sm font-medium text-foreground">Bio (Optional)</Text>
             <TextInput
               placeholder="Tell us about yourself..."
               value={bio}
@@ -50,18 +50,18 @@ export default function SignUpScreen() {
               multiline
               numberOfLines={4}
               textAlignVertical="top"
-              className="h-24 rounded-xl bg-white px-4 py-3 text-base text-gray-900"
+              className="h-24 rounded-xl bg-card px-4 py-3 text-base text-foreground"
               placeholderTextColor="#9ca3af"
             />
           </View>
 
           <View>
-            <Text className="mb-3 text-sm font-medium text-gray-900">Profile Picture (optional)</Text>
+            <Text className="mb-3 text-sm font-medium text-foreground">Profile Picture (optional)</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="gap-3">
               <Pressable
                 onPress={() => setSelectedAvatar(null)}
                 className={`mr-3 h-16 w-16 items-center justify-center rounded-2xl ${
-                  selectedAvatar === null ? 'bg-purple-100' : 'bg-gray-200'
+                  selectedAvatar === null ? 'bg-purple-100 dark:bg-purple-900' : 'bg-muted'
                 }`}
               >
                 <Image

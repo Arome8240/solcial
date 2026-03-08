@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const KEYS = {
   TOKEN: '@solcial:token',
   USER: '@solcial:user',
+  ONBOARDING_COMPLETED: '@solcial:onboarding_completed',
 };
 
 export const storage = {
@@ -36,5 +37,15 @@ export const storage = {
   // Clear all
   async clear() {
     await AsyncStorage.multiRemove([KEYS.TOKEN, KEYS.USER]);
+  },
+
+  // Onboarding
+  async setOnboardingCompleted() {
+    await AsyncStorage.setItem(KEYS.ONBOARDING_COMPLETED, 'true');
+  },
+
+  async hasCompletedOnboarding() {
+    const completed = await AsyncStorage.getItem(KEYS.ONBOARDING_COMPLETED);
+    return completed === 'true';
   },
 };

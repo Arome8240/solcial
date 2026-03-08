@@ -11,6 +11,8 @@ import Animated, {
   interpolate,
   SharedValue,
 } from 'react-native-reanimated';
+import { storage } from '@/lib/storage';
+import { useThemeStore } from '@/store/useThemeStore';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -34,6 +36,7 @@ const ONBOARDING_DATA = [
 
 export default function OnboardingScreen() {
   const scrollX = useSharedValue(0);
+  const { theme } = useThemeStore();
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -41,8 +44,18 @@ export default function OnboardingScreen() {
     },
   });
 
+  const handleCreateAccount = async () => {
+    await storage.setOnboardingCompleted();
+    router.push('/auth/email');
+  };
+
+  const handleSignIn = async () => {
+    await storage.setOnboardingCompleted();
+    router.push('/auth/signin');
+  };
+
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-background">
       <Animated.ScrollView
         horizontal
         pagingEnabled
@@ -52,26 +65,24 @@ export default function OnboardingScreen() {
         contentContainerStyle={{ paddingBottom: 200 }}
       >
         {ONBOARDING_DATA.map((item, index) => (
-          <OnboardingSlide key={index} {...item} />
+          <OnboardingSlide key={index} {...item} theme={theme} />
         ))}
       </Animated.ScrollView>
 
-      <View className="absolute bottom-0 left-0 right-0 bg-gray-50 px-5 pb-12 pt-6">
+      <View className="absolute bottom-0 left-0 right-0 bg-background px-5 pb-12 pt-6">
         <View className="mb-8 flex-row justify-center gap-2">
           {ONBOARDING_DATA.map((_, index) => (
             <Dot key={index} index={index} scrollX={scrollX} />
           ))}
         </View>
 
-        <Button className="mb-4 h-14 rounded-2xl bg-purple-600 active:bg-purple-700" onPress={() => router.push('/auth/email')}>
+        <Button className="mb-4 h-14 rounded-2xl bg-purple-600 active:bg-purple-700" onPress={handleCreateAccount}>
           <Text className="text-base font-medium text-white">Create Account</Text>
         </Button>
 
-        <Link href="/auth/signin" asChild>
-          <Button variant="ghost" className="h-14">
-            <Text className="text-base font-medium text-purple-600">Sign in</Text>
-          </Button>
-        </Link>
+        <Button variant="ghost" className="h-14" onPress={handleSignIn}>
+          <Text className="text-base font-medium text-purple-600">Sign in</Text>
+        </Button>
       </View>
     </View>
   );
@@ -81,22 +92,24 @@ function OnboardingSlide({
   icon: Icon,
   title,
   description,
+  theme,
 }: {
   icon: typeof Zap;
   title: string;
   description: string;
+  theme: 'light' | 'dark';
 }) {
   return (
     <View style={{ width: SCREEN_WIDTH }} className="items-center justify-center px-8 pt-20">
-      <View className="mb-12 h-24 w-24 items-center justify-center rounded-full bg-white shadow-sm">
+      <View className="mb-12 h-24 w-24 items-center justify-center rounded-full bg-card shadow-sm">
         <Icon size={48} color="#7c3aed" strokeWidth={2} />
       </View>
 
-      <Text className="mb-4 text-center text-3xl font-bold leading-tight text-gray-900">
+      <Text className="mb-4 text-center text-3xl font-bold leading-tight text-foreground">
         {title}
       </Text>
 
-      <Text className="text-center text-base leading-relaxed text-gray-500">{description}</Text>
+      <Text className="text-center text-base leading-relaxed text-muted-foreground">{description}</Text>
     </View>
   );
 }

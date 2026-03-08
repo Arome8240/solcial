@@ -68,9 +68,9 @@ export default function VerifyScreen() {
   };
 
   return (
-    <View className="flex-1 bg-gray-50 px-5 pt-16">
-      <Text className="mb-3 text-3xl font-bold text-gray-900">Verify Your Account</Text>
-      <Text className="mb-12 text-base leading-relaxed text-gray-500">
+    <View className="flex-1 bg-background px-5 pt-16">
+      <Text className="mb-3 text-3xl font-bold text-foreground">Verify Your Account</Text>
+      <Text className="mb-12 text-base leading-relaxed text-muted-foreground">
         A six-digit code was sent to your email, enter it below to confirm your account.
       </Text>
 
@@ -88,7 +88,7 @@ export default function VerifyScreen() {
             onBlur={() => setFocusedIndex(null)}
             keyboardType="number-pad"
             maxLength={1}
-            className={`h-14 w-12 rounded-xl bg-white text-center text-lg font-semibold text-gray-900 border-2 ${
+            className={`h-14 w-12 rounded-xl bg-card text-center text-lg font-semibold text-foreground border-2 ${
               focusedIndex === index ? 'border-purple-600' : 'border-transparent'
             }`}
             placeholder="0"
@@ -118,7 +118,7 @@ export default function VerifyScreen() {
         </Pressable>
 
         <Pressable onPress={handleBack}>
-          <Text className="text-center text-base font-medium text-gray-600">Back</Text>
+          <Text className="text-center text-base font-medium text-muted-foreground">Back</Text>
         </Pressable>
       </View>
     </View>
