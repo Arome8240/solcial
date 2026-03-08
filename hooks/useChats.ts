@@ -36,7 +36,7 @@ export function useChats() {
     chats: chats || [],
     isLoading,
     refetch,
-    createChat: createChatMutation.mutate,
+    createChat: createChatMutation.mutateAsync,
     isCreatingChat: createChatMutation.isPending,
   };
 }

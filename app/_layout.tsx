@@ -68,7 +68,7 @@ function RootLayoutContent() {
       <ThemeProvider value={theme === 'dark' ? NAV_THEME.dark : NAV_THEME.light}>
         <StatusBar 
           style={getStatusBarStyle()} 
-          backgroundColor={pathname === '/feed' ? '#715BFF' : undefined}
+          backgroundColor={pathname === '/feed' ? '#9333ea' : undefined}
         />
         <Stack screenOptions={{ headerShown: false}} />
         <PortalHost />

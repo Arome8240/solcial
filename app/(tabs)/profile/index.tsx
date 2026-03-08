@@ -1,7 +1,7 @@
 import { View, ScrollView, TouchableOpacity, Modal, ActivityIndicator, Image } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { Settings, MoreVertical, Copy, Share, Edit, CloudOff, TrendingUp, TrendingDown, Coins, ArrowLeft, UserPlus, UserMinus } from 'lucide-react-native';
+import { Settings, MoreVertical, Copy, Share, Edit, CloudOff, TrendingUp, TrendingDown, Coins, ArrowLeft, UserPlus, UserMinus, MessageCircle } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import * as Clipboard from 'expo-clipboard';
@@ -11,6 +11,7 @@ import { useUserPosts } from '@/hooks/usePosts';
 import { usePortfolio } from '@/hooks/usePortfolio';
 import { useUserProfile } from '@/hooks/useProfile';
 import { useFollows, useCheckFollowing } from '@/hooks/useFollows';
+import { useChats } from '@/hooks/useChats';
 import type { User, Post } from '@/types';
 
 const tabs = ['Posts', 'Portfolio', 'Replies', 'Likes'];
@@ -41,11 +42,21 @@ export default function ProfileScreen() {
   const { data: portfolio, isLoading: isLoadingPortfolio } = usePortfolio(displayUserId);
   const { followUser, unfollowUser } = useFollows();
   const { data: followingData } = useCheckFollowing(isOwnProfile ? '' : displayUserId);
+  const { createChat, isCreatingChat } = useChats();
   
   const [activeTab, setActiveTab] = useState('Posts');
   const [showMenu, setShowMenu] = useState(false);
 
   const isFollowingUser = (followingData as { isFollowing?: boolean })?.isFollowing || false;
+
+  const navigateToProfile = (username: string) => {
+    if (username === typedCurrentUser?.username) {
+      // Navigate to own profile (remove query param)
+      router.push('/(tabs)/profile');
+    } else {
+      router.push(`/(tabs)/profile?username=${username}`);
+    }
+  };
 
   const handleFollowToggle = () => {
     if (!displayUserId) return;
@@ -54,6 +65,21 @@ export default function ProfileScreen() {
       unfollowUser(displayUserId);
     } else {
       followUser(displayUserId);
+    }
+  };
+
+  const handleMessageUser = async () => {
+    if (!displayUserId) return;
+    
+    try {
+      const chat = await createChat(displayUserId) as any;
+      // Navigate to the chat
+      if (chat?.id) {
+        router.push(`/(tabs)/chats/${chat.id}`);
+      }
+    } catch (error) {
+      // Error is already handled by the mutation
+      console.error('Failed to create chat:', error);
     }
   };
 
@@ -111,15 +137,24 @@ export default function ProfileScreen() {
                 <Icon as={MoreVertical} size={24} className="text-foreground" />
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity 
-                onPress={handleFollowToggle}
-                className={`flex-row items-center gap-2 rounded-full px-4 py-2 ${isFollowingUser ? 'bg-gray-200 dark:bg-gray-700' : 'bg-purple-600'}`}
-              >
-                <Icon as={isFollowingUser ? UserMinus : UserPlus} size={18} className={isFollowingUser ? "text-foreground" : "text-white"} />
-                <Text className={`font-semibold ${isFollowingUser ? 'text-foreground' : 'text-white'}`}>
-                  {isFollowingUser ? 'Unfollow' : 'Follow'}
-                </Text>
-              </TouchableOpacity>
+              <View className="flex-row gap-2">
+                <TouchableOpacity 
+                  onPress={handleMessageUser}
+                  disabled={isCreatingChat}
+                  className="items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900 p-3"
+                >
+                  <Icon as={MessageCircle} size={20} className="text-purple-600 dark:text-purple-300" />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  onPress={handleFollowToggle}
+                  className={`flex-row items-center gap-2 rounded-full px-4 py-2 ${isFollowingUser ? 'bg-gray-200 dark:bg-gray-700' : 'bg-purple-600'}`}
+                >
+                  <Icon as={isFollowingUser ? UserMinus : UserPlus} size={18} className={isFollowingUser ? "text-foreground" : "text-white"} />
+                  <Text className={`font-semibold ${isFollowingUser ? 'text-foreground' : 'text-white'}`}>
+                    {isFollowingUser ? 'Unfollow' : 'Follow'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             )}
           </View>
 
@@ -187,23 +222,65 @@ export default function ProfileScreen() {
                 <View className="items-center py-20">
                   <ActivityIndicator size="large" color="#9333ea" />
                 </View>
-              ) : posts.length === 0 ? (
+              ) : !posts || posts.length === 0 ? (
                 <View className="items-center py-20">
                   <Icon as={CloudOff} size={64} className="text-muted-foreground" />
                   <Text className="mt-4 text-muted-foreground">No posts yet</Text>
                 </View>
               ) : (
                 posts.map((post: Post) => (
-                  <View key={post.id} className="mb-4 rounded-2xl bg-card p-4">
-                    <Text className="text-sm text-muted-foreground">
-                      {new Date(post.createdAt).toLocaleDateString()}
-                    </Text>
-                    <Text className="mt-2">{post.content}</Text>
-                    <View className="mt-3 flex-row gap-4">
-                      <Text className="text-sm text-muted-foreground">{post.likesCount} likes</Text>
-                      <Text className="text-sm text-muted-foreground">{post.commentsCount} comments</Text>
+                  <TouchableOpacity 
+                    key={post.id} 
+                    onPress={() => router.push(`/post/${post.id}`)}
+                    className="mb-4 rounded-2xl bg-card p-4"
+                  >
+                    <View className="flex-row items-center gap-3 mb-3">
+                      {post.author?.avatar ? (
+                        <Image 
+                          source={{ uri: post.author.avatar }} 
+                          className="h-10 w-10 rounded-full"
+                        />
+                      ) : (
+                        <View className="h-10 w-10 items-center justify-center rounded-full bg-purple-200 dark:bg-purple-900">
+                          <Text className="text-sm font-bold text-purple-600 dark:text-purple-300">
+                            {post.author?.name?.charAt(0)?.toUpperCase() || post.author?.username?.charAt(0)?.toUpperCase() || '?'}
+                          </Text>
+                        </View>
+                      )}
+                      <View className="flex-1">
+                        <Text className="font-semibold">{post.author?.name || post.author?.username}</Text>
+                        <Text className="text-xs text-muted-foreground">
+                          @{post.author?.username} · {new Date(post.createdAt).toLocaleDateString()}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
+                    <Text className="mb-3">{post.content}</Text>
+                    {post.images && post.images.length > 0 && (
+                      <View className="mb-3 flex-row flex-wrap gap-2">
+                        {post.images.slice(0, 4).map((img, idx) => (
+                          <Image
+                            key={idx}
+                            source={{ uri: img }}
+                            className={`rounded-xl ${
+                              post.images.length === 1
+                                ? 'h-64 w-full'
+                                : post.images.length === 2
+                                ? 'h-48 w-[48%]'
+                                : 'h-32 w-[48%]'
+                            }`}
+                            resizeMode="cover"
+                          />
+                        ))}
+                      </View>
+                    )}
+                    <View className="flex-row gap-4">
+                      <Text className="text-sm text-muted-foreground">{post.likesCount || 0} likes</Text>
+                      <Text className="text-sm text-muted-foreground">{post.commentsCount || 0} comments</Text>
+                      {post.isTokenized && (
+                        <Text className="text-sm text-purple-600 font-semibold">🪙 Tokenized</Text>
+                      )}
+                    </View>
+                  </TouchableOpacity>
                 ))
               )}
             </View>
@@ -216,13 +293,15 @@ export default function ProfileScreen() {
                 <View className="items-center py-20">
                   <ActivityIndicator size="large" color="#9333ea" />
                 </View>
-              ) : !portfolio || portfolio.holdings.length === 0 ? (
+              ) : !portfolio || !portfolio.holdings || portfolio.holdings.length === 0 ? (
                 <View className="items-center py-20">
                   <Icon as={Coins} size={64} className="text-muted-foreground" />
                   <Text className="mt-4 text-muted-foreground">No token holdings yet</Text>
-                  <Text className="mt-2 text-center text-sm text-muted-foreground">
-                    Buy post tokens to start building your portfolio
-                  </Text>
+                  {isOwnProfile && (
+                    <Text className="mt-2 text-center text-sm text-muted-foreground">
+                      Buy post tokens to start building your portfolio
+                    </Text>
+                  )}
                 </View>
               ) : (
                 <>
@@ -263,15 +342,21 @@ export default function ProfileScreen() {
 
                   {/* Holdings List */}
                   {portfolio.holdings.map((holding) => (
-                    <View key={holding.id} className="mb-3 rounded-2xl bg-card p-4">
+                    <TouchableOpacity 
+                      key={holding.id} 
+                      onPress={() => router.push(`/post/${holding.post.id}`)}
+                      className="mb-3 rounded-2xl bg-card p-4"
+                    >
                       <View className="flex-row items-start justify-between">
                         <View className="flex-1">
                           <Text className="font-semibold" numberOfLines={2}>
                             {holding.post.content}
                           </Text>
-                          <Text className="mt-1 text-sm text-muted-foreground">
-                            by @{holding.post.author.username}
-                          </Text>
+                          <TouchableOpacity onPress={() => navigateToProfile(holding.post.author.username)}>
+                            <Text className="mt-1 text-sm text-muted-foreground">
+                              by @{holding.post.author.username}
+                            </Text>
+                          </TouchableOpacity>
                         </View>
                         <View className="ml-2 items-end">
                           <View className="flex-row items-center gap-1">
@@ -305,7 +390,7 @@ export default function ProfileScreen() {
                           <Text className="font-semibold">{holding.currentValue.toFixed(4)} SOL</Text>
                         </View>
                       </View>
-                    </View>
+                    </TouchableOpacity>
                   ))}
                 </>
               )}

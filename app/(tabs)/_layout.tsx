@@ -22,6 +22,7 @@ export default function TabsLayout() {
         options={{
           title: 'Wallet',
           tabBarIcon: ({ color, size }) => <Wallet size={size} color={color} />,
+          href: '/(tabs)/wallet'
         }}
       />
       <Tabs.Screen
@@ -34,6 +35,7 @@ export default function TabsLayout() {
         name="chats"
         options={{
           title: 'Chats',
+          href: '/(tabs)/chats',
           tabBarIcon: ({ color, size }) => <MessageCircle size={size} color={color} />,
         }}
       />
@@ -42,6 +44,7 @@ export default function TabsLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
+          href: '/(tabs)/profile',
         }}
       />
       <Tabs.Screen
