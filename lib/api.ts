@@ -224,6 +224,10 @@ class ApiClient {
     return this.request('/chats');
   }
 
+  async getChat(chatId: string) {
+    return this.request(`/chats/${chatId}`);
+  }
+
   async getMessages(chatId: string, page: number = 1, limit: number = 50) {
     return this.request(`/chats/${chatId}/messages?page=${page}&limit=${limit}`);
   }
