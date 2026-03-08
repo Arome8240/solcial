@@ -1,4 +1,4 @@
-import { View, ScrollView, TouchableOpacity, TextInput, RefreshControl, ActivityIndicator } from 'react-native';
+import { View, ScrollView, TouchableOpacity, TextInput, RefreshControl, ActivityIndicator, Image } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { Search } from 'lucide-react-native';
@@ -63,7 +63,18 @@ export default function ChatsScreen() {
                 className="flex-row items-center gap-3 border-b border-border py-4"
               >
                 <View className="relative">
-                  <View className="h-14 w-14 rounded-full bg-purple-200" />
+                  {chat.otherParticipant?.avatar ? (
+                    <Image 
+                      source={{ uri: chat.otherParticipant.avatar }} 
+                      className="h-14 w-14 rounded-full"
+                    />
+                  ) : (
+                    <View className="h-14 w-14 items-center justify-center rounded-full bg-purple-200 dark:bg-purple-900">
+                      <Text className="text-xl font-bold text-purple-600 dark:text-purple-300">
+                        {chat.otherParticipant?.name?.charAt(0)?.toUpperCase() || chat.otherParticipant?.username?.charAt(0)?.toUpperCase() || '?'}
+                      </Text>
+                    </View>
+                  )}
                 </View>
                 <View className="flex-1">
                   <View className="flex-row items-center justify-between">

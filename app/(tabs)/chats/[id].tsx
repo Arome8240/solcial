@@ -1,14 +1,15 @@
-import { View, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, RefreshControl, Modal } from 'react-native';
+import { View, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, RefreshControl, Modal, Image } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { ArrowLeft, Send, DollarSign, X } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useRef, useEffect } from 'react';
-import { useMessages } from '@/hooks/useChats';
+import { useMessages, useChat } from '@/hooks/useChats';
 import type { Message } from '@/types';
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { data: chat, isLoading: isLoadingChat } = useChat(id);
   const { messages, isLoading, refetch, sendMessage, isSendingMessage, sendTip, isSendingTip } = useMessages(id);
   const [message, setMessage] = useState('');
   const [showTipModal, setShowTipModal] = useState(false);
@@ -46,7 +47,7 @@ export default function ChatScreen() {
     }
   };
 
-  const otherParticipant = messages.find((m: Message) => !m.isMine)?.sender;
+  const otherParticipant = chat?.otherParticipant;
 
   return (
     <KeyboardAvoidingView 
@@ -59,7 +60,18 @@ export default function ChatScreen() {
         <TouchableOpacity onPress={() => router.back()}>
           <Icon as={ArrowLeft} size={24} className="text-foreground" />
         </TouchableOpacity>
-        <View className="h-10 w-10 rounded-full bg-purple-200" />
+        {otherParticipant?.avatar ? (
+          <Image 
+            source={{ uri: otherParticipant.avatar }} 
+            className="h-10 w-10 rounded-full"
+          />
+        ) : (
+          <View className="h-10 w-10 items-center justify-center rounded-full bg-purple-200 dark:bg-purple-900">
+            <Text className="font-bold text-purple-600 dark:text-purple-300">
+              {otherParticipant?.name?.charAt(0)?.toUpperCase() || otherParticipant?.username?.charAt(0)?.toUpperCase() || '?'}
+            </Text>
+          </View>
+        )}
         <View className="flex-1">
           <Text className="font-semibold">
             {otherParticipant?.name || otherParticipant?.username || 'Chat'}
@@ -96,7 +108,20 @@ export default function ChatScreen() {
             >
               {msg.type === 'payment' ? (
                 <View className="flex-row items-center gap-2">
-                  {!msg.isMine && <View className="h-10 w-10 rounded-full bg-purple-200" />}
+                  {!msg.isMine && (
+                    otherParticipant?.avatar ? (
+                      <Image 
+                        source={{ uri: otherParticipant.avatar }} 
+                        className="h-10 w-10 rounded-full"
+                      />
+                    ) : (
+                      <View className="h-10 w-10 items-center justify-center rounded-full bg-purple-200 dark:bg-purple-900">
+                        <Text className="text-sm font-bold text-purple-600 dark:text-purple-300">
+                          {otherParticipant?.name?.charAt(0)?.toUpperCase() || otherParticipant?.username?.charAt(0)?.toUpperCase() || '?'}
+                        </Text>
+                      </View>
+                    )
+                  )}
                   <View className="rounded-2xl bg-green-100 p-4">
                     <View className="flex-row items-center gap-2">
                       <Icon as={DollarSign} size={16} className="text-green-600" />
@@ -109,7 +134,20 @@ export default function ChatScreen() {
                 </View>
               ) : (
                 <View className="flex-row items-end gap-2">
-                  {!msg.isMine && <View className="h-10 w-10 rounded-full bg-purple-200" />}
+                  {!msg.isMine && (
+                    otherParticipant?.avatar ? (
+                      <Image 
+                        source={{ uri: otherParticipant.avatar }} 
+                        className="h-10 w-10 rounded-full"
+                      />
+                    ) : (
+                      <View className="h-10 w-10 items-center justify-center rounded-full bg-purple-200 dark:bg-purple-900">
+                        <Text className="text-sm font-bold text-purple-600 dark:text-purple-300">
+                          {otherParticipant?.name?.charAt(0)?.toUpperCase() || otherParticipant?.username?.charAt(0)?.toUpperCase() || '?'}
+                        </Text>
+                      </View>
+                    )
+                  )}
                   <View
                     className={`max-w-[75%] rounded-2xl px-4 py-3 ${
                       msg.isMine ? 'bg-purple-600' : 'bg-card'

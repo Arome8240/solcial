@@ -41,6 +41,18 @@ export function useChats() {
   };
 }
 
+export function useChat(chatId: string) {
+  return useQuery<Chat>({
+    queryKey: ['chats', chatId],
+    queryFn: async () => {
+      const response = await api.getChat(chatId);
+      if (response.error) throw new Error(response.error);
+      return response.data as Chat;
+    },
+    enabled: !!chatId,
+  });
+}
+
 export function useMessages(chatId: string) {
   const queryClient = useQueryClient();
 
