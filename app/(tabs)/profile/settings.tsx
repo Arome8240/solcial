@@ -1,4 +1,4 @@
-import { View, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { Grid, Users, Bell, Moon, Globe, HelpCircle, FileText, LogOut, ChevronRight } from 'lucide-react-native';
@@ -27,7 +27,22 @@ export default function SettingsScreen() {
   };
 
   const handleLogout = () => {
-    logout();
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: () => logout(),
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   const handleThemeToggle = async () => {
@@ -90,7 +105,7 @@ export default function SettingsScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <ScrollView className="flex-1">
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
         {/* Header */}
         <View className="px-4 pt-12">
           <Text className="text-3xl font-bold">Settings</Text>

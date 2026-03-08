@@ -28,8 +28,7 @@ export default function TabsLayout() {
         name="pay"
         options={{
           title: 'Pay',
-          tabBarIcon: ({ color, size }) => <Send size={size} color={color} />,
-        }}
+          tabBarIcon: ({ color, size }) => <Send size={size} color={color} />, href:null        }}
       />
       <Tabs.Screen
         name="chats"

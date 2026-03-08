@@ -26,7 +26,7 @@ const quickActions = [
 export default function PayScreen() {
   return (
     <View className="flex-1 bg-background">
-      <ScrollView className="flex-1">
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
         {/* Header */}
         <View className="px-4 pt-12">
           <Text className="text-3xl font-bold">Pay</Text>

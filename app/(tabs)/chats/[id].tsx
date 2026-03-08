@@ -73,6 +73,7 @@ export default function ChatScreen() {
       {/* Messages */}
       <ScrollView 
         ref={scrollViewRef}
+        showsVerticalScrollIndicator={false}
         className="flex-1 px-4 py-4"
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refetch} />

@@ -26,6 +26,7 @@ export default function WalletScreen() {
   return (
     <View className="flex-1 bg-background">
       <ScrollView 
+        showsVerticalScrollIndicator={false}
         className="flex-1"
         refreshControl={
           <RefreshControl refreshing={isLoadingBalance} onRefresh={refetchBalance} />

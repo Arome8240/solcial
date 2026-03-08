@@ -67,18 +67,6 @@ export default function SignInScreen() {
           )}
         </Button>
 
-        <Text className="mb-4 text-center text-sm text-gray-500">Or Sign in with</Text>
-
-        <View className="mb-6 gap-3">
-          <Button variant="outline" className="h-14 flex-row gap-3 rounded-2xl bg-white">
-            <Text className="text-base font-medium text-gray-900">Google</Text>
-          </Button>
-
-          <Button variant="outline" className="h-14 flex-row gap-3 rounded-2xl bg-white">
-            <Text className="text-base font-medium text-gray-900">Apple</Text>
-          </Button>
-        </View>
-
         <View className="flex-row justify-center">
           <Text className="text-sm text-gray-900">Don't have an account? </Text>
           <Pressable onPress={handleSignUp}>

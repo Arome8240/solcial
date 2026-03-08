@@ -21,6 +21,7 @@ export default function ChatsScreen() {
   return (
     <View className="flex-1 bg-background">
       <ScrollView 
+        showsVerticalScrollIndicator={false}
         className="flex-1"
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refetch} />

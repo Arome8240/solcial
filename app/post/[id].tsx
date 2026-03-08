@@ -77,7 +77,7 @@ export default function PostDetailsScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1">
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
         {/* Post Content */}
         <View className="border-b border-border bg-card p-4">
           {/* Author Info */}

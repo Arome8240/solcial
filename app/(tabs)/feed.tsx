@@ -1,9 +1,10 @@
 import { View, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator, Modal, TextInput, Pressable, Image, Switch } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { Heart, MessageCircle, Search, Bell, Settings, X, Eye, EyeOff, Copy, ArrowUpRight, ArrowDownLeft, RefreshCw, Sparkles, Gamepad2, ArrowRight, Circle, ImagePlus, Coins, DollarSign, User } from 'lucide-react-native';
+import { Heart, MessageCircle, Search, Bell, X, Eye, EyeOff, Copy, ArrowUpRight, ArrowDownLeft, RefreshCw, Sparkles, Gamepad2, ArrowRight, Circle, ImagePlus, Coins, DollarSign, User } from 'lucide-react-native';
 import { usePosts } from '@/hooks/usePosts';
 import { useWallet } from '@/hooks/useWallet';
+import { useNotifications } from '@/hooks/useNotifications';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
@@ -12,10 +13,12 @@ import * as Clipboard from 'expo-clipboard';
 import { toast } from 'sonner-native';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadMultipleImages } from '@/lib/upload';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function FeedScreen() {
   const { posts, isLoadingFeed, fetchNextPage, hasNextPage, isFetchingNextPage, refetchFeed, createPost, isCreatingPost, likePost, unlikePost, tipPost, isTippingPost, buyToken, isBuyingToken } = usePosts();
   const { balance, walletAddress, isLoadingBalance, refetchBalance } = useWallet();
+  const { unreadCount } = useNotifications();
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [postContent, setPostContent] = useState('');
   const [postImages, setPostImages] = useState<string[]>([]);
@@ -151,9 +154,12 @@ export default function FeedScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView
+     className="flex-1 bg-background">
       <ScrollView 
+        showsVerticalScrollIndicator={false}
         className="flex-1"
+
         refreshControl={
           <RefreshControl refreshing={isLoadingFeed} onRefresh={refetchFeed} />
         }
@@ -167,7 +173,7 @@ export default function FeedScreen() {
         scrollEventThrottle={400}
       >
         {/* Balance Card */}
-        <View className="mx-4 mt-4 overflow-hidden rounded-3xl bg-purple-600 shadow-lg">
+        <View className="overflow-hidden rounded-b-3xl bg-purple-600 shadow-lg">
           <View className="p-6">
             <View className="flex-row items-start justify-between">
               <View className="flex-1">
@@ -185,7 +191,7 @@ export default function FeedScreen() {
                   <ActivityIndicator size="large" color="#ffffff" className="mt-2" />
                 ) : (
                   <Text className="mt-1 text-4xl font-bold text-white">
-                    {showBalance ? `${balance.toFixed(4)} SOL` : '••••••'}
+                    {showBalance ? `${balance.toFixed(2)} SOL` : '••••••'}
                   </Text>
                 )}
                 
@@ -207,15 +213,16 @@ export default function FeedScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity 
                   onPress={() => router.push('/(tabs)/notifications')}
-                  className="h-10 w-10 items-center justify-center rounded-full bg-white/20"
+                  className="relative h-10 w-10 items-center justify-center rounded-full bg-white/20"
                 >
                   <Icon as={Bell} size={18} className="text-white" />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  onPress={() => router.push('/profile/settings')}
-                  className="h-10 w-10 items-center justify-center rounded-full bg-white/20"
-                >
-                  <Icon as={Settings} size={18} className="text-white" />
+                  {unreadCount > 0 && (
+                    <View className="absolute right-0 top-0 h-5 w-5 items-center justify-center rounded-full bg-red-500">
+                      <Text className="text-xs font-bold text-white">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </Text>
+                    </View>
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
@@ -238,12 +245,6 @@ export default function FeedScreen() {
                 <Text className="font-semibold text-white">Receive</Text>
               </TouchableOpacity>
               
-              <TouchableOpacity
-                onPress={() => router.push('/wallet')}
-                className="flex-1 items-center justify-center rounded-xl bg-purple-700 py-3.5 shadow-sm"
-              >
-                <Text className="font-semibold text-white">Wallet</Text>
-              </TouchableOpacity>
             </View>
 
             {/* Network Badge */}
@@ -267,7 +268,7 @@ export default function FeedScreen() {
                   <Text className="text-xl font-bold text-white">Mini Apps</Text>
                 </View>
                 <Text className="mt-2 text-sm text-white/90">
-                  Swap, mint NFTs, play games & more
+                  Swap, mint, games & more
                 </Text>
                 <View className="mt-3 flex-row items-center gap-2">
                   <View className="rounded-full bg-white/20 px-3 py-1">
@@ -276,10 +277,10 @@ export default function FeedScreen() {
                   <Icon as={ArrowRight} size={14} className="text-white/80" />
                 </View>
               </View>
+
+              <Image source={require('@/assets/images/mini.png')} className='w-[96px] h-[101px]'/>
               
-              <View className="h-16 w-16 items-center justify-center rounded-2xl bg-white/20">
-                <Icon as={Gamepad2} size={32} className="text-white" />
-              </View>
+              
             </View>
           </View>
         </TouchableOpacity>
@@ -287,7 +288,10 @@ export default function FeedScreen() {
         {/* Feed Header */}
         <View className="mt-6 flex-row items-center justify-between px-4">
           <Text className="text-xl font-bold">Feed</Text>
-          <TouchableOpacity className="flex-row items-center gap-1">
+          <TouchableOpacity 
+            onPress={() => router.push('/explore')}
+            className="flex-row items-center gap-1"
+          >
             <Icon as={Search} size={20} className="text-purple-600" />
             <Text className="font-semibold text-purple-600">Explore</Text>
           </TouchableOpacity>
@@ -459,7 +463,7 @@ export default function FeedScreen() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView className="flex-1 p-4">
+            <ScrollView showsVerticalScrollIndicator={false} className="flex-1 p-4">
               {/* Content Input */}
               <TextInput
                 value={postContent}
@@ -647,6 +651,6 @@ export default function FeedScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }

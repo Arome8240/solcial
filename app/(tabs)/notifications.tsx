@@ -80,6 +80,7 @@ export default function NotificationsScreen() {
       </View>
 
       <ScrollView
+        showsVerticalScrollIndicator={false}
         className="flex-1"
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={refetch} />

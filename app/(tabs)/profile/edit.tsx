@@ -168,7 +168,7 @@ export default function EditProfileScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <ScrollView className="flex-1">
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
         {/* Header */}
         <View className="flex-row items-center justify-between px-4 pt-12">
           <View className="flex-row items-center gap-3">

@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 export default function TermsPrivacyScreen() {
   return (
     <View className="flex-1 bg-background">
-      <ScrollView className="flex-1">
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
         {/* Header */}
         <View className="flex-row items-center gap-3 px-4 pt-12">
           <TouchableOpacity onPress={() => router.back()}>
