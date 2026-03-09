@@ -25,8 +25,40 @@ export default function SendMoneyScreen() {
   const [isSearching, setIsSearching] = useState(false);
   const [errors, setErrors] = useState({ amount: '', recipient: '' });
   const [permission, requestPermission] = useCameraPermissions();
+  const [recipientUser, setRecipientUser] = useState<User | null>(null);
+  const [isLookingUpWallet, setIsLookingUpWallet] = useState(false);
 
   const quickAmounts = ['0.1', '0.5', '1', '2'];
+
+  // Lookup user by wallet address
+  const lookupWalletAddress = async (address: string) => {
+    if (address.length < 32) return; // Not a valid wallet address
+    
+    setIsLookingUpWallet(true);
+    try {
+      const response = await api.getUserByWallet(address);
+      if (response.data) {
+        setRecipientUser(response.data);
+        toast.success(`Found user: @${response.data.username}`);
+      }
+    } catch (error) {
+      // User not found for this wallet, that's okay
+      setRecipientUser(null);
+    } finally {
+      setIsLookingUpWallet(false);
+    }
+  };
+
+  const handleRecipientChange = (text: string) => {
+    setRecipient(text);
+    setErrors({ ...errors, recipient: '' });
+    setRecipientUser(null);
+    
+    // If it looks like a wallet address, try to lookup the user
+    if (text.length >= 32 && !text.includes('@')) {
+      lookupWalletAddress(text);
+    }
+  };
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -48,6 +80,7 @@ export default function SendMoneyScreen() {
 
   const selectContact = (user: User) => {
     setRecipient(user.username); // Store username instead of wallet address
+    setRecipientUser(user);
     setMemo(`Payment to @${user.username}`);
     setShowContactsModal(false);
     toast.success(`Selected ${user.name || user.username}`);
@@ -167,10 +200,7 @@ export default function SendMoneyScreen() {
           <View className={`rounded-2xl bg-card p-4 ${errors.recipient ? 'border-2 border-red-500' : ''}`}>
             <TextInput
               value={recipient}
-              onChangeText={(text) => {
-                setRecipient(text);
-                setErrors({ ...errors, recipient: '' });
-              }}
+              onChangeText={handleRecipientChange}
               placeholder="Enter username or wallet address"
               placeholderTextColor="#9ca3af"
               className="text-base text-foreground"
@@ -178,6 +208,32 @@ export default function SendMoneyScreen() {
               autoCorrect={false}
             />
           </View>
+          
+          {/* Show looked up user */}
+          {isLookingUpWallet && (
+            <View className="mt-2 flex-row items-center gap-2 rounded-xl bg-purple-50 p-3">
+              <ActivityIndicator size="small" color="#9333ea" />
+              <Text className="text-sm text-purple-600">Looking up wallet...</Text>
+            </View>
+          )}
+          
+          {recipientUser && (
+            <View className="mt-2 flex-row items-center gap-3 rounded-xl bg-green-50 p-3">
+              <View className="h-10 w-10 items-center justify-center rounded-full bg-green-200">
+                <Text className="font-semibold text-green-600">
+                  {recipientUser.username[0].toUpperCase()}
+                </Text>
+              </View>
+              <View className="flex-1">
+                <Text className="font-semibold text-green-900">
+                  {recipientUser.name || recipientUser.username}
+                </Text>
+                <Text className="text-sm text-green-700">@{recipientUser.username}</Text>
+              </View>
+              <Icon as={AlertCircle} size={20} className="text-green-600" />
+            </View>
+          )}
+          
           {errors.recipient ? (
             <View className="mt-2 flex-row items-center gap-1">
               <Icon as={AlertCircle} size={14} className="text-red-500" />
@@ -319,7 +375,21 @@ export default function SendMoneyScreen() {
 
               <View className="rounded-2xl bg-card p-4">
                 <Text className="text-sm text-muted-foreground">To</Text>
-                <Text className="mt-1 font-mono text-sm">{recipient.slice(0, 20)}...</Text>
+                {recipientUser ? (
+                  <View className="mt-2 flex-row items-center gap-3">
+                    <View className="h-10 w-10 items-center justify-center rounded-full bg-purple-200">
+                      <Text className="font-semibold text-purple-600">
+                        {recipientUser.username[0].toUpperCase()}
+                      </Text>
+                    </View>
+                    <View>
+                      <Text className="font-semibold">{recipientUser.name || recipientUser.username}</Text>
+                      <Text className="text-sm text-muted-foreground">@{recipientUser.username}</Text>
+                    </View>
+                  </View>
+                ) : (
+                  <Text className="mt-1 font-mono text-sm">{recipient.slice(0, 20)}...</Text>
+                )}
               </View>
 
               {memo && (

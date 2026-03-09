@@ -369,6 +369,10 @@ class ApiClient {
     });
   }
 
+  async getUserByWallet(walletAddress: string) {
+    return this.request(`/users/wallet/${walletAddress}`);
+  }
+
   // ==================== Health ====================
   async checkHealth() {
     return this.request('/health');
