@@ -121,22 +121,20 @@ export default function WalletScreen() {
                   <TouchableOpacity
                     key={holding.id}
                     onPress={() => router.push(`/post/${holding.post.id}`)}
-                    className="flex-row items-center justify-between rounded-2xl bg-card p-4"
+                    className="flex-row items-center gap-3 rounded-2xl bg-card p-4"
                   >
-                    <View className="flex-row items-center gap-3">
-                      <View className="h-12 w-12 items-center justify-center rounded-full bg-purple-100">
-                        <Icon as={Coins} size={20} className="text-purple-600" />
-                      </View>
-                      <View className="flex-1">
-                        <Text className="font-semibold" numberOfLines={1}>
-                          {holding.post.content.slice(0, 30)}...
-                        </Text>
-                        <Text className="text-sm text-muted-foreground">
-                          {holding.amount} tokens
-                        </Text>
-                      </View>
+                    <View className="h-12 w-12 items-center justify-center rounded-full bg-purple-100">
+                      <Icon as={Coins} size={20} className="text-purple-600" />
                     </View>
-                    <View className="items-end">
+                    <View className="flex-1 min-w-0">
+                      <Text className="font-semibold" numberOfLines={1}>
+                        {holding.post.content.slice(0, 30)}...
+                      </Text>
+                      <Text className="text-sm text-muted-foreground">
+                        {holding.amount} tokens
+                      </Text>
+                    </View>
+                    <View className="items-end ml-2">
                       <Text className="font-semibold">
                         {holding.currentValue.toFixed(4)} SOL
                       </Text>

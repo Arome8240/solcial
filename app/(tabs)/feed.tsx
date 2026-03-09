@@ -183,7 +183,7 @@ export default function FeedScreen() {
               <View className="flex-row items-start justify-between">
               <View className="flex-1">
                 <View className="flex-row items-center gap-2">
-                  <Text className="text-sm text-purple-200">Total Balance</Text>
+                  <Text className="text-xs text-purple-200">Total Balance</Text>
                   <TouchableOpacity 
                     onPress={() => setShowBalance(!showBalance)}
                     className="rounded-full p-1"
@@ -195,7 +195,7 @@ export default function FeedScreen() {
                 {isLoadingBalance ? (
                   <ActivityIndicator size="large" color="#ffffff" className="mt-2" />
                 ) : (
-                  <Text className="mt-1 text-4xl font-bold text-white">
+                  <Text className="mt-1 text-3xl font-bold text-white">
                     {showBalance ? `${balance.toFixed(2)} SOL` : '••••••'}
                   </Text>
                 )}
@@ -275,10 +275,10 @@ export default function FeedScreen() {
             <View className="flex-row items-center justify-between">
               <View className="flex-1">
                 <View className="flex-row items-center gap-2">
-                  <Icon as={Sparkles} size={24} className="text-white" />
-                  <Text className="text-xl font-bold text-white">Explore Mini Apps</Text>
+                  <Icon as={Sparkles} size={20} className="text-white" />
+                  <Text className="text-lg font-bold text-white">Explore Mini Apps</Text>
                 </View>
-                <Text className="mt-2 text-sm text-white/90">
+                <Text className="mt-2 text-xs text-white/90">
                   Swap, mint, games & more
                 </Text>
                 <View className="mt-3 flex-row items-center gap-2">
