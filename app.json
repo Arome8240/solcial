@@ -18,7 +18,10 @@
       "supportsTablet": true,
       "icon": "./assets/images/not.png",
       "bundleIdentifier": "com.arome.dev.solcial",
-      "associatedDomains": ["applinks:solcial.app"]
+      "associatedDomains": ["applinks:solcial.app"],
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"]
+      }
     },
     "android": {
       "edgeToEdgeEnabled": true,
@@ -32,6 +35,7 @@
         "icon": "./assets/images/not.png",
         "color": "#ffffff"
       },
+      "softwareKeyboardLayoutMode": "pan",
       "intentFilters": [
         {
           "action": "VIEW",

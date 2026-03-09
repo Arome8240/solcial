@@ -17,6 +17,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, useState, useRef } from 'react';
 import { useThemeStore, useThemeSync } from '@/store/useThemeStore';
+import { useNavigationStore } from '@/store/useNavigationStore';
 import { usePathname } from 'expo-router';
 import { storage } from '@/lib/storage';
 import * as Notifications from 'expo-notifications';
@@ -51,8 +52,10 @@ export {
 function RootLayoutContent() {
   const { theme } = useThemeSync();
   const { loadTheme, isLoading } = useThemeStore();
+  const { lastRoute, setLastRoute } = useNavigationStore();
   const pathname = usePathname();
   const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
+  const [hasRestoredRoute, setHasRestoredRoute] = useState(false);
   const notificationListener = useRef<Notifications.Subscription | null>(null);
   const responseListener = useRef<Notifications.Subscription | null>(null);
   
@@ -67,6 +70,41 @@ function RootLayoutContent() {
   useEffect(() => {
     loadTheme();
   }, [loadTheme]);
+
+  // Save current route when it changes
+  useEffect(() => {
+    if (pathname && !isCheckingOnboarding && hasRestoredRoute) {
+      // Don't save onboarding or auth routes
+      if (!pathname.startsWith('/onboarding') && !pathname.startsWith('/auth')) {
+        setLastRoute(pathname);
+      }
+    }
+  }, [pathname, isCheckingOnboarding, hasRestoredRoute, setLastRoute]);
+
+  // Restore last route on app start
+  useEffect(() => {
+    async function restoreRoute() {
+      try {
+        const hasCompleted = await storage.hasCompletedOnboarding();
+        
+        // Only restore if onboarding is completed and we have a saved route
+        if (hasCompleted && lastRoute && lastRoute !== '/onboarding') {
+          // Don't restore auth routes
+          if (!lastRoute.startsWith('/auth')) {
+            router.replace(lastRoute as any);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to restore route:', error);
+      } finally {
+        setHasRestoredRoute(true);
+      }
+    }
+
+    if (isFontsLoaded && !isLoading && !hasRestoredRoute) {
+      restoreRoute();
+    }
+  }, [isFontsLoaded, isLoading, lastRoute, hasRestoredRoute]);
 
   // Handle notification interactions (deep linking)
   useEffect(() => {
@@ -190,12 +228,12 @@ function RootLayoutContent() {
       setIsCheckingOnboarding(false);
     }
     
-    if (isFontsLoaded && !isLoading) {
+    if (isFontsLoaded && !isLoading && hasRestoredRoute) {
       checkOnboarding();
     }
-  }, [isFontsLoaded, isLoading, pathname]);
+  }, [isFontsLoaded, isLoading, pathname, hasRestoredRoute]);
 
-  if (!isFontsLoaded || isLoading || isCheckingOnboarding) {
+  if (!isFontsLoaded || isLoading || isCheckingOnboarding || !hasRestoredRoute) {
     return null;
   }
 
