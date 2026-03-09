@@ -1,7 +1,7 @@
-import { View, ScrollView, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { View, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Modal } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { ArrowLeft, Coins, ArrowDownUp, Info } from 'lucide-react-native';
+import { ArrowLeft, Coins, ArrowDownUp, Info, ChevronDown } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useWallet } from '@/hooks/useWallet';
@@ -9,10 +9,10 @@ import { toast } from 'sonner-native';
 import { api } from '@/lib/api';
 
 const tokens = [
-  { symbol: 'SOL', name: 'Solana', rate: 1, icon: '◎' },
-  { symbol: 'USDC', name: 'USD Coin', rate: 100, icon: '$' },
-  { symbol: 'BONK', name: 'Bonk', rate: 1000000, icon: '🐕' },
-  { symbol: 'WIF', name: 'Dogwifhat', rate: 50, icon: '🐶' },
+  { symbol: 'SOL', name: 'Solana', rate: 1, icon: '◎', color: 'bg-purple-600' },
+  { symbol: 'USDC', name: 'USD Coin', rate: 100, icon: '$', color: 'bg-blue-600' },
+  { symbol: 'BONK', name: 'Bonk', rate: 1000000, icon: '🐕', color: 'bg-orange-600' },
+  { symbol: 'WIF', name: 'Dogwifhat', rate: 50, icon: '🐶', color: 'bg-pink-600' },
 ];
 
 export default function SwapScreen() {
@@ -21,12 +21,19 @@ export default function SwapScreen() {
   const [toToken, setToToken] = useState(tokens[1]);
   const [fromAmount, setFromAmount] = useState('');
   const [isSwapping, setIsSwapping] = useState(false);
+  const [showFromModal, setShowFromModal] = useState(false);
+  const [showToModal, setShowToModal] = useState(false);
 
   const toAmount = fromAmount ? (parseFloat(fromAmount) * fromToken.rate / toToken.rate).toFixed(6) : '0';
 
   const handleSwap = async () => {
     if (!fromAmount || parseFloat(fromAmount) <= 0) {
       toast.error('Enter a valid amount');
+      return;
+    }
+
+    if (fromToken.symbol === toToken.symbol) {
+      toast.error('Cannot swap same token');
       return;
     }
 
@@ -61,9 +68,29 @@ export default function SwapScreen() {
   };
 
   const switchTokens = () => {
+    const temp = fromToken;
     setFromToken(toToken);
-    setToToken(fromToken);
+    setToToken(temp);
     setFromAmount('');
+  };
+
+  const selectFromToken = (token: typeof tokens[0]) => {
+    if (token.symbol === toToken.symbol) {
+      // If selecting the same as toToken, swap them
+      setToToken(fromToken);
+    }
+    setFromToken(token);
+    setShowFromModal(false);
+    setFromAmount('');
+  };
+
+  const selectToToken = (token: typeof tokens[0]) => {
+    if (token.symbol === fromToken.symbol) {
+      // If selecting the same as fromToken, swap them
+      setFromToken(toToken);
+    }
+    setToToken(token);
+    setShowToModal(false);
   };
 
   return (
@@ -102,10 +129,14 @@ export default function SwapScreen() {
                 className="flex-1 text-3xl font-bold text-foreground"
                 placeholderTextColor="#9ca3af"
               />
-              <View className="ml-3 flex-row items-center gap-2 rounded-xl bg-purple-100 dark:bg-purple-900 px-4 py-2">
+              <TouchableOpacity
+                onPress={() => setShowFromModal(true)}
+                className={`ml-3 flex-row items-center gap-2 rounded-xl ${fromToken.color} px-4 py-2`}
+              >
                 <Text className="text-2xl">{fromToken.icon}</Text>
-                <Text className="font-semibold">{fromToken.symbol}</Text>
-              </View>
+                <Text className="font-semibold text-white">{fromToken.symbol}</Text>
+                <Icon as={ChevronDown} size={16} className="text-white" />
+              </TouchableOpacity>
             </View>
             {fromToken.symbol === 'SOL' && (
               <Text className="mt-2 text-sm text-muted-foreground">
@@ -129,10 +160,14 @@ export default function SwapScreen() {
             <Text className="text-sm text-muted-foreground">To</Text>
             <View className="mt-2 flex-row items-center justify-between">
               <Text className="flex-1 text-3xl font-bold">{toAmount}</Text>
-              <View className="ml-3 flex-row items-center gap-2 rounded-xl bg-blue-100 dark:bg-blue-900 px-4 py-2">
+              <TouchableOpacity
+                onPress={() => setShowToModal(true)}
+                className={`ml-3 flex-row items-center gap-2 rounded-xl ${toToken.color} px-4 py-2`}
+              >
                 <Text className="text-2xl">{toToken.icon}</Text>
-                <Text className="font-semibold">{toToken.symbol}</Text>
-              </View>
+                <Text className="font-semibold text-white">{toToken.symbol}</Text>
+                <Icon as={ChevronDown} size={16} className="text-white" />
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -141,7 +176,7 @@ export default function SwapScreen() {
             <View className="flex-row items-center gap-2">
               <Icon as={Info} size={16} className="text-purple-600" />
               <Text className="text-sm text-purple-700 dark:text-purple-300">
-                1 {fromToken.symbol} = {(fromToken.rate / toToken.rate).toFixed(6)} {toToken.symbol}
+                1 {fromToken.symbol} ≈ {(fromToken.rate / toToken.rate).toFixed(6)} {toToken.symbol}
               </Text>
             </View>
           </View>
@@ -171,13 +206,17 @@ export default function SwapScreen() {
             {tokens.map((token) => (
               <View key={token.symbol} className="flex-row items-center justify-between rounded-xl bg-card p-4">
                 <View className="flex-row items-center gap-3">
-                  <Text className="text-3xl">{token.icon}</Text>
+                  <View className={`h-10 w-10 items-center justify-center rounded-full ${token.color}`}>
+                    <Text className="text-2xl">{token.icon}</Text>
+                  </View>
                   <View>
                     <Text className="font-semibold">{token.symbol}</Text>
                     <Text className="text-sm text-muted-foreground">{token.name}</Text>
                   </View>
                 </View>
-                <Text className="text-sm text-muted-foreground">Rate: {token.rate}</Text>
+                <Text className="text-sm text-muted-foreground">
+                  1 SOL = {token.rate} {token.symbol}
+                </Text>
               </View>
             ))}
           </View>
@@ -185,6 +224,92 @@ export default function SwapScreen() {
 
         <View className="h-6" />
       </ScrollView>
+
+      {/* From Token Modal */}
+      <Modal
+        visible={showFromModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowFromModal(false)}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setShowFromModal(false)}
+          className="flex-1 justify-end bg-black/50"
+        >
+          <View className="rounded-t-3xl bg-background pb-8">
+            <View className="items-center py-4">
+              <View className="h-1 w-12 rounded-full bg-gray-300" />
+            </View>
+            <Text className="px-6 text-xl font-bold">Select Token</Text>
+            <View className="mt-4 gap-2 px-6">
+              {tokens.map((token) => (
+                <TouchableOpacity
+                  key={token.symbol}
+                  onPress={() => selectFromToken(token)}
+                  className={`flex-row items-center gap-3 rounded-xl p-4 ${
+                    token.symbol === fromToken.symbol ? 'bg-purple-100 dark:bg-purple-900' : 'bg-card'
+                  }`}
+                >
+                  <View className={`h-12 w-12 items-center justify-center rounded-full ${token.color}`}>
+                    <Text className="text-3xl">{token.icon}</Text>
+                  </View>
+                  <View className="flex-1">
+                    <Text className="font-semibold">{token.symbol}</Text>
+                    <Text className="text-sm text-muted-foreground">{token.name}</Text>
+                  </View>
+                  {token.symbol === fromToken.symbol && (
+                    <Icon as={Coins} size={20} className="text-purple-600" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* To Token Modal */}
+      <Modal
+        visible={showToModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowToModal(false)}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setShowToModal(false)}
+          className="flex-1 justify-end bg-black/50"
+        >
+          <View className="rounded-t-3xl bg-background pb-8">
+            <View className="items-center py-4">
+              <View className="h-1 w-12 rounded-full bg-gray-300" />
+            </View>
+            <Text className="px-6 text-xl font-bold">Select Token</Text>
+            <View className="mt-4 gap-2 px-6">
+              {tokens.map((token) => (
+                <TouchableOpacity
+                  key={token.symbol}
+                  onPress={() => selectToToken(token)}
+                  className={`flex-row items-center gap-3 rounded-xl p-4 ${
+                    token.symbol === toToken.symbol ? 'bg-purple-100 dark:bg-purple-900' : 'bg-card'
+                  }`}
+                >
+                  <View className={`h-12 w-12 items-center justify-center rounded-full ${token.color}`}>
+                    <Text className="text-3xl">{token.icon}</Text>
+                  </View>
+                  <View className="flex-1">
+                    <Text className="font-semibold">{token.symbol}</Text>
+                    <Text className="text-sm text-muted-foreground">{token.name}</Text>
+                  </View>
+                  {token.symbol === toToken.symbol && (
+                    <Icon as={Coins} size={20} className="text-purple-600" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
