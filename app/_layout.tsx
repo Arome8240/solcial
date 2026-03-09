@@ -15,11 +15,9 @@ import {
 import { Toaster } from 'sonner-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useThemeStore, useThemeSync } from '@/store/useThemeStore';
-import { useNavigationStore } from '@/store/useNavigationStore';
 import { usePathname } from 'expo-router';
-import { storage } from '@/lib/storage';
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
 
@@ -51,13 +49,10 @@ export {
 
 function RootLayoutContent() {
   const { theme } = useThemeSync();
-  const { loadTheme, isLoading } = useThemeStore();
-  const { lastRoute, setLastRoute } = useNavigationStore();
+  const { loadTheme } = useThemeStore();
   const pathname = usePathname();
-  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
-  const [hasRestoredRoute, setHasRestoredRoute] = useState(false);
-  const notificationListener = useRef<Notifications.Subscription | null>(null);
-  const responseListener = useRef<Notifications.Subscription | null>(null);
+  const notificationListener = useRef<Notifications.EventSubscription | null>(null);
+  const responseListener = useRef<Notifications.EventSubscription | null>(null);
   
   const [isFontsLoaded] = useFonts({
     Geist_400Regular,
@@ -70,41 +65,6 @@ function RootLayoutContent() {
   useEffect(() => {
     loadTheme();
   }, [loadTheme]);
-
-  // Save current route when it changes
-  useEffect(() => {
-    if (pathname && !isCheckingOnboarding && hasRestoredRoute) {
-      // Don't save onboarding or auth routes
-      if (!pathname.startsWith('/onboarding') && !pathname.startsWith('/auth')) {
-        setLastRoute(pathname);
-      }
-    }
-  }, [pathname, isCheckingOnboarding, hasRestoredRoute, setLastRoute]);
-
-  // Restore last route on app start
-  useEffect(() => {
-    async function restoreRoute() {
-      try {
-        const hasCompleted = await storage.hasCompletedOnboarding();
-        
-        // Only restore if onboarding is completed and we have a saved route
-        if (hasCompleted && lastRoute && lastRoute !== '/onboarding') {
-          // Don't restore auth routes
-          if (!lastRoute.startsWith('/auth')) {
-            router.replace(lastRoute as any);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to restore route:', error);
-      } finally {
-        setHasRestoredRoute(true);
-      }
-    }
-
-    if (isFontsLoaded && !isLoading && !hasRestoredRoute) {
-      restoreRoute();
-    }
-  }, [isFontsLoaded, isLoading, lastRoute, hasRestoredRoute]);
 
   // Handle notification interactions (deep linking)
   useEffect(() => {
@@ -157,6 +117,12 @@ function RootLayoutContent() {
   // Parse and handle deep link URLs
   const handleDeepLink = (url: string) => {
     const { hostname, path, queryParams } = Linking.parse(url);
+    
+    // Ignore expo development client URLs
+    if (hostname === 'expo-development-client') {
+      return;
+    }
+    
     console.log('Deep link:', { hostname, path, queryParams });
 
     if (!path) return;
@@ -205,37 +171,8 @@ function RootLayoutContent() {
     }
   };
 
-  // Initialize Pusher test in development mode
-  useEffect(() => {
-    if (__DEV__) {
-      // Dynamically import and run Pusher test
-      import('@/scripts/test-pusher').catch((error) => {
-        console.error('Failed to load Pusher test script:', error);
-      });
-    }
-  }, []);
 
-  // Check onboarding status and redirect if needed
-  useEffect(() => {
-    async function checkOnboarding() {
-      const hasCompleted = await storage.hasCompletedOnboarding();
-      
-      // If onboarding not completed and not on onboarding/auth screens, redirect
-      if (!hasCompleted && !pathname.startsWith('/onboarding') && !pathname.startsWith('/auth')) {
-        router.replace('/onboarding');
-      }
-      
-      setIsCheckingOnboarding(false);
-    }
-    
-    if (isFontsLoaded && !isLoading && hasRestoredRoute) {
-      checkOnboarding();
-    }
-  }, [isFontsLoaded, isLoading, pathname, hasRestoredRoute]);
 
-  if (!isFontsLoaded || isLoading || isCheckingOnboarding || !hasRestoredRoute) {
-    return null;
-  }
 
   // Determine StatusBar style based on route
   const getStatusBarStyle = () => {
