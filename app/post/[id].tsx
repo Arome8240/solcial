@@ -94,9 +94,12 @@ export default function PostDetailsScreen() {
   };
 
   const handleLikeComment = (commentId: string, isLiked: boolean) => {
+    console.log('[Comment Like] Toggling like for comment:', commentId, 'Current isLiked:', isLiked);
     if (isLiked) {
+      console.log('[Comment Like] Unliking comment');
       unlikeComment(commentId);
     } else {
+      console.log('[Comment Like] Liking comment');
       likeComment(commentId);
     }
   };
@@ -547,10 +550,10 @@ function CommentItem({
             <View className="mt-3 border-l-2 border-purple-200 pl-3">
               {isLoadingReplies ? (
                 <ActivityIndicator size="small" color="#9333ea" />
-              ) : replies.length === 0 ? (
+              ) : !Array.isArray(replies) || replies.length === 0 ? (
                 <Text className="text-sm text-muted-foreground">No replies yet</Text>
               ) : (
-                replies.map((reply: Comment) => (
+                (replies as Comment[]).map((reply: Comment) => (
                   <View key={reply.id} className="mb-3 flex-row gap-2">
                     <TouchableOpacity onPress={() => navigateToProfile(reply.author.username)}>
                       {reply.author.avatar ? (

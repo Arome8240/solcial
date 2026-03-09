@@ -53,6 +53,9 @@ export function useComments(postId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', postId] });
     },
+    onError: (error: Error) => {
+      toast.error(`Failed to like comment: ${error.message}`);
+    },
   });
 
   // Unlike comment
@@ -64,6 +67,9 @@ export function useComments(postId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', postId] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to unlike comment: ${error.message}`);
     },
   });
 
@@ -108,6 +114,9 @@ export function useReplies(commentId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['replies', commentId] });
     },
+    onError: (error: Error) => {
+      toast.error(`Failed to like reply: ${error.message}`);
+    },
   });
 
   // Unlike reply
@@ -119,6 +128,9 @@ export function useReplies(commentId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['replies', commentId] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to unlike reply: ${error.message}`);
     },
   });
 
