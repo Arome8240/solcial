@@ -15,6 +15,15 @@ export default function WalletScreen() {
   const userId = (user as User)?.id || '';
   const { holdings, totalValue, isLoading: isLoadingHoldings, refetch: refetchHoldings } = useTokenHoldings(userId);
 
+  // Approximate SOL price in USD (you can fetch this from an API later)
+  const SOL_PRICE_USD = 100;
+  
+  // Calculate total balance in USD
+  const totalBalanceUSD = (balance + totalValue) * SOL_PRICE_USD;
+  
+  // Get only first 5 transactions for recent activity
+  const recentTransactions = transactions.slice(0, 5);
+
   const handleRefresh = async () => {
     await Promise.all([refetchBalance(), refetchHoldings()]);
   };
@@ -35,14 +44,6 @@ export default function WalletScreen() {
         refreshControl={
           <RefreshControl refreshing={isLoadingBalance} onRefresh={handleRefresh} />
         }
-        onScroll={({ nativeEvent }) => {
-          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-          const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
-          if (isCloseToBottom && hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-          }
-        }}
-        scrollEventThrottle={400}
       >
         {/* Header */}
         <View className="bg-purple-600 px-4 pb-8 pt-12">
@@ -60,7 +61,8 @@ export default function WalletScreen() {
               <ActivityIndicator size="large" color="#ffffff" className="mt-2" />
             ) : (
               <>
-                <Text className="mt-2 text-5xl font-bold text-white">{balance.toFixed(4)} SOL</Text>
+                <Text className="mt-2 text-5xl font-bold text-white">${totalBalanceUSD.toFixed(2)}</Text>
+                <Text className="mt-1 text-lg text-purple-200">{(balance + totalValue).toFixed(4)} SOL</Text>
                 <Text className="mt-1 text-sm text-purple-200">{walletAddress?.slice(0, 8)}...{walletAddress?.slice(-8)}</Text>
               </>
             )}
@@ -165,19 +167,24 @@ export default function WalletScreen() {
         <View className="mt-6 px-4 pb-6">
           <View className="flex-row items-center justify-between">
             <Text className="text-xl font-bold">Recent Activity</Text>
+            {transactions.length > 5 && (
+              <TouchableOpacity onPress={() => router.push('/wallet/transactions')}>
+                <Text className="text-sm font-semibold text-purple-600">View All</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           <View className="mt-4">
-            {isLoadingTransactions && transactions.length === 0 ? (
+            {isLoadingTransactions && recentTransactions.length === 0 ? (
               <View className="items-center py-10">
                 <ActivityIndicator size="large" color="#9333ea" />
               </View>
-            ) : transactions.length === 0 ? (
+            ) : recentTransactions.length === 0 ? (
               <View className="items-center py-10">
                 <Text className="text-muted-foreground">No transactions yet</Text>
               </View>
             ) : (
-              transactions.map((tx: Transaction) => (
+              recentTransactions.map((tx: Transaction) => (
                 <TouchableOpacity
                   key={tx.signature}
                   onPress={() => router.push(`/transaction/${tx.signature}`)}
@@ -208,11 +215,6 @@ export default function WalletScreen() {
                   </View>
                 </TouchableOpacity>
               ))
-            )}
-            {isFetchingNextPage && (
-              <View className="py-4">
-                <ActivityIndicator size="small" color="#9333ea" />
-              </View>
             )}
           </View>
         </View>
