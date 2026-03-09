@@ -8,6 +8,7 @@ import { useWallet } from '@/hooks/useWallet';
 import { toast } from 'sonner-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useProfile } from '@/hooks/useProfile';
+import { api } from '@/lib/api';
 import type { User } from '@/types';
 
 export default function SendMoneyScreen() {
