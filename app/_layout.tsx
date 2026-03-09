@@ -189,7 +189,7 @@ function RootLayoutContent() {
           style={getStatusBarStyle()} 
           backgroundColor={pathname === '/feed' ? '#9333ea' : undefined}
         />
-        <Stack screenOptions={{ headerShown: false}} />
+        <Stack screenOptions={{ headerShown: false}} />o
         <PortalHost />
         <Toaster richColors />
       </ThemeProvider>

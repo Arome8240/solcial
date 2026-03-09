@@ -22,6 +22,22 @@ const liveApps = [
     route: '/mini-apps/dice',
   },
   {
+    id: 'coinflip',
+    name: 'Coin Flip',
+    description: 'Heads or tails? Double your bet!',
+    icon: Coins,
+    color: 'bg-yellow-500',
+    route: '/mini-apps/coinflip',
+  },
+  {
+    id: 'spin',
+    name: 'Lucky Spin',
+    description: 'Spin the wheel for big wins',
+    icon: Sparkles,
+    color: 'bg-pink-500',
+    route: '/mini-apps/spin',
+  },
+  {
     id: 'airdrop',
     name: 'Daily Airdrop',
     description: 'Claim your daily SOL rewards',

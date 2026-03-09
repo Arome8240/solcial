@@ -5,78 +5,59 @@ import { ArrowLeft, Gift, Clock, CheckCircle, Sparkles } from 'lucide-react-nati
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from '@/lib/api';
 
 const AIRDROP_AMOUNT = 0.1;
-const AIRDROP_KEY = 'last_airdrop_claim';
 
 export default function AirdropScreen() {
   const [isClaiming, setIsClaiming] = useState(false);
   const [canClaim, setCanClaim] = useState(false);
   const [timeUntilNext, setTimeUntilNext] = useState('');
   const [totalClaimed, setTotalClaimed] = useState(0);
-  const [claimCount, setClaimCount] = useState(0);
+  const [nextClaimAt, setNextClaimAt] = useState<Date | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    checkClaimStatus();
-    loadStats();
-    const interval = setInterval(checkClaimStatus, 1000);
+    loadAirdropStatus();
+    const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
   }, []);
 
-  const loadStats = async () => {
+  const loadAirdropStatus = async () => {
     try {
-      const stats = await AsyncStorage.getItem('airdrop_stats');
-      if (stats) {
-        const { total, count } = JSON.parse(stats);
-        setTotalClaimed(total);
-        setClaimCount(count);
+      const response = await api.getAirdropStatus();
+      if (response.data) {
+        const data = response.data as any;
+        setCanClaim(data.canClaim);
+        setTotalClaimed(data.totalClaimed || 0);
+        setNextClaimAt(data.nextClaimAt ? new Date(data.nextClaimAt) : null);
       }
     } catch (error) {
-      console.error('Failed to load stats:', error);
+      console.error('Failed to load airdrop status:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const saveStats = async (newTotal: number, newCount: number) => {
-    try {
-      await AsyncStorage.setItem('airdrop_stats', JSON.stringify({
-        total: newTotal,
-        count: newCount,
-      }));
-    } catch (error) {
-      console.error('Failed to save stats:', error);
+  const updateCountdown = () => {
+    if (!nextClaimAt || canClaim) {
+      setTimeUntilNext('');
+      return;
     }
-  };
 
-  const checkClaimStatus = async () => {
-    try {
-      const lastClaim = await AsyncStorage.getItem(AIRDROP_KEY);
-      if (!lastClaim) {
-        setCanClaim(true);
-        setTimeUntilNext('');
-        return;
-      }
+    const now = Date.now();
+    const remaining = nextClaimAt.getTime() - now;
 
-      const lastClaimTime = parseInt(lastClaim);
-      const now = Date.now();
-      const timeDiff = now - lastClaimTime;
-      const twentyFourHours = 24 * 60 * 60 * 1000;
-
-      if (timeDiff >= twentyFourHours) {
-        setCanClaim(true);
-        setTimeUntilNext('');
-      } else {
-        setCanClaim(false);
-        const remaining = twentyFourHours - timeDiff;
-        const hours = Math.floor(remaining / (60 * 60 * 1000));
-        const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
-        const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
-        setTimeUntilNext(`${hours}h ${minutes}m ${seconds}s`);
-      }
-    } catch (error) {
-      console.error('Failed to check claim status:', error);
+    if (remaining <= 0) {
       setCanClaim(true);
+      setTimeUntilNext('');
+      return;
     }
+
+    const hours = Math.floor(remaining / (60 * 60 * 1000));
+    const minutes = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+    const seconds = Math.floor((remaining % (60 * 1000)) / 1000);
+    setTimeUntilNext(`${hours}h ${minutes}m ${seconds}s`);
   };
 
   const handleClaim = async () => {
@@ -87,23 +68,27 @@ export default function AirdropScreen() {
 
     setIsClaiming(true);
 
-    setTimeout(async () => {
-      try {
-        await AsyncStorage.setItem(AIRDROP_KEY, Date.now().toString());
-        const newTotal = totalClaimed + AIRDROP_AMOUNT;
-        const newCount = claimCount + 1;
-        setTotalClaimed(newTotal);
-        setClaimCount(newCount);
-        await saveStats(newTotal, newCount);
-        
-        toast.success(`Claimed ${AIRDROP_AMOUNT} SOL! 🎉`);
-        setCanClaim(false);
-        checkClaimStatus();
-      } catch (error) {
-        toast.error('Failed to claim airdrop');
+    try {
+      const response = await api.claimAirdrop();
+      
+      if (response.error) {
+        toast.error(response.error);
+        setIsClaiming(false);
+        return;
       }
+
+      const { amount, nextClaimAt: newNextClaim } = response.data as any;
+      
+      toast.success(`Claimed ${amount} SOL! 🎉`);
+      setTotalClaimed(totalClaimed + amount);
+      setCanClaim(false);
+      setNextClaimAt(new Date(newNextClaim));
+      
+    } catch (error) {
+      toast.error('Failed to claim airdrop');
+    } finally {
       setIsClaiming(false);
-    }, 2000);
+    }
   };
 
   return (
@@ -142,9 +127,11 @@ export default function AirdropScreen() {
           <View className="flex-1 rounded-xl bg-blue-50 dark:bg-blue-950 p-4">
             <View className="flex-row items-center gap-2">
               <Icon as={CheckCircle} size={16} className="text-blue-600" />
-              <Text className="text-sm text-blue-700 dark:text-blue-300">Claims</Text>
+              <Text className="text-sm text-blue-700 dark:text-blue-300">Status</Text>
             </View>
-            <Text className="mt-1 text-2xl font-bold text-blue-700 dark:text-blue-300">{claimCount}</Text>
+            <Text className="mt-1 text-lg font-bold text-blue-700 dark:text-blue-300">
+              {canClaim ? 'Ready' : 'Claimed'}
+            </Text>
           </View>
         </View>
 

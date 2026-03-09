@@ -384,6 +384,45 @@ class ApiClient {
   async checkDetailedHealth() {
     return this.request('/health/detailed');
   }
+
+  // ==================== Mini Apps ====================
+  async playDice(betAmount: number, prediction: 'over' | 'under', targetNumber: number) {
+    return this.request('/mini-apps/dice/play', {
+      method: 'POST',
+      body: JSON.stringify({ betAmount, prediction, targetNumber }),
+    });
+  }
+
+  async playCoinFlip(betAmount: number, choice: 'heads' | 'tails') {
+    return this.request('/mini-apps/coinflip/play', {
+      method: 'POST',
+      body: JSON.stringify({ betAmount, choice }),
+    });
+  }
+
+  async playSpin(betAmount: number) {
+    return this.request('/mini-apps/spin/play', {
+      method: 'POST',
+      body: JSON.stringify({ betAmount }),
+    });
+  }
+
+  async swapTokens(fromToken: string, toToken: string, fromAmount: number) {
+    return this.request('/mini-apps/swap', {
+      method: 'POST',
+      body: JSON.stringify({ fromToken, toToken, fromAmount }),
+    });
+  }
+
+  async claimAirdrop() {
+    return this.request('/mini-apps/airdrop/claim', {
+      method: 'POST',
+    });
+  }
+
+  async getAirdropStatus() {
+    return this.request('/mini-apps/airdrop/status');
+  }
 }
 
 export const api = new ApiClient();

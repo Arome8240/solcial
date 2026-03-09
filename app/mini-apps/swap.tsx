@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { useWallet } from '@/hooks/useWallet';
 import { toast } from 'sonner-native';
+import { api } from '@/lib/api';
 
 const tokens = [
   { symbol: 'SOL', name: 'Solana', rate: 1, icon: '◎' },
@@ -23,7 +24,7 @@ export default function SwapScreen() {
 
   const toAmount = fromAmount ? (parseFloat(fromAmount) * fromToken.rate / toToken.rate).toFixed(6) : '0';
 
-  const handleSwap = () => {
+  const handleSwap = async () => {
     if (!fromAmount || parseFloat(fromAmount) <= 0) {
       toast.error('Enter a valid amount');
       return;
@@ -35,11 +36,28 @@ export default function SwapScreen() {
     }
 
     setIsSwapping(true);
-    setTimeout(() => {
-      setIsSwapping(false);
-      toast.success(`Swapped ${fromAmount} ${fromToken.symbol} for ${toAmount} ${toToken.symbol}`);
+    
+    try {
+      const response = await api.swapTokens(
+        fromToken.symbol,
+        toToken.symbol,
+        parseFloat(fromAmount)
+      );
+
+      if (response.error) {
+        toast.error(response.error);
+        setIsSwapping(false);
+        return;
+      }
+
+      const { toAmount: receivedAmount } = response.data as any;
+      toast.success(`Swapped ${fromAmount} ${fromToken.symbol} for ${receivedAmount.toFixed(6)} ${toToken.symbol}`);
       setFromAmount('');
-    }, 2000);
+      setIsSwapping(false);
+    } catch (error) {
+      toast.error('Swap failed. Please try again.');
+      setIsSwapping(false);
+    }
   };
 
   const switchTokens = () => {

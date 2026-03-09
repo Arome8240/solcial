@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { useState, useRef } from 'react';
 import { useWallet } from '@/hooks/useWallet';
 import { toast } from 'sonner-native';
+import { api } from '@/lib/api';
 
 export default function DiceGameScreen() {
   const { balance } = useWallet();
@@ -29,7 +30,7 @@ export default function DiceGameScreen() {
     }
   };
 
-  const handleRoll = () => {
+  const handleRoll = async () => {
     if (!betAmount || parseFloat(betAmount) <= 0) {
       toast.error('Enter a valid bet amount');
       return;
@@ -57,24 +58,39 @@ export default function DiceGameScreen() {
       rotateAnim.setValue(0);
     });
 
-    setTimeout(() => {
-      const roll = Math.floor(Math.random() * 100) + 1;
-      setLastRoll(roll);
+    try {
+      const response = await api.playDice(
+        parseFloat(betAmount),
+        prediction,
+        target
+      );
 
-      const won = prediction === 'over' ? roll > target : roll < target;
-      setLastResult(won ? 'win' : 'lose');
-
-      if (won) {
-        const winAmount = parseFloat(betAmount) * parseFloat(calculateMultiplier());
-        toast.success(`You won ${winAmount.toFixed(4)} SOL!`);
-        setTotalWins(totalWins + 1);
-      } else {
-        toast.error(`You lost ${betAmount} SOL`);
-        setTotalLosses(totalLosses + 1);
+      if (response.error) {
+        toast.error(response.error);
+        setIsRolling(false);
+        return;
       }
 
+      const { roll, won, winAmount } = response.data as any;
+      
+      setTimeout(() => {
+        setLastRoll(roll);
+        setLastResult(won ? 'win' : 'lose');
+
+        if (won) {
+          toast.success(`You won ${winAmount.toFixed(4)} SOL!`);
+          setTotalWins(totalWins + 1);
+        } else {
+          toast.error(`You lost ${betAmount} SOL`);
+          setTotalLosses(totalLosses + 1);
+        }
+
+        setIsRolling(false);
+      }, 1000);
+    } catch (error) {
+      toast.error('Failed to play. Please try again.');
       setIsRolling(false);
-    }, 1000);
+    }
   };
 
   const spin = rotateAnim.interpolate({
