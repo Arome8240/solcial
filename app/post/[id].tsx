@@ -490,13 +490,16 @@ function CommentItem({
           {/* Action Buttons */}
           <View className="mt-2 flex-row items-center gap-4">
             <TouchableOpacity
-              onPress={() => onLike(comment.id, comment.isLiked)}
+              onPress={() => {
+                console.log('Comment:', comment.id, 'isLiked:', comment.isLiked);
+                onLike(comment.id, comment.isLiked || false);
+              }}
               className="flex-row items-center gap-1"
             >
               <Icon
                 as={Heart}
                 size={16}
-                className={comment.isLiked ? 'text-red-600' : 'text-muted-foreground'}
+                color={comment.isLiked ? '#dc2626' : '#9ca3af'}
                 fill={comment.isLiked ? '#dc2626' : 'none'}
               />
               {comment.likesCount > 0 && (
@@ -590,7 +593,7 @@ function CommentItem({
                           <Icon
                             as={Heart}
                             size={14}
-                            className={reply.isLiked ? 'text-red-600' : 'text-muted-foreground'}
+                            color={reply.isLiked ? '#dc2626' : '#9ca3af'}
                             fill={reply.isLiked ? '#dc2626' : 'none'}
                           />
                           {reply.likesCount > 0 && (
