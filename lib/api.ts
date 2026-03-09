@@ -127,7 +127,10 @@ class ApiClient {
   }
 
   async getUserPosts(username: string, page: number = 1, limit: number = 20) {
-    return this.request(`/posts/user/${username}?page=${page}&limit=${limit}`);
+    console.log('[API] getUserPosts called with:', { username, page, limit });
+    const result = await this.request(`/posts/user/${username}?page=${page}&limit=${limit}`);
+    console.log('[API] getUserPosts result:', result);
+    return result;
   }
 
   async getUserComments(username: string, page: number = 1, limit: number = 20) {

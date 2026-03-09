@@ -168,17 +168,26 @@ export function usePost(postId: string) {
 }
 
 export function useUserPosts(username: string, enabled: boolean = true) {
+  console.log('[useUserPosts] Hook called with username:', username, 'enabled:', enabled, 'condition:', !!username && enabled);
+  
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isLoading,
+    refetch,
   } = useInfiniteQuery<Post[]>({
     queryKey: ['posts', 'user', username],
     queryFn: async ({ pageParam = 1 }) => {
+      console.log('[useUserPosts] Fetching posts for username:', username, 'page:', pageParam);
       const response = await api.getUserPosts(username, pageParam as number, 20);
-      if (response.error) throw new Error(response.error);
+      console.log('[useUserPosts] Response:', response);
+      if (response.error) {
+        console.error('[useUserPosts] Error:', response.error);
+        throw new Error(response.error);
+      }
+      console.log('[useUserPosts] Posts data:', response.data);
       return response.data as Post[];
     },
     getNextPageParam: (lastPage, pages) => {
@@ -186,9 +195,11 @@ export function useUserPosts(username: string, enabled: boolean = true) {
     },
     initialPageParam: 1 as number,
     enabled: !!username && enabled,
+    staleTime: 0, // Always refetch
   });
 
   const posts = data?.pages.flat() || [];
+  console.log('[useUserPosts] isLoading:', isLoading, 'data:', data, 'Final posts array:', posts.length, 'posts');
 
   return {
     posts,
@@ -196,6 +207,7 @@ export function useUserPosts(username: string, enabled: boolean = true) {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch,
   };
 }
 

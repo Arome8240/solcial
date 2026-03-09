@@ -1,4 +1,5 @@
 import { View, ScrollView, TouchableOpacity, Modal, ActivityIndicator, Image, RefreshControl } from 'react-native';
+import React from 'react';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { Settings, MoreVertical, Copy, Share, Edit, CloudOff, TrendingUp, TrendingDown, Coins, ArrowLeft, UserPlus, UserMinus, MessageCircle } from 'lucide-react-native';
@@ -21,11 +22,25 @@ export default function ProfileScreen() {
   const { username: queryUsername } = useLocalSearchParams<{ username?: string }>();
   const { user: currentUser, isLoadingUser } = useAuth();
   const typedCurrentUser = currentUser as User | undefined;
+  const queryClient = useQueryClient();
   
   // If username is provided, fetch that user's profile, otherwise show current user
   // Also check if the queried username matches current user's username
   const isOwnProfile = !queryUsername || queryUsername === typedCurrentUser?.username;
   const targetUsername = isOwnProfile ? (typedCurrentUser?.username || '') : (queryUsername || '');
+  
+  console.log('[ProfileScreen] queryUsername:', queryUsername);
+  console.log('[ProfileScreen] currentUser:', typedCurrentUser?.username);
+  console.log('[ProfileScreen] isOwnProfile:', isOwnProfile);
+  console.log('[ProfileScreen] targetUsername:', targetUsername);
+  
+  // Clear cache for user posts when component mounts
+  React.useEffect(() => {
+    if (targetUsername) {
+      console.log('[ProfileScreen] Invalidating cache for:', targetUsername);
+      queryClient.invalidateQueries({ queryKey: ['posts', 'user', targetUsername] });
+    }
+  }, [targetUsername, queryClient]);
   
   // Only fetch other user's profile if it's not own profile
   const { data: profileUser, isLoading: isLoadingProfile } = useUserProfile(
