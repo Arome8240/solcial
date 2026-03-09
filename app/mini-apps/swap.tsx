@@ -28,19 +28,25 @@ export default function SwapScreen() {
   const [toAmount, setToAmount] = useState('0');
   const [rate, setRate] = useState(0);
   const [priceImpact, setPriceImpact] = useState('0');
+  const [isCalculating, setIsCalculating] = useState(false);
 
   useEffect(() => {
     loadTokenPrices();
   }, []);
 
   useEffect(() => {
-    if (fromAmount && parseFloat(fromAmount) > 0) {
-      calculateSwapQuote();
-    } else {
-      setToAmount('0');
-      setRate(0);
-      setPriceImpact('0');
-    }
+    // Debounce the calculation
+    const timer = setTimeout(() => {
+      if (fromAmount && parseFloat(fromAmount) > 0) {
+        calculateSwapQuote();
+      } else {
+        setToAmount('0');
+        setRate(0);
+        setPriceImpact('0');
+      }
+    }, 500); // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timer);
   }, [fromAmount, fromToken, toToken]);
 
   const loadTokenPrices = async () => {
@@ -60,6 +66,7 @@ export default function SwapScreen() {
   const calculateSwapQuote = async () => {
     if (!fromAmount || parseFloat(fromAmount) <= 0) return;
 
+    setIsCalculating(true);
     try {
       const response = await api.swapTokens(
         fromToken.symbol,
@@ -75,6 +82,11 @@ export default function SwapScreen() {
       }
     } catch (error) {
       console.error('Failed to get quote:', error);
+      setToAmount('0');
+      setRate(0);
+      setPriceImpact('0');
+    } finally {
+      setIsCalculating(false);
     }
   };
 
@@ -209,9 +221,15 @@ export default function SwapScreen() {
 
           {/* To Token */}
           <View className="rounded-2xl bg-card p-4">
-            <Text className="text-sm text-muted-foreground">To</Text>
+            <Text className="text-sm text-muted-foreground">To (estimated)</Text>
             <View className="mt-2 flex-row items-center justify-between">
-              <Text className="flex-1 text-3xl font-bold">{toAmount}</Text>
+              <View className="flex-1 flex-row items-center gap-2">
+                {isCalculating ? (
+                  <ActivityIndicator size="small" color="#9333ea" />
+                ) : (
+                  <Text className="text-3xl font-bold">{toAmount}</Text>
+                )}
+              </View>
               <TouchableOpacity
                 onPress={() => setShowToModal(true)}
                 className={`ml-3 flex-row items-center gap-2 rounded-xl ${toToken.color} px-4 py-2`}

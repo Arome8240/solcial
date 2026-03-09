@@ -281,12 +281,6 @@ export default function FeedScreen() {
                 <Text className="mt-2 text-xs text-white/90">
                   Swap, mint, games & more
                 </Text>
-                <View className="mt-3 flex-row items-center gap-2">
-                  <View className="rounded-full bg-white/20 px-3 py-1">
-                    <Text className="text-xs font-medium text-white">Coming Soon</Text>
-                  </View>
-                  <Icon as={ArrowRight} size={14} className="text-white/80" />
-                </View>
               </View>
 
               <Image source={require('@/assets/images/mini.png')} className='w-[96px] h-[101px]'/>
