@@ -46,7 +46,7 @@ export default function SendMoneyScreen() {
   };
 
   const selectContact = (user: User) => {
-    setRecipient(user.walletAddress);
+    setRecipient(user.username); // Store username instead of wallet address
     setMemo(`Payment to @${user.username}`);
     setShowContactsModal(false);
     toast.success(`Selected ${user.name || user.username}`);
@@ -86,12 +86,9 @@ export default function SendMoneyScreen() {
       isValid = false;
     }
 
-    // Validate recipient
+    // Validate recipient (can be username or wallet address)
     if (!recipient.trim()) {
-      newErrors.recipient = 'Please enter a recipient address';
-      isValid = false;
-    } else if (recipient.length < 32) {
-      newErrors.recipient = 'Invalid Solana address';
+      newErrors.recipient = 'Please enter a recipient';
       isValid = false;
     }
 
@@ -105,19 +102,45 @@ export default function SendMoneyScreen() {
     }
   };
 
-  const confirmSend = () => {
+  const confirmSend = async () => {
     const amountNum = parseFloat(amount);
-    sendSol({ 
-      toAddress: recipient, 
-      amount: amountNum, 
-      memo: memo || undefined 
-    });
-    setShowConfirmModal(false);
-    // Reset form
-    setAmount('');
-    setRecipient('');
-    setMemo('');
-    setErrors({ amount: '', recipient: '' });
+    
+    // Check if recipient is a username (starts with @ or is short) or wallet address
+    const isUsername = recipient.startsWith('@') || recipient.length < 32;
+    
+    if (isUsername) {
+      // Send to user by username
+      const username = recipient.startsWith('@') ? recipient.slice(1) : recipient;
+      try {
+        const response = await api.sendSolToUser(username, amountNum, memo || undefined);
+        if (response.error) {
+          toast.error(response.error);
+          return;
+        }
+        toast.success(`Sent ${amountNum} SOL to @${username}`);
+        setShowConfirmModal(false);
+        // Reset form
+        setAmount('');
+        setRecipient('');
+        setMemo('');
+        setErrors({ amount: '', recipient: '' });
+      } catch (error: any) {
+        toast.error(error.message || 'Failed to send');
+      }
+    } else {
+      // Send to wallet address
+      sendSol({ 
+        toAddress: recipient, 
+        amount: amountNum, 
+        memo: memo || undefined 
+      });
+      setShowConfirmModal(false);
+      // Reset form
+      setAmount('');
+      setRecipient('');
+      setMemo('');
+      setErrors({ amount: '', recipient: '' });
+    }
   };
 
   return (
@@ -139,7 +162,7 @@ export default function SendMoneyScreen() {
 
         {/* Recipient Address */}
         <View className="mt-6 px-4">
-          <Text className="mb-2 text-sm font-medium text-foreground">Recipient Address</Text>
+          <Text className="mb-2 text-sm font-medium text-foreground">Recipient</Text>
           <View className={`rounded-2xl bg-card p-4 ${errors.recipient ? 'border-2 border-red-500' : ''}`}>
             <TextInput
               value={recipient}
@@ -147,7 +170,7 @@ export default function SendMoneyScreen() {
                 setRecipient(text);
                 setErrors({ ...errors, recipient: '' });
               }}
-              placeholder="Enter Solana wallet address"
+              placeholder="Enter username or wallet address"
               placeholderTextColor="#9ca3af"
               className="text-base text-foreground"
               autoCapitalize="none"

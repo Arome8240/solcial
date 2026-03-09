@@ -19,8 +19,9 @@ export function usePosts() {
     queryFn: async ({ pageParam = 1 }) => {
       const response = await api.getFeed(pageParam as number, 20);
       if (response.error) throw new Error(response.error);
-      console.log(response.data)
-      return (response.data || []) as Post[];
+      const data = response.data as Post[];
+      console.log(data[0]);
+      return data || [];
     },
     getNextPageParam: (lastPage, pages) => {
       return Array.isArray(lastPage) && lastPage.length === 20 ? pages.length + 1 : undefined;
