@@ -1,18 +1,18 @@
 import { View, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Modal } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { ArrowLeft, Coins, ArrowDownUp, Info, ChevronDown } from 'lucide-react-native';
+import { ArrowLeft, Coins, ArrowDownUp, Info, ChevronDown, RefreshCw } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWallet } from '@/hooks/useWallet';
 import { toast } from 'sonner-native';
 import { api } from '@/lib/api';
 
 const tokens = [
-  { symbol: 'SOL', name: 'Solana', rate: 1, icon: '◎', color: 'bg-purple-600' },
-  { symbol: 'USDC', name: 'USD Coin', rate: 100, icon: '$', color: 'bg-blue-600' },
-  { symbol: 'BONK', name: 'Bonk', rate: 1000000, icon: '🐕', color: 'bg-orange-600' },
-  { symbol: 'WIF', name: 'Dogwifhat', rate: 50, icon: '🐶', color: 'bg-pink-600' },
+  { symbol: 'SOL', name: 'Solana', icon: '◎', color: 'bg-purple-600' },
+  { symbol: 'USDC', name: 'USD Coin', icon: '$', color: 'bg-blue-600' },
+  { symbol: 'BONK', name: 'Bonk', icon: '🐕', color: 'bg-orange-600' },
+  { symbol: 'WIF', name: 'Dogwifhat', icon: '🐶', color: 'bg-pink-600' },
 ];
 
 export default function SwapScreen() {
@@ -23,8 +23,60 @@ export default function SwapScreen() {
   const [isSwapping, setIsSwapping] = useState(false);
   const [showFromModal, setShowFromModal] = useState(false);
   const [showToModal, setShowToModal] = useState(false);
+  const [tokenPrices, setTokenPrices] = useState<Record<string, number>>({});
+  const [isLoadingPrices, setIsLoadingPrices] = useState(true);
+  const [toAmount, setToAmount] = useState('0');
+  const [rate, setRate] = useState(0);
+  const [priceImpact, setPriceImpact] = useState('0');
 
-  const toAmount = fromAmount ? (parseFloat(fromAmount) * fromToken.rate / toToken.rate).toFixed(6) : '0';
+  useEffect(() => {
+    loadTokenPrices();
+  }, []);
+
+  useEffect(() => {
+    if (fromAmount && parseFloat(fromAmount) > 0) {
+      calculateSwapQuote();
+    } else {
+      setToAmount('0');
+      setRate(0);
+      setPriceImpact('0');
+    }
+  }, [fromAmount, fromToken, toToken]);
+
+  const loadTokenPrices = async () => {
+    try {
+      const response = await api.getTokenPrices();
+      if (response.data) {
+        setTokenPrices(response.data as any);
+      }
+    } catch (error) {
+      console.error('Failed to load token prices:', error);
+      toast.error('Failed to load token prices');
+    } finally {
+      setIsLoadingPrices(false);
+    }
+  };
+
+  const calculateSwapQuote = async () => {
+    if (!fromAmount || parseFloat(fromAmount) <= 0) return;
+
+    try {
+      const response = await api.swapTokens(
+        fromToken.symbol,
+        toToken.symbol,
+        parseFloat(fromAmount)
+      );
+
+      if (response.data) {
+        const data = response.data as any;
+        setToAmount(data.toAmount.toFixed(6));
+        setRate(data.rate);
+        setPriceImpact(data.priceImpact || '0');
+      }
+    } catch (error) {
+      console.error('Failed to get quote:', error);
+    }
+  };
 
   const handleSwap = async () => {
     if (!fromAmount || parseFloat(fromAmount) <= 0) {
@@ -173,12 +225,22 @@ export default function SwapScreen() {
 
           {/* Exchange Rate */}
           <View className="mt-4 rounded-xl bg-purple-50 dark:bg-purple-950 p-4">
-            <View className="flex-row items-center gap-2">
-              <Icon as={Info} size={16} className="text-purple-600" />
-              <Text className="text-sm text-purple-700 dark:text-purple-300">
-                1 {fromToken.symbol} ≈ {(fromToken.rate / toToken.rate).toFixed(6)} {toToken.symbol}
-              </Text>
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center gap-2">
+                <Icon as={Info} size={16} className="text-purple-600" />
+                <Text className="text-sm text-purple-700 dark:text-purple-300">
+                  Rate: 1 {fromToken.symbol} ≈ {rate.toFixed(6)} {toToken.symbol}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={loadTokenPrices}>
+                <Icon as={RefreshCw} size={16} className="text-purple-600" />
+              </TouchableOpacity>
             </View>
+            {parseFloat(priceImpact) > 0 && (
+              <Text className="mt-2 text-xs text-purple-600 dark:text-purple-400">
+                Price Impact: {parseFloat(priceImpact).toFixed(2)}%
+              </Text>
+            )}
           </View>
 
           {/* Swap Button */}
@@ -201,7 +263,10 @@ export default function SwapScreen() {
 
         {/* Token List */}
         <View className="mx-4 mt-6">
-          <Text className="text-lg font-bold">Available Tokens</Text>
+          <View className="flex-row items-center justify-between">
+            <Text className="text-lg font-bold">Available Tokens</Text>
+            {isLoadingPrices && <ActivityIndicator size="small" color="#9333ea" />}
+          </View>
           <View className="mt-3 gap-2">
             {tokens.map((token) => (
               <View key={token.symbol} className="flex-row items-center justify-between rounded-xl bg-card p-4">
@@ -214,9 +279,16 @@ export default function SwapScreen() {
                     <Text className="text-sm text-muted-foreground">{token.name}</Text>
                   </View>
                 </View>
-                <Text className="text-sm text-muted-foreground">
-                  1 SOL = {token.rate} {token.symbol}
-                </Text>
+                <View className="items-end">
+                  {tokenPrices[token.symbol] ? (
+                    <>
+                      <Text className="font-semibold">${tokenPrices[token.symbol].toFixed(4)}</Text>
+                      <Text className="text-xs text-muted-foreground">per token</Text>
+                    </>
+                  ) : (
+                    <Text className="text-sm text-muted-foreground">Loading...</Text>
+                  )}
+                </View>
               </View>
             ))}
           </View>

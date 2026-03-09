@@ -423,6 +423,10 @@ class ApiClient {
   async getAirdropStatus() {
     return this.request('/mini-apps/airdrop/status');
   }
+
+  async getTokenPrices() {
+    return this.request('/mini-apps/token-prices');
+  }
 }
 
 export const api = new ApiClient();
