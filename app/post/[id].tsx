@@ -5,7 +5,7 @@ import { ArrowLeft, Heart, MessageCircle, Share, User, Coins, DollarSign, Send }
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { usePost, usePosts } from '@/hooks/usePosts';
-import { useComments } from '@/hooks/useComments';
+import { useComments, useReplies } from '@/hooks/useComments';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import type { Comment, Post } from '@/types';
@@ -16,13 +16,16 @@ export default function PostDetailsScreen() {
   const { data: postData, isLoading } = usePost(id || '');
   const post = postData as Post | undefined;
   const { user } = useAuth();
-  const { comments, isLoading: isLoadingComments, createComment, isCreatingComment } = useComments(id || '');
+  const { comments, isLoading: isLoadingComments, createComment, isCreatingComment, likeComment, unlikeComment } = useComments(id || '');
   const { buyToken, isBuyingToken, likePost, unlikePost, tipPost, isTippingPost } = usePosts();
   const [commentText, setCommentText] = useState('');
   const [showTipModal, setShowTipModal] = useState(false);
   const [showBuyTokenModal, setShowBuyTokenModal] = useState(false);
   const [tipAmount, setTipAmount] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
 
   const handleBuyToken = () => {
     if (!buyAmount || !post) return;
@@ -69,6 +72,33 @@ export default function PostDetailsScreen() {
     if (!commentText.trim()) return;
     createComment({ content: commentText });
     setCommentText('');
+  };
+
+  const handleReply = (commentId: string) => {
+    if (!replyText.trim()) return;
+    createComment({ content: replyText, parentCommentId: commentId });
+    setReplyText('');
+    setReplyingTo(null);
+  };
+
+  const toggleReplies = (commentId: string) => {
+    setExpandedComments(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(commentId)) {
+        newSet.delete(commentId);
+      } else {
+        newSet.add(commentId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleLikeComment = (commentId: string, isLiked: boolean) => {
+    if (isLiked) {
+      unlikeComment(commentId);
+    } else {
+      likeComment(commentId);
+    }
   };
 
   const navigateToProfile = (username: string) => {
@@ -276,37 +306,24 @@ export default function PostDetailsScreen() {
             </View>
           ) : (
             (comments as Comment[]).map((comment: Comment) => (
-              <View key={comment.id} className="border-b border-border p-4">
-                <View className="flex-row gap-3">
-                  <TouchableOpacity onPress={() => navigateToProfile(comment.author.username)}>
-                    {comment.author.avatar ? (
-                      <Image source={{ uri: comment.author.avatar }} className="h-8 w-8 rounded-full" />
-                    ) : (
-                      <View className="h-8 w-8 items-center justify-center rounded-full bg-purple-200">
-                        <Icon as={User} size={16} className="text-purple-600" />
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                  <View className="flex-1">
-                    <View className="flex-row items-center gap-2">
-                      <TouchableOpacity onPress={() => navigateToProfile(comment.author.username)}>
-                        <Text className="font-semibold">{comment.author.name || comment.author.username}</Text>
-                      </TouchableOpacity>
-                      <Text className="text-sm text-muted-foreground">
-                        {formatTime(comment.createdAt)}
-                      </Text>
-                    </View>
-                    <Text className="mt-1">{comment.content}</Text>
-                    {comment.repliesCount > 0 && (
-                      <TouchableOpacity className="mt-2">
-                        <Text className="text-sm text-purple-600">
-                          View {comment.repliesCount} {comment.repliesCount === 1 ? 'reply' : 'replies'}
-                        </Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-              </View>
+              <CommentItem
+                key={comment.id}
+                comment={comment}
+                onLike={handleLikeComment}
+                onReply={() => setReplyingTo(comment.id)}
+                onToggleReplies={() => toggleReplies(comment.id)}
+                isExpanded={expandedComments.has(comment.id)}
+                replyingTo={replyingTo}
+                replyText={replyText}
+                setReplyText={setReplyText}
+                onSendReply={handleReply}
+                onCancelReply={() => {
+                  setReplyingTo(null);
+                  setReplyText('');
+                }}
+                navigateToProfile={navigateToProfile}
+                formatTime={formatTime}
+              />
             ))
           )}
         </View>
@@ -408,6 +425,186 @@ export default function PostDetailsScreen() {
           </View>
         </View>
       </Modal>
+    </View>
+  );
+}
+
+// Comment Item Component
+function CommentItem({
+  comment,
+  onLike,
+  onReply,
+  onToggleReplies,
+  isExpanded,
+  replyingTo,
+  replyText,
+  setReplyText,
+  onSendReply,
+  onCancelReply,
+  navigateToProfile,
+  formatTime,
+}: {
+  comment: Comment;
+  onLike: (commentId: string, isLiked: boolean) => void;
+  onReply: () => void;
+  onToggleReplies: () => void;
+  isExpanded: boolean;
+  replyingTo: string | null;
+  replyText: string;
+  setReplyText: (text: string) => void;
+  onSendReply: (commentId: string) => void;
+  onCancelReply: () => void;
+  navigateToProfile: (username: string) => void;
+  formatTime: (date: string) => string;
+}) {
+  const { replies, isLoading: isLoadingReplies, likeReply, unlikeReply } = useReplies(
+    isExpanded ? comment.id : ''
+  );
+
+  return (
+    <View className="border-b border-border p-4">
+      <View className="flex-row gap-3">
+        <TouchableOpacity onPress={() => navigateToProfile(comment.author.username)}>
+          {comment.author.avatar ? (
+            <Image source={{ uri: comment.author.avatar }} className="h-8 w-8 rounded-full" />
+          ) : (
+            <View className="h-8 w-8 items-center justify-center rounded-full bg-purple-200">
+              <Icon as={User} size={16} className="text-purple-600" />
+            </View>
+          )}
+        </TouchableOpacity>
+        <View className="flex-1">
+          <View className="flex-row items-center gap-2">
+            <TouchableOpacity onPress={() => navigateToProfile(comment.author.username)}>
+              <Text className="font-semibold">{comment.author.name || comment.author.username}</Text>
+            </TouchableOpacity>
+            <Text className="text-sm text-muted-foreground">
+              {formatTime(comment.createdAt)}
+            </Text>
+          </View>
+          <Text className="mt-1">{comment.content}</Text>
+
+          {/* Action Buttons */}
+          <View className="mt-2 flex-row items-center gap-4">
+            <TouchableOpacity
+              onPress={() => onLike(comment.id, comment.isLiked)}
+              className="flex-row items-center gap-1"
+            >
+              <Icon
+                as={Heart}
+                size={16}
+                className={comment.isLiked ? 'text-red-600' : 'text-muted-foreground'}
+                fill={comment.isLiked ? '#dc2626' : 'none'}
+              />
+              {comment.likesCount > 0 && (
+                <Text className={`text-sm ${comment.isLiked ? 'text-red-600' : 'text-muted-foreground'}`}>
+                  {comment.likesCount}
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={onReply} className="flex-row items-center gap-1">
+              <Icon as={MessageCircle} size={16} className="text-muted-foreground" />
+              <Text className="text-sm text-muted-foreground">Reply</Text>
+            </TouchableOpacity>
+
+            {comment.repliesCount > 0 && (
+              <TouchableOpacity onPress={onToggleReplies}>
+                <Text className="text-sm text-purple-600">
+                  {isExpanded ? 'Hide' : 'View'} {comment.repliesCount}{' '}
+                  {comment.repliesCount === 1 ? 'reply' : 'replies'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Reply Input */}
+          {replyingTo === comment.id && (
+            <View className="mt-3 flex-row items-center gap-2 rounded-lg border border-border bg-muted p-2">
+              <TextInput
+                value={replyText}
+                onChangeText={setReplyText}
+                placeholder="Write a reply..."
+                placeholderTextColor="#9ca3af"
+                className="flex-1 text-sm text-foreground"
+                autoFocus
+              />
+              <TouchableOpacity onPress={onCancelReply}>
+                <Text className="text-sm text-muted-foreground">Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => onSendReply(comment.id)}
+                disabled={!replyText.trim()}
+                className={`rounded-full p-1.5 ${replyText.trim() ? 'bg-purple-600' : 'bg-gray-300'}`}
+              >
+                <Icon as={Send} size={14} className="text-white" />
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Replies */}
+          {isExpanded && (
+            <View className="mt-3 border-l-2 border-purple-200 pl-3">
+              {isLoadingReplies ? (
+                <ActivityIndicator size="small" color="#9333ea" />
+              ) : replies.length === 0 ? (
+                <Text className="text-sm text-muted-foreground">No replies yet</Text>
+              ) : (
+                replies.map((reply: Comment) => (
+                  <View key={reply.id} className="mb-3 flex-row gap-2">
+                    <TouchableOpacity onPress={() => navigateToProfile(reply.author.username)}>
+                      {reply.author.avatar ? (
+                        <Image source={{ uri: reply.author.avatar }} className="h-6 w-6 rounded-full" />
+                      ) : (
+                        <View className="h-6 w-6 items-center justify-center rounded-full bg-purple-200">
+                          <Icon as={User} size={12} className="text-purple-600" />
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                    <View className="flex-1">
+                      <View className="flex-row items-center gap-2">
+                        <TouchableOpacity onPress={() => navigateToProfile(reply.author.username)}>
+                          <Text className="text-sm font-semibold">
+                            {reply.author.name || reply.author.username}
+                          </Text>
+                        </TouchableOpacity>
+                        <Text className="text-xs text-muted-foreground">
+                          {formatTime(reply.createdAt)}
+                        </Text>
+                      </View>
+                      <Text className="mt-0.5 text-sm">{reply.content}</Text>
+                      <View className="mt-1 flex-row items-center gap-3">
+                        <TouchableOpacity
+                          onPress={() => {
+                            if (reply.isLiked) {
+                              unlikeReply(reply.id);
+                            } else {
+                              likeReply(reply.id);
+                            }
+                          }}
+                          className="flex-row items-center gap-1"
+                        >
+                          <Icon
+                            as={Heart}
+                            size={14}
+                            className={reply.isLiked ? 'text-red-600' : 'text-muted-foreground'}
+                            fill={reply.isLiked ? '#dc2626' : 'none'}
+                          />
+                          {reply.likesCount > 0 && (
+                            <Text className={`text-xs ${reply.isLiked ? 'text-red-600' : 'text-muted-foreground'}`}>
+                              {reply.likesCount}
+                            </Text>
+                          )}
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                ))
+              )}
+            </View>
+          )}
+        </View>
+      </View>
     </View>
   );
 }

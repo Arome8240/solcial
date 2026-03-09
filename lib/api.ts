@@ -329,6 +329,23 @@ class ApiClient {
     });
   }
 
+  // ==================== Comments ====================
+  async likeComment(commentId: string) {
+    return this.request(`/posts/comments/${commentId}/like`, {
+      method: 'POST',
+    });
+  }
+
+  async unlikeComment(commentId: string) {
+    return this.request(`/posts/comments/${commentId}/like`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getCommentReplies(commentId: string) {
+    return this.request(`/posts/comments/${commentId}/replies`);
+  }
+
   // ==================== Upload ====================
   async uploadImage(image: string) {
     return this.request('/upload/image', {

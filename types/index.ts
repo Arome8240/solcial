@@ -54,6 +54,7 @@ export interface Comment {
   content: string;
   likesCount: number;
   repliesCount: number;
+  isLiked: boolean;
   createdAt: string;
 }
 

@@ -19,8 +19,8 @@ export function useComments(postId: string) {
       if (response.error) throw new Error(response.error);
       return response.data;
     },
-    getNextPageParam: (lastPage, pages) => {
-      return lastPage && lastPage.length === 20 ? pages.length + 1 : undefined;
+    getNextPageParam: (lastPage: any, pages) => {
+      return lastPage && Array.isArray(lastPage) && lastPage.length === 20 ? pages.length + 1 : undefined;
     },
     initialPageParam: 1,
     enabled: !!postId,
@@ -43,6 +43,30 @@ export function useComments(postId: string) {
     },
   });
 
+  // Like comment
+  const likeCommentMutation = useMutation({
+    mutationFn: async (commentId: string) => {
+      const response = await api.likeComment(commentId);
+      if (response.error) throw new Error(response.error);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comments', postId] });
+    },
+  });
+
+  // Unlike comment
+  const unlikeCommentMutation = useMutation({
+    mutationFn: async (commentId: string) => {
+      const response = await api.unlikeComment(commentId);
+      if (response.error) throw new Error(response.error);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comments', postId] });
+    },
+  });
+
   const comments = data?.pages.flat() || [];
 
   return {
@@ -53,37 +77,55 @@ export function useComments(postId: string) {
     isFetchingNextPage,
     createComment: createCommentMutation.mutate,
     isCreatingComment: createCommentMutation.isPending,
+    likeComment: likeCommentMutation.mutate,
+    unlikeComment: unlikeCommentMutation.mutate,
   };
 }
 
 export function useReplies(commentId: string) {
+  const queryClient = useQueryClient();
+
   const {
     data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
     isLoading,
-  } = useInfiniteQuery({
+  } = useQuery({
     queryKey: ['replies', commentId],
-    queryFn: async ({ pageParam = 1 }) => {
-      const response = await api.getReplies(commentId, pageParam, 10);
+    queryFn: async () => {
+      const response = await api.getCommentReplies(commentId);
       if (response.error) throw new Error(response.error);
       return response.data;
     },
-    getNextPageParam: (lastPage, pages) => {
-      return lastPage && lastPage.length === 10 ? pages.length + 1 : undefined;
-    },
-    initialPageParam: 1,
     enabled: !!commentId,
   });
 
-  const replies = data?.pages.flat() || [];
+  // Like reply
+  const likeReplyMutation = useMutation({
+    mutationFn: async (replyId: string) => {
+      const response = await api.likeComment(replyId);
+      if (response.error) throw new Error(response.error);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['replies', commentId] });
+    },
+  });
+
+  // Unlike reply
+  const unlikeReplyMutation = useMutation({
+    mutationFn: async (replyId: string) => {
+      const response = await api.unlikeComment(replyId);
+      if (response.error) throw new Error(response.error);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['replies', commentId] });
+    },
+  });
 
   return {
-    replies,
+    replies: data || [],
     isLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+    likeReply: likeReplyMutation.mutate,
+    unlikeReply: unlikeReplyMutation.mutate,
   };
 }
