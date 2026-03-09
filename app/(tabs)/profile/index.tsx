@@ -61,7 +61,6 @@ export default function ProfileScreen() {
   const { followUser, unfollowUser } = useFollows();
   const { data: followingData } = useCheckFollowing(isOwnProfile ? '' : displayUserId);
   const { createChat, isCreatingChat } = useChats();
-  const queryClient = useQueryClient();
   
   const [activeTab, setActiveTab] = useState('Posts');
   const [showMenu, setShowMenu] = useState(false);
