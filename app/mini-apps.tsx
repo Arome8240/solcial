@@ -1,7 +1,7 @@
 import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { ArrowLeft, Sparkles, Gamepad2, Coins, Zap, Gift, TrendingUp } from 'lucide-react-native';
+import { ArrowLeft, Sparkles, Gamepad2, Coins, Zap, Gift, TrendingUp, UtensilsCrossed } from 'lucide-react-native';
 import { router } from 'expo-router';
 
 const liveApps = [
@@ -12,6 +12,14 @@ const liveApps = [
     icon: Coins,
     color: 'bg-blue-500',
     route: '/mini-apps/swap',
+  },
+  {
+    id: 'food',
+    name: 'Food Delivery',
+    description: 'Order food and pay with SOL',
+    icon: UtensilsCrossed,
+    color: 'bg-orange-500',
+    route: '/mini-apps/food',
   },
   {
     id: 'dice',
