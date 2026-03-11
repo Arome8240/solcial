@@ -1,4 +1,5 @@
 import '@/global.css';
+import 'react-native-gesture-handler';
 
 import { NAV_THEME } from '@/lib/theme';
 import { ThemeProvider } from '@react-navigation/native';
@@ -15,12 +16,15 @@ import {
 import { Toaster } from 'sonner-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useThemeStore, useThemeSync } from '@/store/useThemeStore';
 import { usePathname } from 'expo-router';
-import { storage } from '@/lib/storage';
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
+import * as SplashScreen from 'expo-splash-screen';
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
 
 // Create a client
 const queryClient = new QueryClient({
@@ -50,18 +54,10 @@ export {
 
 function RootLayoutContent() {
   const { theme } = useThemeSync();
-  const { loadTheme, isLoading } = useThemeStore();
+  const { loadTheme } = useThemeStore();
   const pathname = usePathname();
-  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
-  const notificationListener = useRef<Notifications.Subscription | null>(null);
-  const responseListener = useRef<Notifications.Subscription | null>(null);
-  
-  const [isFontsLoaded] = useFonts({
-    Geist_400Regular,
-    Geist_500Medium,
-    Geist_600SemiBold,
-    Geist_700Bold,
-  });
+  const notificationListener = useRef<Notifications.EventSubscription | null>(null);
+  const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
   // Load saved theme preference on mount
   useEffect(() => {
@@ -119,6 +115,12 @@ function RootLayoutContent() {
   // Parse and handle deep link URLs
   const handleDeepLink = (url: string) => {
     const { hostname, path, queryParams } = Linking.parse(url);
+    
+    // Ignore expo development client URLs
+    if (hostname === 'expo-development-client') {
+      return;
+    }
+    
     console.log('Deep link:', { hostname, path, queryParams });
 
     if (!path) return;
@@ -167,65 +169,50 @@ function RootLayoutContent() {
     }
   };
 
-  // Initialize Pusher test in development mode
-  useEffect(() => {
-    if (__DEV__) {
-      // Dynamically import and run Pusher test
-      import('@/scripts/test-pusher').catch((error) => {
-        console.error('Failed to load Pusher test script:', error);
-      });
-    }
-  }, []);
-
-  // Check onboarding status and redirect if needed
-  useEffect(() => {
-    async function checkOnboarding() {
-      const hasCompleted = await storage.hasCompletedOnboarding();
-      
-      // If onboarding not completed and not on onboarding/auth screens, redirect
-      if (!hasCompleted && !pathname.startsWith('/onboarding') && !pathname.startsWith('/auth')) {
-        router.replace('/onboarding');
-      }
-      
-      setIsCheckingOnboarding(false);
-    }
-    
-    if (isFontsLoaded && !isLoading) {
-      checkOnboarding();
-    }
-  }, [isFontsLoaded, isLoading, pathname]);
-
-  if (!isFontsLoaded || isLoading || isCheckingOnboarding) {
-    return null;
-  }
-
   // Determine StatusBar style based on route
   const getStatusBarStyle = () => {
     if (pathname === '/feed') {
-      return 'light'; // Light text on red background
+      return 'light';
     }
     return theme === 'dark' ? 'light' : 'dark';
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={theme === 'dark' ? NAV_THEME.dark : NAV_THEME.light}>
-        <StatusBar 
-          style={getStatusBarStyle()} 
-          backgroundColor={pathname === '/feed' ? '#9333ea' : undefined}
-        />
-        <Stack screenOptions={{ headerShown: false}} />
-        <PortalHost />
-        <Toaster richColors />
-      </ThemeProvider>
-    </GestureHandlerRootView>
+    <ThemeProvider value={theme === 'dark' ? NAV_THEME.dark : NAV_THEME.light}>
+      <StatusBar 
+        style={getStatusBarStyle()} 
+        backgroundColor={pathname === '/feed' ? '#9333ea' : undefined}
+      />
+      <Stack screenOptions={{ headerShown: false }} />
+      <PortalHost />
+      <Toaster richColors />
+    </ThemeProvider>
   );
 }
 
 export default function RootLayout() {
+  const [isFontsLoaded] = useFonts({
+    Geist_400Regular,
+    Geist_500Medium,
+    Geist_600SemiBold,
+    Geist_700Bold,
+  });
+
+  useEffect(() => {
+    if (isFontsLoaded) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [isFontsLoaded]);
+
+  if (!isFontsLoaded) {
+    return null;
+  }
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <RootLayoutContent />
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={queryClient}>
+        <RootLayoutContent />
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }
