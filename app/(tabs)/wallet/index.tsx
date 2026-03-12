@@ -123,7 +123,7 @@ export default function WalletScreen() {
                     onPress={() => router.push(`/post/${holding.post.id}`)}
                     className="flex-row items-center justify-between rounded-2xl bg-card p-4"
                   >
-                    <View className="flex-row items-center gap-3">
+                    <View className="flex-row items-center gap-3 flex-1">
                       <View className="h-12 w-12 items-center justify-center rounded-full bg-purple-100">
                         <Icon as={Coins} size={20} className="text-purple-600" />
                       </View>
