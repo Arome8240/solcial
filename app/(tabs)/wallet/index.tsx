@@ -7,6 +7,7 @@ import { useWallet } from '@/hooks/useWallet';
 import { useTokenHoldings } from '@/hooks/usePortfolio';
 import { useAuth } from '@/hooks/useAuth';
 import { useSOLPrice } from '@/hooks/useTokenPrice';
+import { useSeekerBalance } from '@/hooks/useSeekerBalance';
 import { formatDistanceToNow } from 'date-fns';
 import type { Transaction, User } from '@/types';
 
@@ -16,6 +17,7 @@ export default function WalletScreen() {
   const userId = (user as User)?.id || '';
   const { holdings, totalValue, isLoading: isLoadingHoldings, refetch: refetchHoldings } = useTokenHoldings(userId);
   const { data: solPrice, isLoading: isLoadingPrice } = useSOLPrice();
+  const { data: seekerBalance, isLoading: isLoadingSeekerBalance, refetch: refetchSeekerBalance } = useSeekerBalance();
 
   const usdValue = balance * (solPrice || 0);
   
@@ -28,7 +30,7 @@ export default function WalletScreen() {
   });
 
   const handleRefresh = async () => {
-    await Promise.all([refetchBalance(), refetchHoldings()]);
+    await Promise.all([refetchBalance(), refetchHoldings(), refetchSeekerBalance()]);
   };
 
   const formatTime = (date: string) => {

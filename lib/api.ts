@@ -212,6 +212,9 @@ class ApiClient {
   async getBalance() {
     return this.request('/wallet/balance');
   }
+  async getSeekerBalance() {
+    return this.request('/wallet/seeker-balance');
+  }
 
   async getTransactions(page: number = 1, limit: number = 20) {
     return this.request(`/wallet/transactions?page=${page}&limit=${limit}`);
