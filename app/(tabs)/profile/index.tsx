@@ -2,7 +2,7 @@ import { View, ScrollView, TouchableOpacity, Modal, ActivityIndicator, Image, Re
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { Settings, MoreVertical, Copy, Share, Edit, CloudOff, TrendingUp, TrendingDown, Coins, ArrowLeft, UserPlus, UserMinus, MessageCircle } from 'lucide-react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import * as Clipboard from 'expo-clipboard';
 import { toast } from 'sonner-native';
@@ -198,14 +198,17 @@ export default function ProfileScreen() {
           </View>
 
           <View className="mt-4 flex-row gap-6">
-            <TouchableOpacity onPress={() => router.push(`/follows/${displayUserId}?tab=following`)}>
+            <Link href={`/follows/${displayUserId}?tab=following`} asChild>
+            <TouchableOpacity>
               <Text className="text-xl font-bold">{displayUser?.followingCount || 0}</Text>
               <Text className="text-sm text-muted-foreground">Following</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push(`/follows/${displayUserId}?tab=followers`)}>
+            </Link>
+            <Link href={`/follows/${displayUserId}?tab=followers`} asChild>
+            <TouchableOpacity>
               <Text className="text-xl font-bold">{displayUser?.followersCount || 0}</Text>
               <Text className="text-sm text-muted-foreground">Followers</Text>
-            </TouchableOpacity>
+            </TouchableOpacity></Link>
             <View>
               <Text className="text-xl font-bold">{displayUser?.postsCount || 0}</Text>
               <Text className="text-sm text-muted-foreground">Posts</Text>
