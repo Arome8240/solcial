@@ -5,20 +5,7 @@ import { ArrowLeft, ArrowRightLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useSwapHistory } from '@/hooks/useSwapHistory';
 import { formatDistanceToNow } from 'date-fns';
-
-const tokenIcons: Record<string, string> = {
-  SOL: '◎',
-  USDC: '$',
-  BONK: '🐕',
-  WIF: '🐶',
-};
-
-const tokenColors: Record<string, string> = {
-  SOL: 'bg-purple-600',
-  USDC: 'bg-blue-600',
-  BONK: 'bg-orange-600',
-  WIF: 'bg-pink-600',
-};
+import { getTokenIcon, getTokenColor } from '@/lib/tokens';
 
 export default function SwapHistoryScreen() {
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useSwapHistory();
@@ -80,15 +67,15 @@ export default function SwapHistoryScreen() {
                       </View>
                       <View>
                         <View className="flex-row items-center gap-2">
-                          <View className={`h-6 w-6 items-center justify-center rounded-full ${tokenColors[swap.fromToken] || 'bg-gray-600'}`}>
-                            <Text className="text-xs">{tokenIcons[swap.fromToken] || '?'}</Text>
+                          <View className={`h-6 w-6 items-center justify-center rounded-full ${getTokenColor(swap.fromToken)}`}>
+                            <Text className="text-xs text-white font-semibold">{getTokenIcon(swap.fromToken)}</Text>
                           </View>
                           <Text className="font-semibold">
                             {swap.fromAmount.toFixed(4)} {swap.fromToken}
                           </Text>
                           <Text className="text-muted-foreground">→</Text>
-                          <View className={`h-6 w-6 items-center justify-center rounded-full ${tokenColors[swap.toToken] || 'bg-gray-600'}`}>
-                            <Text className="text-xs">{tokenIcons[swap.toToken] || '?'}</Text>
+                          <View className={`h-6 w-6 items-center justify-center rounded-full ${getTokenColor(swap.toToken)}`}>
+                            <Text className="text-xs text-white font-semibold">{getTokenIcon(swap.toToken)}</Text>
                           </View>
                           <Text className="font-semibold">
                             {swap.toAmount.toFixed(4)} {swap.toToken}

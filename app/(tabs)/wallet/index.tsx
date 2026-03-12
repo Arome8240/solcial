@@ -6,20 +6,22 @@ import { router } from 'expo-router';
 import { useWallet } from '@/hooks/useWallet';
 import { useTokenHoldings } from '@/hooks/usePortfolio';
 import { useAuth } from '@/hooks/useAuth';
-import { useSOLPrice } from '@/hooks/useTokenPrice';
+import { useAllTokenPrices } from '@/hooks/useTokenPrice';
 import { useSeekerBalance } from '@/hooks/useSeekerBalance';
 import { formatDistanceToNow } from 'date-fns';
 import type { Transaction, User } from '@/types';
+import { TOKENS } from '@/lib/tokens';
 
 export default function WalletScreen() {
   const { balance, walletAddress, isLoadingBalance, refetchBalance, transactions, isLoadingTransactions, fetchNextPage, hasNextPage, isFetchingNextPage } = useWallet();
   const { user } = useAuth();
   const userId = (user as User)?.id || '';
   const { holdings, totalValue, isLoading: isLoadingHoldings, refetch: refetchHoldings } = useTokenHoldings(userId);
-  const { data: solPrice, isLoading: isLoadingPrice } = useSOLPrice();
+  const { data: tokenPrices, isLoading: isLoadingPrices, refetch: refetchPrices } = useAllTokenPrices();
   const { data: seekerBalance, isLoading: isLoadingSeekerBalance, refetch: refetchSeekerBalance } = useSeekerBalance();
 
-  const usdValue = balance * (solPrice || 0);
+  const solPrice = tokenPrices?.SOL || 0;
+  const usdValue = balance * solPrice;
   
   // Debug logging
   console.log('Wallet Debug:', {
@@ -30,7 +32,7 @@ export default function WalletScreen() {
   });
 
   const handleRefresh = async () => {
-    await Promise.all([refetchBalance(), refetchHoldings(), refetchSeekerBalance()]);
+    await Promise.all([refetchBalance(), refetchHoldings(), refetchSeekerBalance(), refetchPrices()]);
   };
 
   const formatTime = (date: string) => {
@@ -105,86 +107,35 @@ export default function WalletScreen() {
           </View>
 
           <View className="mt-4 gap-3">
-            <View className="flex-row items-center justify-between rounded-2xl bg-card p-4">
-              <View className="flex-row items-center gap-3">
-                <View className="h-12 w-12 items-center justify-center rounded-full bg-purple-600">
-                  <Text className="text-xl font-bold text-white">S</Text>
-                </View>
-                <View>
-                  <Text className="font-semibold">Solana</Text>
-                  <Text className="text-sm text-muted-foreground">{balance.toFixed(4)} SOL</Text>
-                </View>
-              </View>
-              <View className="items-end">
-                <Text className="font-semibold">${usdValue.toFixed(2)}</Text>
-                {solPrice && (
-                  <Text className="text-sm text-muted-foreground">
-                    ${solPrice.toFixed(2)}/SOL
-                  </Text>
-                )}
-              </View>
-            </View>
+            {TOKENS.map((token) => {
+              const tokenBalance = token.symbol === 'SOL' ? balance : token.symbol === 'SEEKER' ? (seekerBalance || 0) : 0;
+              const tokenPrice = tokenPrices?.[token.symbol] || 0;
+              const tokenValue = tokenBalance * tokenPrice;
 
-            {/* Seeker Token */}
-            <View className="flex-row items-center justify-between rounded-2xl bg-card p-4">
-              <View className="flex-row items-center gap-3">
-                <View className="h-12 w-12 items-center justify-center rounded-full bg-blue-600">
-                  <Text className="text-xl font-bold text-white">SK</Text>
+              return (
+                <View key={token.symbol} className="flex-row items-center justify-between rounded-2xl bg-card p-4">
+                  <View className="flex-row items-center gap-3">
+                    <View className={`h-12 w-12 items-center justify-center rounded-full ${token.color}`}>
+                      <Text className="text-xl font-bold text-white">{token.icon}</Text>
+                    </View>
+                    <View>
+                      <Text className="font-semibold">{token.name}</Text>
+                      <Text className="text-sm text-muted-foreground">
+                        {isLoadingSeekerBalance && token.symbol === 'SEEKER' ? '...' : tokenBalance.toFixed(token.symbol === 'SOL' ? 4 : 2)} {token.symbol}
+                      </Text>
+                    </View>
+                  </View>
+                  <View className="items-end">
+                    <Text className="font-semibold">${tokenValue.toFixed(2)}</Text>
+                    {tokenPrice > 0 && (
+                      <Text className="text-sm text-muted-foreground">
+                        ${tokenPrice.toFixed(token.symbol === 'SOL' ? 2 : 4)}/{token.symbol}
+                      </Text>
+                    )}
+                  </View>
                 </View>
-                <View>
-                  <Text className="font-semibold">Seeker</Text>
-                  <Text className="text-sm text-muted-foreground">
-                    {isLoadingSeekerBalance ? '...' : (seekerBalance || 0).toFixed(2)} SEEKER
-                  </Text>
-                </View>
-              </View>
-              <View className="items-end">
-                <Text className="font-semibold">
-                  ${isLoadingSeekerBalance ? '...' : '0.00'}
-                </Text>
-                <Text className="text-sm text-muted-foreground">
-                  $0.00/SEEKER
-                </Text>
-              </View>
-            </View>
-
-            {/* USDT */}
-            <View className="flex-row items-center justify-between rounded-2xl bg-card p-4">
-              <View className="flex-row items-center gap-3">
-                <View className="h-12 w-12 items-center justify-center rounded-full bg-green-600">
-                  <Text className="text-xl font-bold text-white">₮</Text>
-                </View>
-                <View>
-                  <Text className="font-semibold">Tether USD</Text>
-                  <Text className="text-sm text-muted-foreground">0.00 USDT</Text>
-                </View>
-              </View>
-              <View className="items-end">
-                <Text className="font-semibold">$0.00</Text>
-                <Text className="text-sm text-muted-foreground">
-                  $1.00/USDT
-                </Text>
-              </View>
-            </View>
-
-            {/* USDC */}
-            <View className="flex-row items-center justify-between rounded-2xl bg-card p-4">
-              <View className="flex-row items-center gap-3">
-                <View className="h-12 w-12 items-center justify-center rounded-full bg-blue-500">
-                  <Text className="text-xl font-bold text-white">$</Text>
-                </View>
-                <View>
-                  <Text className="font-semibold">USD Coin</Text>
-                  <Text className="text-sm text-muted-foreground">0.00 USDC</Text>
-                </View>
-              </View>
-              <View className="items-end">
-                <Text className="font-semibold">$0.00</Text>
-                <Text className="text-sm text-muted-foreground">
-                  $1.00/USDC
-                </Text>
-              </View>
-            </View>
+              );
+            })}
 
             {/* Token Holdings */}
             {isLoadingHoldings ? (

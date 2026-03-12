@@ -6,38 +6,28 @@ import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useWallet } from '@/hooks/useWallet';
 import { useSwapHistory } from '@/hooks/useSwapHistory';
+import { useAllTokenPrices } from '@/hooks/useTokenPrice';
 import { toast } from 'sonner-native';
 import { api } from '@/lib/api';
 import { formatDistanceToNow } from 'date-fns';
-
-const tokens = [
-  { symbol: 'SOL', name: 'Solana', icon: '◎', color: 'bg-purple-600' },
-  { symbol: 'USDC', name: 'USD Coin', icon: '$', color: 'bg-blue-600' },
-  { symbol: 'BONK', name: 'Bonk', icon: '🐕', color: 'bg-orange-600' },
-  { symbol: 'WIF', name: 'Dogwifhat', icon: '🐶', color: 'bg-pink-600' },
-];
+import { TOKENS } from '@/lib/tokens';
 
 export default function SwapScreen() {
   const { balance } = useWallet();
   const { data: swapHistoryData, refetch: refetchSwapHistory } = useSwapHistory();
-  const recentSwaps = swapHistoryData?.pages[0]?.swaps.slice(0, 5) || [];
+  const { data: tokenPrices, isLoading: isLoadingPrices, refetch: refetchPrices } = useAllTokenPrices();
+  const recentSwaps = swapHistoryData?.pages?.[0]?.swaps?.slice(0, 5) || [];
   
-  const [fromToken, setFromToken] = useState(tokens[0]);
-  const [toToken, setToToken] = useState(tokens[1]);
+  const [fromToken, setFromToken] = useState(TOKENS[0]);
+  const [toToken, setToToken] = useState(TOKENS[2]); // USDC
   const [fromAmount, setFromAmount] = useState('');
   const [isSwapping, setIsSwapping] = useState(false);
   const [showFromModal, setShowFromModal] = useState(false);
   const [showToModal, setShowToModal] = useState(false);
-  const [tokenPrices, setTokenPrices] = useState<Record<string, number>>({});
-  const [isLoadingPrices, setIsLoadingPrices] = useState(true);
   const [toAmount, setToAmount] = useState('0');
   const [rate, setRate] = useState(0);
   const [priceImpact, setPriceImpact] = useState('0');
   const [isCalculating, setIsCalculating] = useState(false);
-
-  useEffect(() => {
-    loadTokenPrices();
-  }, []);
 
   useEffect(() => {
     // Debounce the calculation
@@ -53,20 +43,6 @@ export default function SwapScreen() {
 
     return () => clearTimeout(timer);
   }, [fromAmount, fromToken, toToken]);
-
-  const loadTokenPrices = async () => {
-    try {
-      const response = await api.getTokenPrices();
-      if (response.data) {
-        setTokenPrices(response.data as any);
-      }
-    } catch (error) {
-      console.error('Failed to load token prices:', error);
-      toast.error('Failed to load token prices');
-    } finally {
-      setIsLoadingPrices(false);
-    }
-  };
 
   const calculateSwapQuote = async () => {
     if (!fromAmount || parseFloat(fromAmount) <= 0) return;
@@ -144,7 +120,7 @@ export default function SwapScreen() {
     setFromAmount('');
   };
 
-  const selectFromToken = (token: typeof tokens[0]) => {
+  const selectFromToken = (token: typeof TOKENS[0]) => {
     if (token.symbol === toToken.symbol) {
       // If selecting the same as toToken, swap them
       setToToken(fromToken);
@@ -154,7 +130,7 @@ export default function SwapScreen() {
     setFromAmount('');
   };
 
-  const selectToToken = (token: typeof tokens[0]) => {
+  const selectToToken = (token: typeof TOKENS[0]) => {
     if (token.symbol === fromToken.symbol) {
       // If selecting the same as fromToken, swap them
       setFromToken(toToken);
@@ -256,7 +232,7 @@ export default function SwapScreen() {
                   Rate: 1 {fromToken.symbol} ≈ {rate.toFixed(6)} {toToken.symbol}
                 </Text>
               </View>
-              <TouchableOpacity onPress={loadTokenPrices}>
+              <TouchableOpacity onPress={refetchPrices}>
                 <Icon as={RefreshCw} size={16} className="text-purple-600" />
               </TouchableOpacity>
             </View>
@@ -292,11 +268,11 @@ export default function SwapScreen() {
             {isLoadingPrices && <ActivityIndicator size="small" color="#9333ea" />}
           </View>
           <View className="mt-3 gap-2">
-            {tokens.map((token) => (
+            {TOKENS.map((token) => (
               <View key={token.symbol} className="flex-row items-center justify-between rounded-xl bg-card p-4">
                 <View className="flex-row items-center gap-3">
                   <View className={`h-10 w-10 items-center justify-center rounded-full ${token.color}`}>
-                    <Text className="text-2xl">{token.icon}</Text>
+                    <Text className="text-xl text-white font-semibold">{token.icon}</Text>
                   </View>
                   <View>
                     <Text className="font-semibold">{token.symbol}</Text>
@@ -304,13 +280,15 @@ export default function SwapScreen() {
                   </View>
                 </View>
                 <View className="items-end">
-                  {tokenPrices[token.symbol] ? (
+                  {tokenPrices && tokenPrices[token.symbol] !== undefined ? (
                     <>
                       <Text className="font-semibold">${tokenPrices[token.symbol].toFixed(4)}</Text>
                       <Text className="text-xs text-muted-foreground">per token</Text>
                     </>
                   ) : (
-                    <Text className="text-sm text-muted-foreground">Loading...</Text>
+                    <Text className="text-sm text-muted-foreground">
+                      {isLoadingPrices ? 'Loading...' : 'N/A'}
+                    </Text>
                   )}
                 </View>
               </View>
@@ -377,7 +355,7 @@ export default function SwapScreen() {
             </View>
             <Text className="px-6 text-xl font-bold">Select Token</Text>
             <View className="mt-4 gap-2 px-6">
-              {tokens.map((token) => (
+              {TOKENS.map((token) => (
                 <TouchableOpacity
                   key={token.symbol}
                   onPress={() => selectFromToken(token)}
@@ -386,7 +364,7 @@ export default function SwapScreen() {
                   }`}
                 >
                   <View className={`h-12 w-12 items-center justify-center rounded-full ${token.color}`}>
-                    <Text className="text-3xl">{token.icon}</Text>
+                    <Text className="text-2xl text-white font-semibold">{token.icon}</Text>
                   </View>
                   <View className="flex-1">
                     <Text className="font-semibold">{token.symbol}</Text>
@@ -420,7 +398,7 @@ export default function SwapScreen() {
             </View>
             <Text className="px-6 text-xl font-bold">Select Token</Text>
             <View className="mt-4 gap-2 px-6">
-              {tokens.map((token) => (
+              {TOKENS.map((token) => (
                 <TouchableOpacity
                   key={token.symbol}
                   onPress={() => selectToToken(token)}
@@ -429,7 +407,7 @@ export default function SwapScreen() {
                   }`}
                 >
                   <View className={`h-12 w-12 items-center justify-center rounded-full ${token.color}`}>
-                    <Text className="text-3xl">{token.icon}</Text>
+                    <Text className="text-2xl text-white font-semibold">{token.icon}</Text>
                   </View>
                   <View className="flex-1">
                     <Text className="font-semibold">{token.symbol}</Text>

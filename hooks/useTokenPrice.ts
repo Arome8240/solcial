@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { dexScreenerService } from '@/services/dexscreener';
 import { jupiterService } from '@/services/jupiter';
 import { coinGeckoService } from '@/services/coingecko';
+import { TOKENS } from '@/lib/tokens';
 
 export function useTokenPrice(address: string, provider: 'dexscreener' | 'jupiter' = 'dexscreener') {
   return useQuery({
@@ -58,6 +59,42 @@ export function useSOLPrice() {
       
       console.warn('All price sources failed, returning 0');
       return 0;
+    },
+    refetchInterval: 30000,
+    staleTime: 20000,
+  });
+}
+
+export function useAllTokenPrices() {
+  return useQuery({
+    queryKey: ['all-token-prices'],
+    queryFn: async () => {
+      const prices: Record<string, number> = {};
+      
+      // Get CoinGecko IDs for tokens that have them
+      const coingeckoIds = TOKENS.filter(t => t.coingeckoId).map(t => t.coingeckoId!);
+      
+      try {
+        const coingeckoPrices = await coinGeckoService.getMultiplePrices(coingeckoIds);
+        
+        // Map CoinGecko prices to token symbols
+        for (const token of TOKENS) {
+          if (token.coingeckoId && coingeckoPrices[token.coingeckoId]) {
+            prices[token.symbol] = coingeckoPrices[token.coingeckoId];
+          }
+        }
+        
+        console.log('All token prices:', prices);
+      } catch (error) {
+        console.error('Failed to fetch token prices:', error);
+      }
+      
+      // Set default prices for stablecoins if not fetched
+      if (!prices['USDT']) prices['USDT'] = 1.0;
+      if (!prices['USDC']) prices['USDC'] = 1.0;
+      if (!prices['SEEKER']) prices['SEEKER'] = 0.0;
+      
+      return prices;
     },
     refetchInterval: 30000,
     staleTime: 20000,
