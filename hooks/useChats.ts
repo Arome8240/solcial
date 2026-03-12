@@ -80,7 +80,6 @@ export function useChat(chatId: string) {
     queryFn: async () => {
       const response = await api.getChat(chatId);
       if (response.error) throw new Error(response.error);
-      console.log('[useChat] Chat response:', JSON.stringify(response.data, null, 2));
       return response.data as Chat;
     },
     enabled: !!chatId,
@@ -105,8 +104,7 @@ export function useMessages(chatId: string) {
     queryFn: async ({ pageParam = 1 }) => {
       const response = await api.getMessages(chatId, pageParam as number, 50);
       if (response.error) throw new Error(response.error);
-      //console.log(response.data)
-      return response.data as Message[];
+     return response.data as Message[];
     },
     getNextPageParam: (lastPage, pages) => {
       return Array.isArray(lastPage) && lastPage.length === 50 ? pages.length + 1 : undefined;
