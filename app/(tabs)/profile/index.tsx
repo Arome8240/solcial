@@ -216,7 +216,7 @@ export default function ProfileScreen() {
           </View>
 
           {/* Wallet Address */}
-          <View className="mt-4 rounded-2xl bg-gray-50 dark:bg-gray-800 p-4">
+          <View className="mt-4 rounded-2xl bg-gray-50 dark:bg-muted-foreground p-4">
             <Text className="text-sm text-muted-foreground">Wallet Address</Text>
             <View className="mt-1 flex-row items-center justify-between">
               <Text className="text-lg font-bold">

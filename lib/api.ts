@@ -352,6 +352,35 @@ class ApiClient {
     });
   }
 
+  // ==================== Mini Apps ====================
+  async playSpin(betAmount: number) {
+    return this.request('/mini-apps/spin/play', {
+      method: 'POST',
+      body: JSON.stringify({ betAmount }),
+    });
+  }
+
+  async playCoinFlip(betAmount: number, choice: 'heads' | 'tails') {
+    return this.request('/mini-apps/coinflip/play', {
+      method: 'POST',
+      body: JSON.stringify({ betAmount, choice }),
+    });
+  }
+
+  async playDice(betAmount: number, prediction: number) {
+    return this.request('/mini-apps/dice/play', {
+      method: 'POST',
+      body: JSON.stringify({ betAmount, prediction }),
+    });
+  }
+
+  async swapTokens(fromToken: string, toToken: string, amount: number) {
+    return this.request('/mini-apps/swap', {
+      method: 'POST',
+      body: JSON.stringify({ fromToken, toToken, amount }),
+    });
+  }
+
   // ==================== Health ====================
   async checkHealth() {
     return this.request('/health');
