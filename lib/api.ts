@@ -383,6 +383,9 @@ class ApiClient {
       body: JSON.stringify({ fromToken, toToken, amount }),
     });
   }
+  async getSwapHistory(page: number = 1, limit: number = 20) {
+    return this.request(`/mini-apps/swap/history?page=${page}&limit=${limit}`);
+  }
 
   // ==================== Health ====================
   async checkHealth() {

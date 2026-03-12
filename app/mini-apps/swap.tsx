@@ -1,12 +1,14 @@
 import { View, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, Modal } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { ArrowLeft, Coins, ArrowDownUp, Info, ChevronDown, RefreshCw } from 'lucide-react-native';
+import { ArrowLeft, Coins, ArrowDownUp, Info, ChevronDown, RefreshCw, History } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useWallet } from '@/hooks/useWallet';
+import { useSwapHistory } from '@/hooks/useSwapHistory';
 import { toast } from 'sonner-native';
 import { api } from '@/lib/api';
+import { formatDistanceToNow } from 'date-fns';
 
 const tokens = [
   { symbol: 'SOL', name: 'Solana', icon: '◎', color: 'bg-purple-600' },
@@ -17,6 +19,9 @@ const tokens = [
 
 export default function SwapScreen() {
   const { balance } = useWallet();
+  const { data: swapHistoryData, refetch: refetchSwapHistory } = useSwapHistory();
+  const recentSwaps = swapHistoryData?.pages[0]?.swaps.slice(0, 5) || [];
+  
   const [fromToken, setFromToken] = useState(tokens[0]);
   const [toToken, setToToken] = useState(tokens[1]);
   const [fromAmount, setFromAmount] = useState('');
@@ -125,6 +130,7 @@ export default function SwapScreen() {
       toast.success(`Swapped ${fromAmount} ${fromToken.symbol} for ${receivedAmount.toFixed(6)} ${toToken.symbol}`);
       setFromAmount('');
       setIsSwapping(false);
+      refetchSwapHistory(); // Refresh swap history
     } catch (error) {
       toast.error('Swap failed. Please try again.');
       setIsSwapping(false);
@@ -311,6 +317,44 @@ export default function SwapScreen() {
             ))}
           </View>
         </View>
+
+        {/* Recent Swaps */}
+        {recentSwaps.length > 0 && (
+          <View className="mx-4 mt-6">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-lg font-bold">Recent Swaps</Text>
+              <TouchableOpacity onPress={() => router.push('/mini-apps/swap-history')}>
+                <View className="flex-row items-center gap-1">
+                  <Icon as={History} size={16} className="text-blue-600" />
+                  <Text className="text-sm font-semibold text-blue-600">View All</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+            <View className="mt-3 gap-2">
+              {recentSwaps.map((swap) => (
+                <View key={swap.id} className="rounded-xl bg-card p-4">
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-1">
+                      <View className="flex-row items-center gap-2">
+                        <Text className="font-semibold">
+                          {swap.fromAmount.toFixed(4)} {swap.fromToken}
+                        </Text>
+                        <Text className="text-muted-foreground">→</Text>
+                        <Text className="font-semibold">
+                          {swap.toAmount.toFixed(4)} {swap.toToken}
+                        </Text>
+                      </View>
+                      <Text className="mt-1 text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(swap.createdAt), { addSuffix: true })}
+                      </Text>
+                    </View>
+                    <Text className="text-xs capitalize text-green-600">{swap.status}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
 
         <View className="h-6" />
       </ScrollView>

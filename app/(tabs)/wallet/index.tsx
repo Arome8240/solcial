@@ -49,14 +49,6 @@ export default function WalletScreen() {
         refreshControl={
           <RefreshControl refreshing={isLoadingBalance} onRefresh={handleRefresh} />
         }
-        onScroll={({ nativeEvent }) => {
-          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-          const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
-          if (isCloseToBottom && hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-          }
-        }}
-        scrollEventThrottle={400}
       >
         {/* Header */}
         <View className="bg-purple-600 px-4 pb-8 pt-12">
@@ -254,6 +246,11 @@ export default function WalletScreen() {
         <View className="mt-6 px-4 pb-6">
           <View className="flex-row items-center justify-between">
             <Text className="text-xl font-bold">Recent Activity</Text>
+            {transactions.length > 0 && (
+              <TouchableOpacity onPress={() => router.push('/wallet/history')}>
+                <Text className="text-sm font-semibold text-purple-600">View All</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           <View className="mt-4">
@@ -266,7 +263,7 @@ export default function WalletScreen() {
                 <Text className="text-muted-foreground">No transactions yet</Text>
               </View>
             ) : (
-              transactions.map((tx: Transaction) => (
+              transactions.slice(0, 5).map((tx: Transaction) => (
                 <TouchableOpacity
                   key={tx.signature}
                   onPress={() => router.push(`/transaction/${tx.signature}`)}
@@ -297,11 +294,6 @@ export default function WalletScreen() {
                   </View>
                 </TouchableOpacity>
               ))
-            )}
-            {isFetchingNextPage && (
-              <View className="py-4">
-                <ActivityIndicator size="small" color="#9333ea" />
-              </View>
             )}
           </View>
         </View>
