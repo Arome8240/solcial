@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, ActivityIndicator, Image, TextInput, Modal, Platform, KeyboardAvoidingView, Keyboard, KeyboardEventListener } from 'react-native';
+import { View, TouchableOpacity, ActivityIndicator, Image, TextInput, Modal, Platform, Share as RNShare , Keyboard, KeyboardEventListener, KeyboardAvoidingView} from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { ArrowLeft, Heart, Share, User, Coins, DollarSign, Send } from 'lucide-react-native';
@@ -16,7 +16,6 @@ export default function PostDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: postData, isLoading } = usePost(id || '');
   const post = postData as Post | undefined;
-  const { user } = useAuth();
   const { comments, isLoading: isLoadingComments, createComment, isCreatingComment } = useComments(id || '');
   const { buyToken, isBuyingToken, likePost, unlikePost, tipPost, isTippingPost } = usePosts();
   const [commentText, setCommentText] = useState('');
@@ -97,8 +96,23 @@ const handleKeyboardHide: KeyboardEventListener = (event) => {
     router.push(`/(tabs)/profile?username=${username}`);
   };
 
-  const handleShare = () => {
-    toast.success('Share functionality coming soon!');
+  const handleShare = async () => {
+    if (!post) return;
+    
+    try {
+      const shareUrl = `https://solcial.app/post/${post.id}`;
+      const message = `Check out this post by @${post.author.username} on Solcial!\n\n"${post.content.slice(0, 100)}${post.content.length > 100 ? '...' : ''}"\n\n${shareUrl}`;
+      
+      const result = await RNShare.share({
+        message: Platform.OS === 'ios' ? message : message,
+        url: Platform.OS === 'ios' ? shareUrl : undefined,
+        title: `Post by @${post.author.username}`,
+      });
+
+    } catch (error) {
+      toast.error('Failed to share post');
+      console.error('Share error:', error);
+    }
   };
 
   if (isLoading) {
