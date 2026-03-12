@@ -136,18 +136,60 @@ export default function WalletScreen() {
             {/* Seeker Token */}
             <View className="flex-row items-center justify-between rounded-2xl bg-card p-4">
               <View className="flex-row items-center gap-3">
-                <View className="h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
+                <View className="h-12 w-12 items-center justify-center rounded-full bg-blue-600">
                   <Text className="text-xl font-bold text-white">SK</Text>
                 </View>
                 <View>
                   <Text className="font-semibold">Seeker</Text>
-                  <Text className="text-sm text-muted-foreground">0.00 SEEKER</Text>
+                  <Text className="text-sm text-muted-foreground">
+                    {isLoadingSeekerBalance ? '...' : (seekerBalance || 0).toFixed(2)} SEEKER
+                  </Text>
+                </View>
+              </View>
+              <View className="items-end">
+                <Text className="font-semibold">
+                  ${isLoadingSeekerBalance ? '...' : '0.00'}
+                </Text>
+                <Text className="text-sm text-muted-foreground">
+                  $0.00/SEEKER
+                </Text>
+              </View>
+            </View>
+
+            {/* USDT */}
+            <View className="flex-row items-center justify-between rounded-2xl bg-card p-4">
+              <View className="flex-row items-center gap-3">
+                <View className="h-12 w-12 items-center justify-center rounded-full bg-green-600">
+                  <Text className="text-xl font-bold text-white">₮</Text>
+                </View>
+                <View>
+                  <Text className="font-semibold">Tether USD</Text>
+                  <Text className="text-sm text-muted-foreground">0.00 USDT</Text>
                 </View>
               </View>
               <View className="items-end">
                 <Text className="font-semibold">$0.00</Text>
                 <Text className="text-sm text-muted-foreground">
-                  $0.00/SEEKER
+                  $1.00/USDT
+                </Text>
+              </View>
+            </View>
+
+            {/* USDC */}
+            <View className="flex-row items-center justify-between rounded-2xl bg-card p-4">
+              <View className="flex-row items-center gap-3">
+                <View className="h-12 w-12 items-center justify-center rounded-full bg-blue-500">
+                  <Text className="text-xl font-bold text-white">$</Text>
+                </View>
+                <View>
+                  <Text className="font-semibold">USD Coin</Text>
+                  <Text className="text-sm text-muted-foreground">0.00 USDC</Text>
+                </View>
+              </View>
+              <View className="items-end">
+                <Text className="font-semibold">$0.00</Text>
+                <Text className="text-sm text-muted-foreground">
+                  $1.00/USDC
                 </Text>
               </View>
             </View>
