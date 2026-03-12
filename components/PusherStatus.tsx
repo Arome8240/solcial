@@ -68,18 +68,21 @@ export function PusherStatus({ showDetails = false, compact = false }: PusherSta
     return (
       <TouchableOpacity 
         onPress={logPusherStatus}
-        className="flex-row items-center gap-1"
+        className="flex-row items-center gap-2"
       >
-        <Icon 
-          as={getStatusIcon()} 
-          size={14} 
-          className={getStatusColor()}
-        />
-        {showDetails && (
-          <Text className={`text-xs ${getStatusColor()}`}>
-            {getStatusText()}
-          </Text>
-        )}
+        {/* Circle indicator */}
+        <View className="relative">
+          <View className={`h-3 w-3 rounded-full ${
+            status.state === 'connected' ? 'bg-green-500' :
+            status.state === 'connecting' || status.state === 'initialized' ? 'bg-yellow-500' :
+            'bg-red-500'
+          }`} />
+          
+          {/* Pulse animation for connecting state */}
+          {(status.state === 'connecting' || status.state === 'initialized') && (
+            <View className="absolute inset-0 h-3 w-3 rounded-full bg-yellow-400 opacity-75 animate-pulse" />
+          )}
+        </View>
       </TouchableOpacity>
     );
   }

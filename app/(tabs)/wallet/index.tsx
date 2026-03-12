@@ -6,6 +6,7 @@ import { router } from 'expo-router';
 import { useWallet } from '@/hooks/useWallet';
 import { useTokenHoldings } from '@/hooks/usePortfolio';
 import { useAuth } from '@/hooks/useAuth';
+import { useSOLPrice } from '@/hooks/useTokenPrice';
 import { formatDistanceToNow } from 'date-fns';
 import type { Transaction, User } from '@/types';
 
@@ -14,6 +15,17 @@ export default function WalletScreen() {
   const { user } = useAuth();
   const userId = (user as User)?.id || '';
   const { holdings, totalValue, isLoading: isLoadingHoldings, refetch: refetchHoldings } = useTokenHoldings(userId);
+  const { data: solPrice, isLoading: isLoadingPrice } = useSOLPrice();
+
+  const usdValue = balance * (solPrice || 0);
+  
+  // Debug logging
+  console.log('Wallet Debug:', {
+    balance,
+    solPrice,
+    usdValue,
+    isLoadingPrice,
+  });
 
   const handleRefresh = async () => {
     await Promise.all([refetchBalance(), refetchHoldings()]);
@@ -56,12 +68,19 @@ export default function WalletScreen() {
           {/* Balance Card */}
           <View className="mt-6 items-center">
             <Text className="text-sm text-purple-200">Total Balance</Text>
-            {isLoadingBalance ? (
+            {isLoadingBalance || isLoadingPrice ? (
               <ActivityIndicator size="large" color="#ffffff" className="mt-2" />
             ) : (
               <>
-                <Text className="mt-2 text-5xl font-bold text-white">{balance.toFixed(4)} SOL</Text>
-                <Text className="mt-1 text-sm text-purple-200">{walletAddress?.slice(0, 8)}...{walletAddress?.slice(-8)}</Text>
+                <Text className="mt-2 text-5xl font-bold text-white">
+                  ${usdValue.toFixed(2)}
+                </Text>
+                <Text className="mt-1 text-lg text-purple-200">
+                  {balance.toFixed(4)} SOL
+                </Text>
+                <Text className="mt-1 text-sm text-purple-200">
+                  {walletAddress?.slice(0, 8)}...{walletAddress?.slice(-8)}
+                </Text>
               </>
             )}
           </View>
@@ -103,7 +122,31 @@ export default function WalletScreen() {
                 </View>
               </View>
               <View className="items-end">
-                <Text className="font-semibold">Devnet</Text>
+                <Text className="font-semibold">${usdValue.toFixed(2)}</Text>
+                {solPrice && (
+                  <Text className="text-sm text-muted-foreground">
+                    ${solPrice.toFixed(2)}/SOL
+                  </Text>
+                )}
+              </View>
+            </View>
+
+            {/* Seeker Token */}
+            <View className="flex-row items-center justify-between rounded-2xl bg-card p-4">
+              <View className="flex-row items-center gap-3">
+                <View className="h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
+                  <Text className="text-xl font-bold text-white">SK</Text>
+                </View>
+                <View>
+                  <Text className="font-semibold">Seeker</Text>
+                  <Text className="text-sm text-muted-foreground">0.00 SEEKER</Text>
+                </View>
+              </View>
+              <View className="items-end">
+                <Text className="font-semibold">$0.00</Text>
+                <Text className="text-sm text-muted-foreground">
+                  $0.00/SEEKER
+                </Text>
               </View>
             </View>
 

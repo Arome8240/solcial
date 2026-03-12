@@ -132,7 +132,7 @@ export default function SendMoneyScreen() {
         </View>
 
         {/* Balance Display */}
-        <View className="mx-4 mt-6 rounded-2xl bg-purple-50 p-4">
+        <View className="mx-4 mt-6 rounded-2xl bg-purple-50 dark:bg-purple-50/50 p-4">
           <Text className="text-sm text-muted-foreground">Available Balance</Text>
           <Text className="mt-1 text-2xl font-bold text-purple-600">{balance.toFixed(4)} SOL</Text>
         </View>
@@ -165,7 +165,7 @@ export default function SendMoneyScreen() {
           <View className="mt-3 flex-row gap-3">
             <TouchableOpacity
               onPress={handleQRScan}
-              className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-purple-100 py-3"
+              className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-purple-100 dark:bg-purple-50/50 py-3"
             >
               <Icon as={QrCode} size={18} className="text-purple-600" />
               <Text className="font-semibold text-purple-600">Scan QR</Text>
@@ -173,7 +173,7 @@ export default function SendMoneyScreen() {
             
             <TouchableOpacity
               onPress={() => setShowContactsModal(true)}
-              className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-purple-100 py-3"
+              className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-purple-100 dark:bg-purple-50/50 py-3"
             >
               <Icon as={Users} size={18} className="text-purple-600" />
               <Text className="font-semibold text-purple-600">Contacts</Text>
