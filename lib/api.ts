@@ -377,10 +377,24 @@ class ApiClient {
     });
   }
 
-  async swapTokens(fromToken: string, toToken: string, amount: number) {
+  async swapTokens(
+    fromToken: string, 
+    toToken: string, 
+    fromAmount: number,
+    toAmount?: number,
+    rate?: number,
+    priceImpact?: number
+  ) {
     return this.request('/mini-apps/swap', {
       method: 'POST',
-      body: JSON.stringify({ fromToken, toToken, amount }),
+      body: JSON.stringify({ 
+        fromToken, 
+        toToken, 
+        fromAmount,
+        toAmount,
+        rate,
+        priceImpact
+      }),
     });
   }
   async getSwapHistory(page: number = 1, limit: number = 20) {

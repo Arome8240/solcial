@@ -131,27 +131,40 @@ export default function SwapScreen() {
       
       const calculatedToAmount = (amount * fromPrice) / toPrice;
       const calculatedRate = fromPrice / toPrice;
+      const calculatedPriceImpact = 0.1; // Minimal price impact for demo
       
-      console.log('Swap execution:', {
+      console.log('Executing swap:', {
         fromToken: fromToken.symbol,
         toToken: toToken.symbol,
         fromAmount: amount,
         toAmount: calculatedToAmount,
         rate: calculatedRate,
+        priceImpact: calculatedPriceImpact,
       });
 
-      // Simulate swap delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Send swap to backend with calculated values
+      const response = await api.swapTokens(
+        fromToken.symbol,
+        toToken.symbol,
+        amount,
+        calculatedToAmount,
+        calculatedRate,
+        calculatedPriceImpact
+      );
 
+      if (response.error) {
+        toast.error(response.error);
+        setIsSwapping(false);
+        return;
+      }
+
+      const swapResult = response.data || response;
+      
       // Show success message
       toast.success(`Swapped ${fromAmount} ${fromToken.symbol} for ${calculatedToAmount.toFixed(6)} ${toToken.symbol}`);
       setFromAmount('');
       setIsSwapping(false);
-      
-      // Note: In production, you would call the backend here to:
-      // 1. Execute the actual on-chain swap via Jupiter
-      // 2. Record the swap in the database
-      // For demo purposes, we're just showing the calculation
+      refetchSwapHistory(); // Refresh swap history
       
     } catch (error: any) {
       console.error('Swap error:', error);
