@@ -149,6 +149,10 @@ export function useAuth() {
     toast.success('Logged out successfully');
   };
 
+  const isFirstTimeUser = () => {}
+
+  const setIsFirstTimeUser = () =>{}
+
   return {
     user,
     isLoadingUser,

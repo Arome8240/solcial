@@ -17,16 +17,12 @@ export function useChats() {
   const { data: chats, isLoading, refetch, error } = useQuery<Chat[]>({
     queryKey: ['chats'],
     queryFn: async () => {
-      console.log('[useChats] Fetching chats...');
-      const response = await api.getChats();
-      console.log('[useChats] Raw response:', response);
+     const response = await api.getChats();
       
       if (response.error) {
-        console.error('[useChats] API error:', response.error);
         throw new Error(response.error);
       }
       
-      console.log('[useChats] Chats response:', JSON.stringify(response.data, null, 2));
       return response.data as Chat[];
     },
   });

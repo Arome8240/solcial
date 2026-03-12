@@ -4,6 +4,7 @@ const KEYS = {
   TOKEN: '@solcial:token',
   USER: '@solcial:user',
   ONBOARDING_COMPLETED: '@solcial:onboarding_completed',
+  FIRST_TIME_USER: '@solcial:first_time_user',
 };
 
 export const storage = {
@@ -47,5 +48,16 @@ export const storage = {
   async hasCompletedOnboarding() {
     const completed = await AsyncStorage.getItem(KEYS.ONBOARDING_COMPLETED);
     return completed === 'true';
+  },
+
+  // First Time User
+  async setFirstTimeUser(isFirstTime: boolean) {
+    await AsyncStorage.setItem(KEYS.FIRST_TIME_USER, isFirstTime ? 'true' : 'false');
+  },
+
+  async isFirstTimeUser() {
+    const firstTime = await AsyncStorage.getItem(KEYS.FIRST_TIME_USER);
+    // If not set, default to true (first time)
+    return firstTime === null ? true : firstTime === 'true';
   },
 };

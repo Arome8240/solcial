@@ -3,6 +3,7 @@ import * as React from 'react';
 import { TextInput, View, Text, Pressable } from 'react-native';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
+import InputAccessoryViewButton from "./input-accessory-view-button";
 
 interface InputProps extends React.ComponentPropsWithoutRef<typeof TextInput> {
   label?: string;
@@ -42,6 +43,7 @@ const Input = React.forwardRef<React.ElementRef<typeof TextInput>, InputProps>(
               props.onBlur?.(e);
             }}
             {...props}
+            inputAccessoryViewID={InputAccessoryViewButton.nativeID}
           />
           {isPassword && (
             <Pressable

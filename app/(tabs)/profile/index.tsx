@@ -198,14 +198,14 @@ export default function ProfileScreen() {
           </View>
 
           <View className="mt-4 flex-row gap-6">
-            <View>
+            <TouchableOpacity onPress={() => router.push(`/follows/${displayUserId}?tab=following`)}>
               <Text className="text-xl font-bold">{displayUser?.followingCount || 0}</Text>
               <Text className="text-sm text-muted-foreground">Following</Text>
-            </View>
-            <View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push(`/follows/${displayUserId}?tab=followers`)}>
               <Text className="text-xl font-bold">{displayUser?.followersCount || 0}</Text>
               <Text className="text-sm text-muted-foreground">Followers</Text>
-            </View>
+            </TouchableOpacity>
             <View>
               <Text className="text-xl font-bold">{displayUser?.postsCount || 0}</Text>
               <Text className="text-sm text-muted-foreground">Posts</Text>

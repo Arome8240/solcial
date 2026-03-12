@@ -13,6 +13,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { storage } from '@/lib/storage';
 import { useThemeStore } from '@/store/useThemeStore';
+import { useOnboarding } from '@/hooks/useOnboarding';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -37,6 +38,7 @@ const ONBOARDING_DATA = [
 export default function OnboardingScreen() {
   const scrollX = useSharedValue(0);
   const { theme } = useThemeStore();
+  const { completeOnboarding } = useOnboarding();
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -45,12 +47,12 @@ export default function OnboardingScreen() {
   });
 
   const handleCreateAccount = async () => {
-    await storage.setOnboardingCompleted();
+    await completeOnboarding();
     router.push('/auth/email');
   };
 
   const handleSignIn = async () => {
-    await storage.setOnboardingCompleted();
+    await completeOnboarding();
     router.push('/auth/signin');
   };
 

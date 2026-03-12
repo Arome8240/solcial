@@ -5,7 +5,26 @@ import type { Notification } from '@/types';
 import * as ExpoNotifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+
+// Initialize Firebase (configure with your Firebase config)
+const firebaseConfig = {
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+};
+
+let firebaseApp: any;
+try {
+  firebaseApp = initializeApp(firebaseConfig);
+} catch (error) {
+  console.warn('Firebase initialization failed:', error);
+}
 
 // Configure notifications
 ExpoNotifications.setNotificationHandler({
@@ -25,14 +44,44 @@ export function useNotifications() {
   useEffect(() => {
     registerForPushNotificationsAsync();
 
-    // Listen for notifications
+    // Listen for notifications from Expo
     const subscription1 = ExpoNotifications.addNotificationReceivedListener((notification) => {
       console.log('Notification received:', notification);
     });
 
     const subscription2 = ExpoNotifications.addNotificationResponseReceivedListener((response) => {
       console.log('Notification response:', response);
+      // Handle notification tap
+      handleNotificationTap(response.notification.request.content.data);
     });
+
+    // Listen for Firebase messages (web/foreground)
+    if (firebaseApp && Platform.OS === 'web') {
+      try {
+        const messaging = getMessaging(firebaseApp);
+        const unsubscribe = onMessage(messaging, (payload: any) => {
+          console.log('Firebase message received:', payload);
+          // Show notification
+          if (payload.notification) {
+            ExpoNotifications.scheduleNotificationAsync({
+              content: {
+                title: payload.notification.title,
+                body: payload.notification.body,
+                data: payload.data || {},
+              },
+              trigger: null,
+            });
+          }
+        });
+        return () => {
+          subscription1.remove();
+          subscription2.remove();
+          unsubscribe();
+        };
+      } catch (error) {
+        console.warn('Firebase messaging setup failed:', error);
+      }
+    }
 
     return () => {
       subscription1.remove();
@@ -134,34 +183,60 @@ async function registerForPushNotificationsAsync() {
   }
   
   if (finalStatus !== 'granted') {
-    console.log('Failed to get push token for push notification!');
+    console.log('Failed to get push notification permissions!');
     return;
   }
 
   try {
-    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-    
-    if (!projectId) {
-      console.warn('EAS project ID not found. Push notifications require EAS Build.');
-      return;
+    // Get Firebase token for native platforms
+    if (firebaseApp && (Platform.OS === 'ios' || Platform.OS === 'android')) {
+      try {
+        const messaging = getMessaging(firebaseApp);
+        token = await getToken(messaging, {
+          vapidKey: process.env.EXPO_PUBLIC_FIREBASE_VAPID_KEY,
+        });
+        console.log('Firebase token:', token);
+      } catch (firebaseError) {
+        console.warn('Firebase token retrieval failed, falling back to Expo token:', firebaseError);
+      }
     }
-    
-    token = (await ExpoNotifications.getExpoPushTokenAsync({ projectId })).data;
-    console.log('Push token:', token);
+
+    // Fallback to Expo token
+    if (!token) {
+      const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+      
+      if (!projectId) {
+        console.warn('EAS project ID not found. Push notifications require EAS Build.');
+        return;
+      }
+      
+      token = (await ExpoNotifications.getExpoPushTokenAsync({ projectId })).data;
+      console.log('Expo push token:', token);
+    }
 
     // Register token with backend
-    await api.registerPushToken(token);
+    if (token) {
+      await api.registerPushToken(token);
+    }
   } catch (error: any) {
-    // In development builds without proper credentials, this will fail
     if (__DEV__) {
-      console.log('Push notifications not available in development build.');
+      console.log('Push notifications not fully available in development build.');
       console.log('To enable push notifications:');
       console.log('1. Build with EAS: eas build --profile development --platform android');
-      console.log('2. Or use Expo Go for testing');
+      console.log('2. Configure Firebase credentials in .env');
     } else {
       console.error('Error getting push token:', error?.message || error);
     }
   }
 
   return token;
+}
+
+function handleNotificationTap(data: any) {
+  // Handle navigation based on notification data
+  if (!data) return;
+
+  // This would typically use router.push() to navigate
+  // Example: if (data.postId) router.push(`/post/${data.postId}`);
+  console.log('Notification tapped with data:', data);
 }
