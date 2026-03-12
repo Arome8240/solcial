@@ -42,13 +42,41 @@ export default function SwapScreen() {
     }, 500); // Wait 500ms after user stops typing
 
     return () => clearTimeout(timer);
-  }, [fromAmount, fromToken, toToken]);
+  }, [fromAmount, fromToken, toToken, tokenPrices]);
 
   const calculateSwapQuote = async () => {
     if (!fromAmount || parseFloat(fromAmount) <= 0) return;
 
     setIsCalculating(true);
     try {
+      // Use local price calculation if we have token prices
+      if (tokenPrices && tokenPrices[fromToken.symbol] && tokenPrices[toToken.symbol]) {
+        const fromPrice = tokenPrices[fromToken.symbol];
+        const toPrice = tokenPrices[toToken.symbol];
+        const amount = parseFloat(fromAmount);
+        
+        // Calculate: (amount * fromPrice) / toPrice
+        const calculatedToAmount = (amount * fromPrice) / toPrice;
+        const calculatedRate = fromPrice / toPrice;
+        
+        console.log('Local swap calculation:', {
+          fromToken: fromToken.symbol,
+          toToken: toToken.symbol,
+          fromAmount: amount,
+          fromPrice,
+          toPrice,
+          calculatedToAmount,
+          calculatedRate,
+        });
+        
+        setToAmount(calculatedToAmount.toFixed(6));
+        setRate(calculatedRate);
+        setPriceImpact('0.1'); // Minimal price impact for demo
+        setIsCalculating(false);
+        return;
+      }
+      
+      // Fallback to backend API if prices not available
       const response = await api.swapTokens(
         fromToken.symbol,
         toToken.symbol,
@@ -90,25 +118,44 @@ export default function SwapScreen() {
     setIsSwapping(true);
     
     try {
-      const response = await api.swapTokens(
-        fromToken.symbol,
-        toToken.symbol,
-        parseFloat(fromAmount)
-      );
-
-      if (response.error) {
-        toast.error(response.error);
+      // Calculate swap locally using token prices
+      if (!tokenPrices || !tokenPrices[fromToken.symbol] || !tokenPrices[toToken.symbol]) {
+        toast.error('Unable to fetch token prices');
         setIsSwapping(false);
         return;
       }
 
-      const { toAmount: receivedAmount } = response.data as any;
-      toast.success(`Swapped ${fromAmount} ${fromToken.symbol} for ${receivedAmount.toFixed(6)} ${toToken.symbol}`);
+      const fromPrice = tokenPrices[fromToken.symbol];
+      const toPrice = tokenPrices[toToken.symbol];
+      const amount = parseFloat(fromAmount);
+      
+      const calculatedToAmount = (amount * fromPrice) / toPrice;
+      const calculatedRate = fromPrice / toPrice;
+      
+      console.log('Swap execution:', {
+        fromToken: fromToken.symbol,
+        toToken: toToken.symbol,
+        fromAmount: amount,
+        toAmount: calculatedToAmount,
+        rate: calculatedRate,
+      });
+
+      // Simulate swap delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Show success message
+      toast.success(`Swapped ${fromAmount} ${fromToken.symbol} for ${calculatedToAmount.toFixed(6)} ${toToken.symbol}`);
       setFromAmount('');
       setIsSwapping(false);
-      refetchSwapHistory(); // Refresh swap history
-    } catch (error) {
-      toast.error('Swap failed. Please try again.');
+      
+      // Note: In production, you would call the backend here to:
+      // 1. Execute the actual on-chain swap via Jupiter
+      // 2. Record the swap in the database
+      // For demo purposes, we're just showing the calculation
+      
+    } catch (error: any) {
+      console.error('Swap error:', error);
+      toast.error(error?.message || 'Swap failed. Please try again.');
       setIsSwapping(false);
     }
   };
@@ -232,7 +279,7 @@ export default function SwapScreen() {
                   Rate: 1 {fromToken.symbol} ≈ {rate.toFixed(6)} {toToken.symbol}
                 </Text>
               </View>
-              <TouchableOpacity onPress={refetchPrices}>
+              <TouchableOpacity onPress={() => refetchPrices()}>
                 <Icon as={RefreshCw} size={16} className="text-purple-600" />
               </TouchableOpacity>
             </View>

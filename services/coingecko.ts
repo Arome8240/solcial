@@ -56,6 +56,8 @@ class CoinGeckoService {
   async getMultiplePrices(coingeckoIds: string[]): Promise<Record<string, number>> {
     try {
       const ids = coingeckoIds.join(',');
+      console.log('CoinGecko API request for IDs:', ids);
+      
       const response = await fetch(
         `${this.baseUrl}/simple/price?ids=${ids}&vs_currencies=usd`,
         {
@@ -66,19 +68,23 @@ class CoinGeckoService {
         }
       );
       
+      console.log('CoinGecko API response status:', response.status);
+      
       if (!response.ok) {
-        console.error('CoinGecko API error:', response.status);
+        console.error('CoinGecko API error:', response.status, response.statusText);
         return {};
       }
       
       const data = await response.json();
+      console.log('CoinGecko API raw data:', JSON.stringify(data, null, 2));
+      
       const prices: Record<string, number> = {};
       
       for (const id of coingeckoIds) {
         prices[id] = data[id]?.usd || 0;
       }
       
-      console.log('CoinGecko multiple prices:', prices);
+      console.log('CoinGecko multiple prices result:', prices);
       return prices;
     } catch (error) {
       console.error('CoinGecko multiple prices error:', error);

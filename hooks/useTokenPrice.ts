@@ -74,26 +74,41 @@ export function useAllTokenPrices() {
       // Get CoinGecko IDs for tokens that have them
       const coingeckoIds = TOKENS.filter(t => t.coingeckoId).map(t => t.coingeckoId!);
       
+      console.log('Fetching prices for tokens:', TOKENS.map(t => ({ symbol: t.symbol, coingeckoId: t.coingeckoId })));
+      console.log('CoinGecko IDs to fetch:', coingeckoIds);
+      
       try {
         const coingeckoPrices = await coinGeckoService.getMultiplePrices(coingeckoIds);
+        console.log('CoinGecko response:', coingeckoPrices);
         
         // Map CoinGecko prices to token symbols
         for (const token of TOKENS) {
           if (token.coingeckoId && coingeckoPrices[token.coingeckoId]) {
             prices[token.symbol] = coingeckoPrices[token.coingeckoId];
+            console.log(`Mapped ${token.symbol}: $${coingeckoPrices[token.coingeckoId]}`);
           }
         }
         
-        console.log('All token prices:', prices);
+        console.log('All token prices after mapping:', prices);
       } catch (error) {
         console.error('Failed to fetch token prices:', error);
       }
       
       // Set default prices for stablecoins if not fetched
-      if (!prices['USDT']) prices['USDT'] = 1.0;
-      if (!prices['USDC']) prices['USDC'] = 1.0;
-      if (!prices['SEEKER']) prices['SEEKER'] = 0.0;
+      if (!prices['USDT']) {
+        prices['USDT'] = 1.0;
+        console.log('Set default USDT price: $1.00');
+      }
+      if (!prices['USDC']) {
+        prices['USDC'] = 1.0;
+        console.log('Set default USDC price: $1.00');
+      }
+      if (!prices['SEEKER']) {
+        prices['SEEKER'] = 0.0;
+        console.log('Set default SEEKER price: $0.00');
+      }
       
+      console.log('Final token prices:', prices);
       return prices;
     },
     refetchInterval: 30000,

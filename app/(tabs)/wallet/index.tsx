@@ -28,7 +28,7 @@ export default function WalletScreen() {
     balance,
     solPrice,
     usdValue,
-    isLoadingPrice,
+    isLoadingPrices,
   });
 
   const handleRefresh = async () => {
@@ -64,7 +64,7 @@ export default function WalletScreen() {
           {/* Balance Card */}
           <View className="mt-6 items-center">
             <Text className="text-sm text-purple-200">Total Balance</Text>
-            {isLoadingBalance || isLoadingPrice ? (
+            {isLoadingBalance || isLoadingPrices ? (
               <ActivityIndicator size="large" color="#ffffff" className="mt-2" />
             ) : (
               <>
