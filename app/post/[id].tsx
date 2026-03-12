@@ -1,16 +1,16 @@
-import { View, TouchableOpacity, ActivityIndicator, Image, TextInput, Modal, Platform } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { View, TouchableOpacity, ActivityIndicator, Image, TextInput, Modal, Platform, KeyboardAvoidingView, Keyboard, KeyboardEventListener } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { ArrowLeft, Heart, Share, User, Coins, DollarSign, Send } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePost, usePosts } from '@/hooks/usePosts';
 import { useComments } from '@/hooks/useComments';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import type { Comment, Post } from '@/types';
 import { toast } from 'sonner-native';
+import InputAccessoryViewButton from "@/components/ui/input-accessory-view-button";
 
 export default function PostDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -24,6 +24,27 @@ export default function PostDetailsScreen() {
   const [showBuyTokenModal, setShowBuyTokenModal] = useState(false);
   const [tipAmount, setTipAmount] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false)
+
+  useEffect(()=> {
+    const showSubscription = Keyboard.addListener("keyboardDidShow", handleKeyboardShow)
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", handleKeyboardHide)
+
+    return  () => {
+      showSubscription.remove()
+      hideSubscription.remove()
+    }
+  })
+
+const handleKeyboardShow: KeyboardEventListener = (event) => {
+  console.log(event)
+  setIsKeyboardVisible(true)
+}
+
+const handleKeyboardHide: KeyboardEventListener = (event) => {
+  console.log(event)
+  setIsKeyboardVisible(true)
+}
 
   const handleBuyToken = () => {
     if (!buyAmount || !post) return;
@@ -112,219 +133,221 @@ export default function PostDetailsScreen() {
         </TouchableOpacity>
       </View>
 
-      <KeyboardAwareScrollView
+      <KeyboardAvoidingView
         className="flex-1"
-        enableOnAndroid={true}
-        enableAutomaticScroll={true}
-        keyboardOpeningTime={0}
-        extraScrollHeight={20}
-        showsVerticalScrollIndicator={false}
+        behavior={Platform.OS === 'ios'? "padding": "padding"}
+        keyboardVerticalOffset={100}
       >
-        {/* Post Content */}
-        <View className="border-b border-border bg-card p-4">
-          {/* Author Info */}
-          <View className="flex-row items-center gap-3">
-            <TouchableOpacity onPress={() => navigateToProfile(post.author.username)}>
-              {post.author.avatar ? (
-                <Image source={{ uri: post.author.avatar }} className="h-12 w-12 rounded-full" />
-              ) : (
-                <View className="h-12 w-12 items-center justify-center rounded-full bg-purple-200">
-                  <Icon as={User} size={24} className="text-purple-600" />
-                </View>
-              )}
-            </TouchableOpacity>
-            <View className="flex-1">
+        <View className="flex-1">
+          {/* Post Content */}
+          <View className="border-b border-border bg-card p-4">
+            {/* Author Info */}
+            <View className="flex-row items-center gap-3">
               <TouchableOpacity onPress={() => navigateToProfile(post.author.username)}>
-                <Text className="font-bold">{post.author.name || post.author.username}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigateToProfile(post.author.username)}>
-                <Text className="text-sm text-muted-foreground">@{post.author.username}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Post Text */}
-          <Text className="mt-4 text-lg">{post.content}</Text>
-
-          {/* Token Badge */}
-          {post.isTokenized && (
-            <View className="mt-3 flex-row items-center gap-2 self-start rounded-full bg-purple-100 px-3 py-1.5">
-              <Icon as={Coins} size={16} className="text-purple-600" />
-              <Text className="text-sm font-medium text-purple-600">
-                {post.tokenSupply} tokens @ {post.tokenPrice} SOL
-              </Text>
-              <Text className="text-xs text-purple-500">• {post.tokenHolders} holders</Text>
-            </View>
-          )}
-
-          {/* Images */}
-          {post.images && post.images.length > 0 && (
-            <View className={`mt-4 gap-2 ${post.images.length === 1 ? '' : 'flex-row flex-wrap'}`}>
-              {post.images.map((img, idx) => (
-                <Image
-                  key={idx}
-                  source={{ uri: img }}
-                  className={`rounded-xl ${
-                    post.images.length === 1 
-                      ? 'h-80 w-full' 
-                      : 'h-40 w-[48%]'
-                  }`}
-                  resizeMode="cover"
-                />
-              ))}
-            </View>
-          )}
-
-          {/* Timestamp */}
-          <Text className="mt-4 text-sm text-muted-foreground">
-            {formatTime(post.createdAt)}
-          </Text>
-
-          {/* Stats */}
-          <View className="mt-4 flex-row gap-6 border-t border-border pt-4">
-            <View>
-              <Text className="text-xl font-bold">{post.likesCount}</Text>
-              <Text className="text-sm text-muted-foreground">Likes</Text>
-            </View>
-            <View>
-              <Text className="text-xl font-bold">{post.commentsCount}</Text>
-              <Text className="text-sm text-muted-foreground">Comments</Text>
-            </View>
-            <View>
-              <Text className="text-xl font-bold">{post.tipsCount || 0}</Text>
-              <Text className="text-sm text-muted-foreground">Tips</Text>
-            </View>
-            {post.isTokenized && (
-              <View>
-                <Text className="text-xl font-bold">{post.tokenHolders}</Text>
-                <Text className="text-sm text-muted-foreground">Holders</Text>
-              </View>
-            )}
-          </View>
-
-          {/* Tips Display */}
-          {post.totalTipsAmount > 0 && (
-            <View className="mt-3 rounded-lg bg-green-50 p-3">
-              <Text className="text-sm text-green-700">
-                💰 Received {post.totalTipsAmount.toFixed(4)} SOL in tips
-              </Text>
-            </View>
-          )}
-
-          {/* Action Buttons */}
-          <View className="mt-4 flex-row gap-3 border-t border-border pt-4">
-            <TouchableOpacity 
-              onPress={handleLike}
-              className={`flex-1 flex-row items-center justify-center gap-2 rounded-xl py-3 ${
-                post.isLiked ? 'bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900' : 'border border-border'
-              }`}
-            >
-              <Icon as={Heart} size={20} className={post.isLiked ? "text-red-600" : "text-foreground"} />
-              <Text className={`font-semibold ${post.isLiked ? 'text-red-600' : 'text-foreground'}`}>
-                {post.isLiked ? 'Liked' : 'Like'}
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              onPress={() => setShowTipModal(true)}
-              className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-green-600 py-3"
-            >
-              <Icon as={DollarSign} size={20} className="text-white" />
-              <Text className="font-semibold text-white">Tip</Text>
-            </TouchableOpacity>
-            
-            {post.isTokenized && (
-              <TouchableOpacity 
-                onPress={() => setShowBuyTokenModal(true)}
-                className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-purple-600 py-3"
-              >
-                <Icon as={Coins} size={20} className="text-white" />
-                <Text className="font-semibold text-white">Buy</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        {/* Comments Section Header */}
-        <View className="mt-2 bg-card">
-          <View className="border-b border-border px-4 py-3">
-            <Text className="font-bold">Comments ({post.commentsCount})</Text>
-          </View>
-        </View>
-
-        {/* Loading or Empty State */}
-        {isLoadingComments && (
-          <View className="items-center py-8">
-            <ActivityIndicator size="small" color="#9333ea" />
-          </View>
-        )}
-        {!isLoadingComments && comments.length === 0 && (
-          <View className="items-center py-8">
-            <Text className="text-muted-foreground">No comments yet</Text>
-            <Text className="mt-1 text-sm text-muted-foreground">Be the first to comment!</Text>
-          </View>
-        )}
-
-        {/* Comments List */}
-        {(comments as Comment[]).map((comment: Comment) => (
-          <View key={comment.id} className="border-b border-border p-4">
-            <View className="flex-row gap-3">
-              <TouchableOpacity onPress={() => navigateToProfile(comment.author.username)}>
-                {comment.author.avatar ? (
-                  <Image source={{ uri: comment.author.avatar }} className="h-8 w-8 rounded-full" />
+                {post.author.avatar ? (
+                  <Image source={{ uri: post.author.avatar }} className="h-12 w-12 rounded-full" />
                 ) : (
-                  <View className="h-8 w-8 items-center justify-center rounded-full bg-purple-200">
-                    <Icon as={User} size={16} className="text-purple-600" />
+                  <View className="h-12 w-12 items-center justify-center rounded-full bg-purple-200">
+                    <Icon as={User} size={24} className="text-purple-600" />
                   </View>
                 )}
               </TouchableOpacity>
               <View className="flex-1">
-                <View className="flex-row items-center gap-2">
-                  <TouchableOpacity onPress={() => navigateToProfile(comment.author.username)}>
-                    <Text className="font-semibold">{comment.author.name || comment.author.username}</Text>
-                  </TouchableOpacity>
-                  <Text className="text-sm text-muted-foreground">
-                    {formatTime(comment.createdAt)}
-                  </Text>
-                </View>
-                <Text className="mt-1">{comment.content}</Text>
-                {comment.repliesCount > 0 && (
-                  <TouchableOpacity className="mt-2">
-                    <Text className="text-sm text-purple-600">
-                      View {comment.repliesCount} {comment.repliesCount === 1 ? 'reply' : 'replies'}
-                    </Text>
-                  </TouchableOpacity>
-                )}
+                <TouchableOpacity onPress={() => navigateToProfile(post.author.username)}>
+                  <Text className="font-bold">{post.author.name || post.author.username}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigateToProfile(post.author.username)}>
+                  <Text className="text-sm text-muted-foreground">@{post.author.username}</Text>
+                </TouchableOpacity>
               </View>
             </View>
-          </View>
-        ))}
-      </KeyboardAwareScrollView>
 
-      {/* Fixed Comment Input at Bottom */}
-      <View className="border-t border-border bg-card p-4">
-        <View className="flex-row items-center gap-3">
-          <View className="h-10 w-10 items-center justify-center rounded-full bg-purple-200">
-            <Icon as={User} size={20} className="text-purple-600" />
+            {/* Post Text */}
+            <Text className="mt-4 text-lg">{post.content}</Text>
+
+            {/* Token Badge */}
+            {post.isTokenized && (
+              <View className="mt-3 flex-row items-center gap-2 self-start rounded-full bg-purple-100 px-3 py-1.5">
+                <Icon as={Coins} size={16} className="text-purple-600" />
+                <Text className="text-sm font-medium text-purple-600">
+                  {post.tokenSupply} tokens @ {post.tokenPrice} SOL
+                </Text>
+                <Text className="text-xs text-purple-500">• {post.tokenHolders} holders</Text>
+              </View>
+            )}
+
+            {/* Images */}
+            {post.images && post.images.length > 0 && (
+              <View className={`mt-4 gap-2 ${post.images.length === 1 ? '' : 'flex-row flex-wrap'}`}>
+                {post.images.map((img, idx) => (
+                  <Image
+                    key={idx}
+                    source={{ uri: img }}
+                    className={`rounded-xl ${
+                      post.images.length === 1 
+                        ? 'h-80 w-full' 
+                        : 'h-40 w-[48%]'
+                    }`}
+                    resizeMode="cover"
+                  />
+                ))}
+              </View>
+            )}
+
+            {/* Timestamp */}
+            <Text className="mt-4 text-sm text-muted-foreground">
+              {formatTime(post.createdAt)}
+            </Text>
+
+            {/* Stats */}
+            <View className="mt-4 flex-row gap-6 border-t border-border pt-4">
+              <View>
+                <Text className="text-xl font-bold">{post.likesCount}</Text>
+                <Text className="text-sm text-muted-foreground">Likes</Text>
+              </View>
+              <View>
+                <Text className="text-xl font-bold">{post.commentsCount}</Text>
+                <Text className="text-sm text-muted-foreground">Comments</Text>
+              </View>
+              <View>
+                <Text className="text-xl font-bold">{post.tipsCount || 0}</Text>
+                <Text className="text-sm text-muted-foreground">Tips</Text>
+              </View>
+              {post.isTokenized && (
+                <View>
+                  <Text className="text-xl font-bold">{post.tokenHolders}</Text>
+                  <Text className="text-sm text-muted-foreground">Holders</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Tips Display */}
+            {post.totalTipsAmount > 0 && (
+              <View className="mt-3 rounded-lg bg-green-50 p-3">
+                <Text className="text-sm text-green-700">
+                  💰 Received {post.totalTipsAmount.toFixed(4)} SOL in tips
+                </Text>
+              </View>
+            )}
+
+            {/* Action Buttons */}
+            <View className="mt-4 flex-row gap-3 border-t border-border pt-4">
+              <TouchableOpacity 
+                onPress={handleLike}
+                className={`flex-1 flex-row items-center justify-center gap-2 rounded-xl py-3 ${
+                  post.isLiked ? 'bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900' : 'border border-border'
+                }`}
+              >
+                <Icon as={Heart} size={20} className={post.isLiked ? "text-red-600" : "text-foreground"} />
+                <Text className={`font-semibold ${post.isLiked ? 'text-red-600' : 'text-foreground'}`}>
+                  {post.isLiked ? 'Liked' : 'Like'}
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                onPress={() => setShowTipModal(true)}
+                className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-green-600 py-3"
+              >
+                <Icon as={DollarSign} size={20} className="text-white" />
+                <Text className="font-semibold text-white">Tip</Text>
+              </TouchableOpacity>
+              
+              {post.isTokenized && (
+                <TouchableOpacity 
+                  onPress={() => setShowBuyTokenModal(true)}
+                  className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-purple-600 py-3"
+                >
+                  <Icon as={Coins} size={20} className="text-white" />
+                  <Text className="font-semibold text-white">Buy</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
-          <TextInput
-            value={commentText}
-            onChangeText={setCommentText}
-            placeholder="Add a comment..."
-            placeholderTextColor="#9ca3af"
-            className="flex-1 text-base text-foreground"
-            multiline
-            maxLength={500}
-          />
-          <TouchableOpacity
-            onPress={handleCreateComment}
-            disabled={!commentText.trim() || isCreatingComment}
-            className={`rounded-full p-2 ${commentText.trim() ? 'bg-purple-600' : 'bg-gray-300'}`}
-          >
-            <Icon as={Send} size={18} className="text-white" />
-          </TouchableOpacity>
+
+          {/* Comments Section Header */}
+          <View className="mt-2 bg-card">
+            <View className="border-b border-border px-4 py-3">
+              <Text className="font-bold">Comments ({post.commentsCount})</Text>
+            </View>
+          </View>
+
+          {/* Loading or Empty State */}
+          {isLoadingComments && (
+            <View className="items-center py-8">
+              <ActivityIndicator size="small" color="#9333ea" />
+            </View>
+          )}
+          {!isLoadingComments && comments.length === 0 && (
+            <View className="items-center py-8">
+              <Text className="text-muted-foreground">No comments yet</Text>
+              <Text className="mt-1 text-sm text-muted-foreground">Be the first to comment!</Text>
+            </View>
+          )}
+
+          {/* Comments List */}
+          {(comments as Comment[]).map((comment: Comment) => (
+            <View key={comment.id} className="border-b border-border p-4">
+              <View className="flex-row gap-3">
+                <TouchableOpacity onPress={() => navigateToProfile(comment.author.username)}>
+                  {comment.author.avatar ? (
+                    <Image source={{ uri: comment.author.avatar }} className="h-8 w-8 rounded-full" />
+                  ) : (
+                    <View className="h-8 w-8 items-center justify-center rounded-full bg-purple-200">
+                      <Icon as={User} size={16} className="text-purple-600" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+                <View className="flex-1">
+                  <View className="flex-row items-center gap-2">
+                    <TouchableOpacity onPress={() => navigateToProfile(comment.author.username)}>
+                      <Text className="font-semibold">{comment.author.name || comment.author.username}</Text>
+                    </TouchableOpacity>
+                    <Text className="text-sm text-muted-foreground">
+                      {formatTime(comment.createdAt)}
+                    </Text>
+                  </View>
+                  <Text className="mt-1">{comment.content}</Text>
+                  {comment.repliesCount > 0 && (
+                    <TouchableOpacity className="mt-2">
+                      <Text className="text-sm text-purple-600">
+                        View {comment.repliesCount} {comment.repliesCount === 1 ? 'reply' : 'replies'}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            </View>
+          ))}
         </View>
-      </View>
+
+        
+      </KeyboardAvoidingView>
+
+      {/* Comment Input at Bottom - Inside ScrollView */}
+        <View className="border-t border-border bg-card p-4">
+          <View className="flex-row items-center gap-3">
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-purple-200">
+              <Icon as={User} size={20} className="text-purple-600" />
+            </View>
+            <TextInput
+              value={commentText}
+              onChangeText={setCommentText}
+              placeholder="Add a comment..."
+              placeholderTextColor="#9ca3af"
+              className="flex-1 text-base text-foreground"
+              multiline
+              inputAccessoryViewID={InputAccessoryViewButton.nativeID}
+              maxLength={500}
+            />
+            <TouchableOpacity
+              onPress={handleCreateComment}
+              disabled={!commentText.trim() || isCreatingComment}
+              className={`rounded-full p-2 ${commentText.trim() ? 'bg-purple-600' : 'bg-gray-300'}`}
+            >
+              <Icon as={Send} size={18} className="text-white" />
+            </TouchableOpacity>
+          </View>
+        </View>
 
       {/* Tip Modal */}
       <Modal

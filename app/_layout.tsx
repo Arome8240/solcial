@@ -22,6 +22,7 @@ import { usePathname } from 'expo-router';
 import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
 import * as SplashScreen from 'expo-splash-screen';
+import {KeyboardProvider} from "react-native-keyboard-controller"
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -211,7 +212,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <QueryClientProvider client={queryClient}>
-        <RootLayoutContent />
+        <KeyboardProvider>
+          <RootLayoutContent />
+          </KeyboardProvider>
       </QueryClientProvider>
     </GestureHandlerRootView>
   );

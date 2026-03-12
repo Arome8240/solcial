@@ -26,6 +26,7 @@
         "foregroundImage": "./assets/images/appicon.png",
         "backgroundColor": "#ffffff"
       },
+      "softwareKeyboardLayoutMode":"pan",
       "package": "com.arome.dev.solcial",
       "notification": {
         "icon": "./assets/images/not.png",
