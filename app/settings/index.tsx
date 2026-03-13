@@ -56,7 +56,9 @@ export default function SettingsScreen() {
                 </View>
               </View>
             </TouchableOpacity>
+          </View>
 
+          <View className="mt-3">
             <LanguageSelector />
           </View>
         </View>

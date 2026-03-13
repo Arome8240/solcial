@@ -1,9 +1,8 @@
-import { View, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { View, TouchableOpacity, Modal, ScrollView, Alert } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { Globe, Check, X } from 'lucide-react-native';
-import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { toast } from 'sonner-native';
 
 const LANGUAGES = [
@@ -22,27 +21,16 @@ const LANGUAGES = [
 ];
 
 export function LanguageSelector() {
-  const { i18n } = useTranslation();
   const [showModal, setShowModal] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const [currentLang, setCurrentLang] = useState('en');
 
-  useEffect(() => {
-    // Check if i18n is initialized
-    if (i18n && i18n.isInitialized) {
-      setIsReady(true);
-    }
-  }, [i18n]);
+  const currentLanguage = LANGUAGES.find(lang => lang.code === currentLang) || LANGUAGES[0];
 
-  const currentLanguage = LANGUAGES.find(lang => lang.code === i18n?.language) || LANGUAGES[0];
-
-  const handleLanguageChange = async (languageCode: string) => {
+  const handleLanguageChange = (languageCode: string) => {
     try {
-      if (!i18n) {
-        toast.error('Translation system not ready');
-        return;
-      }
-      
-      await i18n.changeLanguage(languageCode);
+      // For now, just update local state
+      // i18n integration will be added later
+      setCurrentLang(languageCode);
       const language = LANGUAGES.find(lang => lang.code === languageCode);
       toast.success(`Language changed to ${language?.nativeName}`);
       setShowModal(false);
@@ -52,32 +40,10 @@ export function LanguageSelector() {
     }
   };
 
-  const handlePress = () => {
-    console.log('Language selector pressed, isReady:', isReady);
-    console.log('Current language:', i18n?.language);
-    setShowModal(true);
-  };
-
-  if (!isReady) {
-    return (
-      <View className="flex-row items-center justify-between rounded-2xl bg-card p-4 opacity-50">
-        <View className="flex-row items-center gap-3 flex-1">
-          <View className="h-10 w-10 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-            <Icon as={Globe} size={20} className="text-blue-600 dark:text-blue-300" />
-          </View>
-          <View className="flex-1">
-            <Text className="font-semibold">Language</Text>
-            <Text className="text-sm text-muted-foreground">Loading...</Text>
-          </View>
-        </View>
-      </View>
-    );
-  }
-
   return (
-    <>
+    <View>
       <TouchableOpacity
-        onPress={handlePress}
+        onPress={() => setShowModal(true)}
         className="flex-row items-center justify-between rounded-2xl bg-card p-4"
         activeOpacity={0.7}
       >
@@ -94,53 +60,42 @@ export function LanguageSelector() {
         </View>
       </TouchableOpacity>
 
-      {/* Language Selection Modal */}
       <Modal
         visible={showModal}
         transparent
         animationType="slide"
         onRequestClose={() => setShowModal(false)}
-        statusBarTranslucent
       >
-        <TouchableOpacity 
-          className="flex-1 bg-black/50 justify-end"
-          activeOpacity={1}
-          onPress={() => setShowModal(false)}
-        >
-          <TouchableOpacity 
-            activeOpacity={1}
-            onPress={(e) => e.stopPropagation()}
-          >
-            <View className="rounded-t-3xl bg-background p-6 max-h-[80%]">
-              <View className="flex-row items-center justify-between mb-4">
-                <Text className="text-2xl font-bold">Select Language</Text>
-                <TouchableOpacity onPress={() => setShowModal(false)}>
-                  <Icon as={X} size={24} className="text-foreground" />
-                </TouchableOpacity>
-              </View>
-
-              <ScrollView showsVerticalScrollIndicator={false}>
-                {LANGUAGES.map((language) => (
-                  <TouchableOpacity
-                    key={language.code}
-                    onPress={() => handleLanguageChange(language.code)}
-                    className="flex-row items-center justify-between rounded-xl bg-card p-4 mb-2"
-                    activeOpacity={0.7}
-                  >
-                    <View>
-                      <Text className="font-semibold">{language.nativeName}</Text>
-                      <Text className="text-sm text-muted-foreground">{language.name}</Text>
-                    </View>
-                    {i18n.language === language.code && (
-                      <Icon as={Check} size={20} className="text-purple-600" />
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+        <View className="flex-1 bg-black/50 justify-end">
+          <View className="rounded-t-3xl bg-background p-6 max-h-[80%]">
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-2xl font-bold">Select Language</Text>
+              <TouchableOpacity onPress={() => setShowModal(false)}>
+                <Icon as={X} size={24} className="text-foreground" />
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
-        </TouchableOpacity>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {LANGUAGES.map((language) => (
+                <TouchableOpacity
+                  key={language.code}
+                  onPress={() => handleLanguageChange(language.code)}
+                  className="flex-row items-center justify-between rounded-xl bg-card p-4 mb-2"
+                  activeOpacity={0.7}
+                >
+                  <View>
+                    <Text className="font-semibold">{language.nativeName}</Text>
+                    <Text className="text-sm text-muted-foreground">{language.name}</Text>
+                  </View>
+                  {currentLang === language.code && (
+                    <Icon as={Check} size={20} className="text-purple-600" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
       </Modal>
-    </>
+    </View>
   );
 }
