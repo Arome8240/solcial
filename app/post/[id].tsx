@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, ActivityIndicator, Image, TextInput, Modal, Platform, Share as RNShare , Keyboard, KeyboardEventListener, KeyboardAvoidingView} from 'react-native';
+import { View, TouchableOpacity, ActivityIndicator, Image, TextInput, Modal, Platform, Share as RNShare , Keyboard, KeyboardEventListener, KeyboardAvoidingView, ScrollView} from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { ArrowLeft, Heart, Share, User, Coins, DollarSign, Send } from 'lucide-react-native';
@@ -152,7 +152,11 @@ const handleKeyboardHide: KeyboardEventListener = (event) => {
         behavior={Platform.OS === 'ios'? "padding": "padding"}
         keyboardVerticalOffset={100}
       >
-        <View className="flex-1">
+        <ScrollView 
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* Post Content */}
           <View className="border-b border-border bg-card p-4">
             {/* Author Info */}
@@ -332,7 +336,7 @@ const handleKeyboardHide: KeyboardEventListener = (event) => {
               </View>
             </View>
           ))}
-        </View>
+        </ScrollView>
 
         
       </KeyboardAvoidingView>

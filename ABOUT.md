@@ -31,6 +31,9 @@ Display your digital collectibles on your profile. Solcial integrates with major
 
 ### Technology Stack
 
+**UI Design**
+- Figma
+
 **Frontend**
 - React Native for cross-platform mobile apps
 - Expo for rapid development and deployment
@@ -59,7 +62,7 @@ Arome Moses is a visionary entrepreneur passionate about decentralized technolog
 
 "Social media should empower people, not exploit them. We're building the platform we wish existed - one where creators own their work, users control their data, and communities benefit from the value they create."
 
-**Michael Gwanzang** - Co-Founder & Product Designer
+**Michael Gwanzwang** - Co-Founder & Product Designer
 
 Michael is an award-winning product designer focused on making Web3 accessible to everyone. His design philosophy centers on creating intuitive, beautiful experiences that hide complexity while maintaining power.
 
@@ -67,7 +70,7 @@ Michael is an award-winning product designer focused on making Web3 accessible t
 
 ### Advisors
 
-**Peter Adaaku (Sarface)** - Strategic Advisor
+**Peter Adaaku (Scarface)** - Strategic Advisor
 
 Peter Adaaku, known as Sarface, is the CEO and Co-Founder of Blockfuse, a leading blockchain development and consulting firm. With extensive experience in Web3 infrastructure and decentralized applications, Peter brings invaluable insights into blockchain scalability, user adoption strategies, and ecosystem development.
 
@@ -200,7 +203,7 @@ We're building a sustainable business that doesn't rely on selling user data or 
 **Discord**: [Your Discord link]
 Connect with the community, get support, and shape the platform's future.
 
-**Twitter/X**: @solcial
+**Twitter/X**: @solcialApp
 Follow for updates, announcements, and community highlights.
 
 **Telegram**: [Your Telegram link]

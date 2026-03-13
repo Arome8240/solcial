@@ -72,20 +72,35 @@ export default function SearchScreen() {
         api.searchTokens(query),
       ]);
 
+      console.log('Search responses:', {
+        users: usersRes,
+        posts: postsRes,
+        tokens: tokensRes,
+      });
+
+      // Handle users response
       if (usersRes.data && Array.isArray(usersRes.data)) {
         setUsers(usersRes.data as SearchUser[]);
+      } else if (Array.isArray(usersRes)) {
+        setUsers(usersRes as SearchUser[]);
       } else {
         setUsers([]);
       }
       
+      // Handle posts response
       if (postsRes.data && Array.isArray(postsRes.data)) {
         setPosts(postsRes.data as SearchPost[]);
+      } else if (Array.isArray(postsRes)) {
+        setPosts(postsRes as SearchPost[]);
       } else {
         setPosts([]);
       }
       
+      // Handle tokens response
       if (tokensRes.data && Array.isArray(tokensRes.data)) {
         setTokens(tokensRes.data as SearchToken[]);
+      } else if (Array.isArray(tokensRes)) {
+        setTokens(tokensRes as SearchToken[]);
       } else {
         setTokens([]);
       }

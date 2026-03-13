@@ -16,11 +16,12 @@ export function useComments(postId: string) {
     queryKey: ['comments', postId],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await api.getComments(postId, pageParam, 20);
+      console.log("Comments", response.data)
       if (response.error) throw new Error(response.error);
       return response.data;
     },
     getNextPageParam: (lastPage, pages) => {
-      return lastPage && lastPage.length === 20 ? pages.length + 1 : undefined;
+      return lastPage && Array.isArray(lastPage) && lastPage.length === 20 ? pages.length + 1 : undefined;
     },
     initialPageParam: 1,
     enabled: !!postId,
@@ -71,7 +72,7 @@ export function useReplies(commentId: string) {
       return response.data;
     },
     getNextPageParam: (lastPage, pages) => {
-      return lastPage && lastPage.length === 10 ? pages.length + 1 : undefined;
+      return lastPage && Array.isArray(lastPage) && lastPage.length === 10 ? pages.length + 1 : undefined;
     },
     initialPageParam: 1,
     enabled: !!commentId,
