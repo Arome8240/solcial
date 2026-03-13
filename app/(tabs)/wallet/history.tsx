@@ -1,22 +1,14 @@
 import { View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { ArrowUpRight, ArrowDownLeft, ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useWallet } from '@/hooks/useWallet';
-import { formatDistanceToNow } from 'date-fns';
 import type { Transaction } from '@/types';
+import { TransactionCard } from '@/components/wallet';
 
 export default function TransactionHistoryScreen() {
   const { transactions, isLoadingTransactions, fetchNextPage, hasNextPage, isFetchingNextPage } = useWallet();
-
-  const formatTime = (date: string) => {
-    try {
-      return formatDistanceToNow(new Date(date), { addSuffix: true });
-    } catch {
-      return '';
-    }
-  };
 
   return (
     <View className="flex-1 bg-background">
@@ -54,35 +46,17 @@ export default function TransactionHistoryScreen() {
           ) : (
             <>
               {transactions.map((tx: Transaction) => (
-                <TouchableOpacity
+                <TransactionCard
                   key={tx.signature}
+                  type={tx.type === 'airdrop' ? 'receive' : tx.type}
+                  amount={tx.amount}
+                  token="SOL"
+                  timestamp={tx.blockTime || new Date().toISOString()}
+                  status={tx.status}
+                  from={tx.type === 'receive' ? tx.fromAddress : undefined}
+                  to={tx.type === 'send' ? tx.toAddress : undefined}
                   onPress={() => router.push(`/transaction/${tx.signature}`)}
-                  className="mb-3 flex-row items-center justify-between rounded-2xl bg-card p-4"
-                >
-                  <View className="flex-row items-center gap-3">
-                    <View className={`h-12 w-12 items-center justify-center rounded-full ${tx.type === 'receive' ? 'bg-green-100' : 'bg-purple-100'}`}>
-                      <Icon 
-                        as={tx.type === 'receive' ? ArrowDownLeft : ArrowUpRight} 
-                        size={20} 
-                        className={tx.type === 'receive' ? 'text-green-600' : 'text-purple-600'}
-                      />
-                    </View>
-                    <View>
-                      <Text className="font-semibold">
-                        {tx.type === 'receive' ? 'Received' : tx.type === 'send' ? 'Sent' : 'Airdrop'}
-                      </Text>
-                      <Text className="text-sm text-muted-foreground">
-                        {tx.blockTime ? formatTime(tx.blockTime) : 'Pending'}
-                      </Text>
-                    </View>
-                  </View>
-                  <View className="items-end">
-                    <Text className={`font-semibold ${tx.type === 'receive' ? 'text-green-600' : 'text-foreground'}`}>
-                      {tx.type === 'receive' ? '+' : '-'}{tx.amount.toFixed(4)} SOL
-                    </Text>
-                    <Text className="text-sm text-muted-foreground capitalize">{tx.status}</Text>
-                  </View>
-                </TouchableOpacity>
+                />
               ))}
               {isFetchingNextPage && (
                 <View className="py-4">

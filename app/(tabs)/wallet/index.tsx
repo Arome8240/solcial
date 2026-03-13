@@ -8,12 +8,12 @@ import { useTokenHoldings } from '@/hooks/usePortfolio';
 import { useAuth } from '@/hooks/useAuth';
 import { useAllTokenPrices } from '@/hooks/useTokenPrice';
 import { useSeekerBalance } from '@/hooks/useSeekerBalance';
-import { formatDistanceToNow } from 'date-fns';
 import type { Transaction, User } from '@/types';
 import { TOKENS } from '@/lib/tokens';
+import { TransactionCard } from '@/components/wallet';
 
 export default function WalletScreen() {
-  const { balance, walletAddress, isLoadingBalance, refetchBalance, transactions, isLoadingTransactions, fetchNextPage, hasNextPage, isFetchingNextPage } = useWallet();
+  const { balance, walletAddress, isLoadingBalance, refetchBalance, transactions, isLoadingTransactions } = useWallet();
   const { user } = useAuth();
   const userId = (user as User)?.id || '';
   const { holdings, totalValue, isLoading: isLoadingHoldings, refetch: refetchHoldings } = useTokenHoldings(userId);
@@ -33,14 +33,6 @@ export default function WalletScreen() {
 
   const handleRefresh = async () => {
     await Promise.all([refetchBalance(), refetchHoldings(), refetchSeekerBalance(), refetchPrices()]);
-  };
-
-  const formatTime = (date: string) => {
-    try {
-      return formatDistanceToNow(new Date(date), { addSuffix: true });
-    } catch {
-      return '';
-    }
   };
 
   return (
@@ -215,35 +207,17 @@ export default function WalletScreen() {
               </View>
             ) : (
               transactions.slice(0, 5).map((tx: Transaction) => (
-                <TouchableOpacity
+                <TransactionCard
                   key={tx.signature}
+                  type={tx.type === 'airdrop' ? 'receive' : tx.type}
+                  amount={tx.amount}
+                  token="SOL"
+                  timestamp={tx.blockTime || new Date().toISOString()}
+                  status={tx.status}
+                  from={tx.type === 'receive' ? tx.fromAddress : undefined}
+                  to={tx.type === 'send' ? tx.toAddress : undefined}
                   onPress={() => router.push(`/transaction/${tx.signature}`)}
-                  className="mb-3 flex-row items-center justify-between rounded-2xl bg-card p-4"
-                >
-                  <View className="flex-row items-center gap-3">
-                    <View className={`h-12 w-12 items-center justify-center rounded-full ${tx.type === 'receive' ? 'bg-green-100' : 'bg-purple-100'}`}>
-                      <Icon 
-                        as={tx.type === 'receive' ? ArrowDownLeft : ArrowUpRight} 
-                        size={20} 
-                        className={tx.type === 'receive' ? 'text-green-600' : 'text-purple-600'}
-                      />
-                    </View>
-                    <View>
-                      <Text className="font-semibold">
-                        {tx.type === 'receive' ? 'Received' : tx.type === 'send' ? 'Sent' : 'Airdrop'}
-                      </Text>
-                      <Text className="text-sm text-muted-foreground">
-                        {tx.blockTime ? formatTime(tx.blockTime) : 'Pending'}
-                      </Text>
-                    </View>
-                  </View>
-                  <View className="items-end">
-                    <Text className={`font-semibold ${tx.type === 'receive' ? 'text-green-600' : 'text-foreground'}`}>
-                      {tx.type === 'receive' ? '+' : '-'}{tx.amount.toFixed(4)} SOL
-                    </Text>
-                    <Text className="text-sm text-muted-foreground capitalize">{tx.status}</Text>
-                  </View>
-                </TouchableOpacity>
+                />
               ))
             )}
           </View>

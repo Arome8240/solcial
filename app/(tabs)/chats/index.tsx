@@ -1,15 +1,16 @@
-import { View, ScrollView, TouchableOpacity, TextInput, RefreshControl, ActivityIndicator, Image, Modal } from 'react-native';
+import { View, ScrollView, TouchableOpacity, TextInput, RefreshControl, ActivityIndicator, Modal } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { Search, Plus, X, User } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useChats } from '@/hooks/useChats';
-import { formatDistanceToNow } from 'date-fns';
 import type { Chat } from '@/types';
 import { PusherStatus } from '@/components/PusherStatus';
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import { toast } from 'sonner-native';
+import { ChatCard } from '@/components/chat';
+import { Avatar } from '@/components/common';
 
 interface SearchUser {
   id: string;
@@ -29,14 +30,6 @@ export default function ChatsScreen() {
   console.log('[ChatsScreen] Chats count:', chats?.length || 0);
   console.log('[ChatsScreen] Is loading:', isLoading);
   console.log('[ChatsScreen] First chat:', chats?.[0]);
-
-  const formatTime = (date: string) => {
-    try {
-      return formatDistanceToNow(new Date(date), { addSuffix: false }).replace('about ', '');
-    } catch {
-      return '';
-    }
-  };
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -117,39 +110,22 @@ export default function ChatsScreen() {
             </View>
           ) : (
             chats.map((chat: Chat) => (
-              <TouchableOpacity
+              <ChatCard
                 key={chat.id}
+                id={chat.id}
+                participant={{
+                  avatar: chat.otherParticipant?.avatar,
+                  name: chat.otherParticipant?.name,
+                  username: chat.otherParticipant?.username || 'unknown',
+                }}
+                lastMessage={chat.lastMessage ? {
+                  content: chat.lastMessage,
+                  timestamp: chat.lastMessageAt || new Date().toISOString(),
+                  isRead: true,
+                } : undefined}
+                unreadCount={0}
                 onPress={() => router.push(`/chats/${chat.id}`)}
-                className="flex-row items-center gap-3 border-b border-border py-4"
-              >
-                <View className="relative">
-                  {chat.otherParticipant?.avatar ? (
-                    <Image 
-                      source={{ uri: chat.otherParticipant.avatar }} 
-                      className="h-14 w-14 rounded-full"
-                    />
-                  ) : (
-                    <View className="h-14 w-14 items-center justify-center rounded-full bg-purple-200 dark:bg-purple-900">
-                      <Text className="text-xl font-bold text-purple-600 dark:text-purple-300">
-                        {chat.otherParticipant?.name?.charAt(0)?.toUpperCase() || chat.otherParticipant?.username?.charAt(0)?.toUpperCase() || '?'}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <View className="flex-1">
-                  <View className="flex-row items-center justify-between">
-                    <Text className="font-semibold">
-                      {chat.otherParticipant?.name || chat.otherParticipant?.username || 'Unknown'}
-                    </Text>
-                    <Text className="text-sm text-muted-foreground">
-                      {chat.lastMessageAt ? formatTime(chat.lastMessageAt) : ''}
-                    </Text>
-                  </View>
-                  <Text className="mt-1 text-sm text-muted-foreground" numberOfLines={1}>
-                    {chat.lastMessage || 'No messages yet'}
-                  </Text>
-                </View>
-              </TouchableOpacity>
+              />
             ))
           )}
         </View>
@@ -221,16 +197,12 @@ export default function ChatsScreen() {
                     disabled={isCreatingChat}
                     className="flex-row items-center gap-3 border-b border-border py-4"
                   >
-                    {user.avatar ? (
-                      <Image 
-                        source={{ uri: user.avatar }} 
-                        className="h-12 w-12 rounded-full"
-                      />
-                    ) : (
-                      <View className="h-12 w-12 items-center justify-center rounded-full bg-purple-200 dark:bg-purple-900">
-                        <Icon as={User} size={20} className="text-purple-600 dark:text-purple-300" />
-                      </View>
-                    )}
+                    <Avatar
+                      uri={user.avatar}
+                      name={user.name}
+                      username={user.username}
+                      size="md"
+                    />
                     <View className="flex-1">
                       <Text className="font-semibold">{user.name || user.username}</Text>
                       <Text className="text-sm text-muted-foreground">@{user.username}</Text>

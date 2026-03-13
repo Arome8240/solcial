@@ -1,7 +1,7 @@
 import { Modal, View, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { Share, Edit } from 'lucide-react-native';
+import { Share, Edit, Settings } from 'lucide-react-native';
 import { router } from 'expo-router';
 
 interface ProfileMenuProps {
@@ -45,10 +45,21 @@ export function ProfileMenu({ visible, onClose }: ProfileMenuProps) {
               onClose();
               router.push('/profile/edit');
             }}
-            className="flex-row items-center gap-4 px-6 py-5"
+            className="flex-row items-center gap-4 border-b border-border px-6 py-5"
           >
             <Icon as={Edit} size={24} className="text-foreground" />
             <Text className="text-lg font-semibold">Edit Profile</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => {
+              onClose();
+              router.push('/settings');
+            }}
+            className="flex-row items-center gap-4 px-6 py-5"
+          >
+            <Icon as={Settings} size={24} className="text-foreground" />
+            <Text className="text-lg font-semibold">Settings</Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>

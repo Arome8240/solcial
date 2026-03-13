@@ -5,6 +5,8 @@ const KEYS = {
   USER: '@solcial:user',
   ONBOARDING_COMPLETED: '@solcial:onboarding_completed',
   FIRST_TIME_USER: '@solcial:first_time_user',
+  BIOMETRIC_ENABLED: '@solcial:biometric_enabled',
+  BIOMETRIC_CREDENTIALS: '@solcial:biometric_credentials',
 };
 
 export const storage = {
@@ -59,5 +61,29 @@ export const storage = {
     const firstTime = await AsyncStorage.getItem(KEYS.FIRST_TIME_USER);
     // If not set, default to true (first time)
     return firstTime === null ? true : firstTime === 'true';
+  },
+
+  // Biometric
+  async setBiometricEnabled(enabled: boolean) {
+    await AsyncStorage.setItem(KEYS.BIOMETRIC_ENABLED, enabled ? 'true' : 'false');
+  },
+
+  async getBiometricEnabled() {
+    const enabled = await AsyncStorage.getItem(KEYS.BIOMETRIC_ENABLED);
+    return enabled === 'true';
+  },
+
+  async saveBiometricCredentials(email: string, password: string) {
+    const credentials = { email, password };
+    await AsyncStorage.setItem(KEYS.BIOMETRIC_CREDENTIALS, JSON.stringify(credentials));
+  },
+
+  async getBiometricCredentials() {
+    const credentials = await AsyncStorage.getItem(KEYS.BIOMETRIC_CREDENTIALS);
+    return credentials ? JSON.parse(credentials) : null;
+  },
+
+  async removeBiometricCredentials() {
+    await AsyncStorage.removeItem(KEYS.BIOMETRIC_CREDENTIALS);
   },
 };
