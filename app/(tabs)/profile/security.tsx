@@ -175,14 +175,17 @@ export default function SecurityPrivacyScreen() {
             WALLET SECURITY
           </Text>
 
-          <TouchableOpacity className="mb-3 flex-row items-center gap-4 rounded-2xl bg-card p-4">
+          <TouchableOpacity 
+            onPress={() => router.push('/(tabs)/profile/recovery-phrase')}
+            className="mb-3 flex-row items-center gap-4 rounded-2xl bg-card p-4"
+          >
             <View className="h-12 w-12 items-center justify-center rounded-full bg-purple-100">
               <Icon as={Lock} size={24} className="text-purple-600" />
             </View>
             <View className="flex-1">
               <Text className="font-semibold">Recovery Phrase</Text>
               <Text className="text-sm text-muted-foreground">
-                View and backup your recovery phrase
+                View wallet information and security
               </Text>
             </View>
             <Icon as={ChevronRight} size={20} className="text-muted-foreground" />
