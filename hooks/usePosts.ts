@@ -253,7 +253,8 @@ export function useUserPosts(username: string, enabled: boolean = true) {
     queryFn: async ({ pageParam = 1 }) => {
       const response = await api.getUserPosts(username, pageParam as number, 20);
       if (response.error) throw new Error(response.error);
-      return response.data as Post[];
+      console.log('[useUserPosts] Response:', response.data);
+      return (response.data || []) as Post[];
     },
     getNextPageParam: (lastPage, pages) => {
       return Array.isArray(lastPage) && lastPage.length === 20 ? pages.length + 1 : undefined;
@@ -263,6 +264,7 @@ export function useUserPosts(username: string, enabled: boolean = true) {
   });
 
   const posts = data?.pages.flat() || [];
+  console.log('[useUserPosts] Posts count:', posts.length);
 
   return {
     posts,
