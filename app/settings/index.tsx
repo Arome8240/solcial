@@ -5,11 +5,9 @@ import { ArrowLeft, User, Bell, Lock, Shield, HelpCircle, LogOut } from 'lucide-
 import { router } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { BiometricSettings, TwoFactorSettings, LanguageSelector } from '@/components/settings';
-import { useTranslation } from 'react-i18next';
 
 export default function SettingsScreen() {
   const { logout } = useAuth();
-  const { t } = useTranslation();
 
   const handleSignOut = () => {
     logout();
@@ -23,14 +21,14 @@ export default function SettingsScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <Icon as={ArrowLeft} size={24} className="text-foreground" />
           </TouchableOpacity>
-          <Text className="text-2xl font-bold">{t('settings.settings')}</Text>
+          <Text className="text-2xl font-bold">Settings</Text>
         </View>
       </View>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Account Section */}
         <View className="px-4 pt-6">
-          <Text className="mb-3 text-sm font-semibold text-muted-foreground">{t('settings.account').toUpperCase()}</Text>
+          <Text className="mb-3 text-sm font-semibold text-muted-foreground">ACCOUNT</Text>
           
           <View className="gap-3">
             <TouchableOpacity className="flex-row items-center justify-between rounded-2xl bg-card p-4">
@@ -51,8 +49,8 @@ export default function SettingsScreen() {
                   <Icon as={Bell} size={20} className="text-blue-600 dark:text-blue-300" />
                 </View>
                 <View>
-                  <Text className="font-semibold">{t('settings.notifications')}</Text>
-                  <Text className="text-sm text-muted-foreground">{t('settings.notificationPreferences')}</Text>
+                  <Text className="font-semibold">Notifications</Text>
+                  <Text className="text-sm text-muted-foreground">Manage notification preferences</Text>
                 </View>
               </View>
             </TouchableOpacity>
@@ -65,7 +63,7 @@ export default function SettingsScreen() {
 
         {/* Security Section */}
         <View className="px-4 pt-6">
-          <Text className="mb-3 text-sm font-semibold text-muted-foreground">{t('settings.security').toUpperCase()}</Text>
+          <Text className="mb-3 text-sm font-semibold text-muted-foreground">SECURITY</Text>
           
           <View className="gap-3">
             <BiometricSettings />
@@ -100,7 +98,7 @@ export default function SettingsScreen() {
 
         {/* Support Section */}
         <View className="px-4 pt-6">
-          <Text className="mb-3 text-sm font-semibold text-muted-foreground">{t('settings.help').toUpperCase()}</Text>
+          <Text className="mb-3 text-sm font-semibold text-muted-foreground">HELP & SUPPORT</Text>
           
           <View className="gap-3">
             <TouchableOpacity className="flex-row items-center justify-between rounded-2xl bg-card p-4">
@@ -124,7 +122,7 @@ export default function SettingsScreen() {
             className="flex-row items-center justify-center gap-2 rounded-2xl bg-red-50 p-4 dark:bg-red-950/30"
           >
             <Icon as={LogOut} size={20} className="text-red-600" />
-            <Text className="font-semibold text-red-600">{t('auth.signOut')}</Text>
+            <Text className="font-semibold text-red-600">Sign Out</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

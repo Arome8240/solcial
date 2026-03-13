@@ -1,8 +1,8 @@
-import { View, TouchableOpacity, Modal, ScrollView, Alert } from 'react-native';
+import { View, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { Globe, Check, X } from 'lucide-react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner-native';
 
 const LANGUAGES = [
@@ -24,9 +24,19 @@ export function LanguageSelector() {
   const [showModal, setShowModal] = useState(false);
   const [currentLang, setCurrentLang] = useState('en');
 
+  useEffect(() => {
+    console.log('LanguageSelector mounted');
+  }, []);
+
   const currentLanguage = LANGUAGES.find(lang => lang.code === currentLang) || LANGUAGES[0];
 
+  const handlePress = () => {
+    console.log('Language button pressed');
+    setShowModal(true);
+  };
+
   const handleLanguageChange = (languageCode: string) => {
+    console.log('Language selected:', languageCode);
     try {
       // For now, just update local state
       // i18n integration will be added later
@@ -43,7 +53,7 @@ export function LanguageSelector() {
   return (
     <View>
       <TouchableOpacity
-        onPress={() => setShowModal(true)}
+        onPress={handlePress}
         className="flex-row items-center justify-between rounded-2xl bg-card p-4"
         activeOpacity={0.7}
       >
