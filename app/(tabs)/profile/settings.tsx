@@ -1,7 +1,7 @@
-import { View, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
+import { View, ScrollView, TouchableOpacity, Switch, Alert, Modal } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
-import { Grid, Users, Bell, Moon, Globe, HelpCircle, FileText, LogOut, ChevronRight } from 'lucide-react-native';
+import { Grid, Users, Bell, Moon, Globe, HelpCircle, FileText, LogOut, ChevronRight, Check, X } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,19 +11,92 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { api } from '@/lib/api';
 import { toast } from 'sonner-native';
+import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { User } from '@/types';
+
+const LANGUAGES = [
+  { code: 'en', name: 'English', nativeName: 'English' },
+  { code: 'es', name: 'Spanish', nativeName: 'Español' },
+  { code: 'fr', name: 'French', nativeName: 'Français' },
+  { code: 'de', name: 'German', nativeName: 'Deutsch' },
+  { code: 'zh', name: 'Chinese', nativeName: '中文' },
+  { code: 'ja', name: 'Japanese', nativeName: '日本語' },
+  { code: 'ko', name: 'Korean', nativeName: '한국어' },
+  { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
+  { code: 'pt', name: 'Portuguese', nativeName: 'Português' },
+  { code: 'ru', name: 'Russian', nativeName: 'Русский' },
+  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
+  { code: 'it', name: 'Italian', nativeName: 'Italiano' },
+];
 
 export default function SettingsScreen() {
   const [notifications, setNotifications] = useState(false);
   const { theme, toggleTheme } = useThemeStore();
-  const { logout } = useAuth();
+  const [showModal, setShowModal] = useState(false);
+  const [currentLang, setCurrentLang] = useState('en');
+  const { logout, user } = useAuth();
+  const { i18n } = useTranslation();
 
   useEffect(() => {
     checkNotificationStatus();
+    loadLanguagePreference();
   }, []);
+
+  const loadLanguagePreference = async () => {
+    try {
+      // First try to get from user profile
+      const userWithLang = user as User | null;
+      if (userWithLang?.language) {
+        setCurrentLang(userWithLang.language);
+        await i18n.changeLanguage(userWithLang.language);
+      } else {
+        // Fallback to AsyncStorage
+        const savedLang = await AsyncStorage.getItem('userLanguage');
+        if (savedLang) {
+          setCurrentLang(savedLang);
+          await i18n.changeLanguage(savedLang);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading language preference:', error);
+    }
+  };
 
   const checkNotificationStatus = async () => {
     const { status } = await ExpoNotifications.getPermissionsAsync();
     setNotifications(status === 'granted');
+  };
+
+  const handlePress = () => {
+    console.log('Language button pressed');
+    setShowModal(true);
+  };
+
+  const handleLanguageChange = async (languageCode: string) => {
+    console.log('Language selected:', languageCode);
+    try {
+      // Update i18n
+      await i18n.changeLanguage(languageCode);
+      
+      // Save to AsyncStorage
+      await AsyncStorage.setItem('userLanguage', languageCode);
+      
+      // Save to backend
+      const response = await api.updateLanguage(languageCode);
+      
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      
+      setCurrentLang(languageCode);
+      const language = LANGUAGES.find(lang => lang.code === languageCode);
+      toast.success(`Language changed to ${language?.nativeName}`);
+      setShowModal(false);
+    } catch (error) {
+      console.error('Language change error:', error);
+      toast.error('Failed to change language');
+    }
   };
 
   const handleLogout = () => {
@@ -54,12 +127,12 @@ export default function SettingsScreen() {
       // Request permission and register token
       const { status: existingStatus } = await ExpoNotifications.getPermissionsAsync();
       let finalStatus = existingStatus;
-      
+
       if (existingStatus !== 'granted') {
         const { status } = await ExpoNotifications.requestPermissionsAsync();
         finalStatus = status;
       }
-      
+
       if (finalStatus !== 'granted') {
         toast.error('Failed to get push notification permissions');
         setNotifications(false);
@@ -79,15 +152,15 @@ export default function SettingsScreen() {
       // Get push token
       try {
         const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-        
+
         if (!projectId) {
           toast.error('Push notifications require EAS Build');
           setNotifications(false);
           return;
         }
-        
+
         const token = (await ExpoNotifications.getExpoPushTokenAsync({ projectId })).data;
-        
+
         // Register token with backend
         const response = await api.registerPushToken(token);
         if (response.error) {
@@ -95,18 +168,18 @@ export default function SettingsScreen() {
           setNotifications(false);
           return;
         }
-        
+
         setNotifications(true);
         toast.success('Notifications enabled!');
       } catch (error: any) {
         console.error('Error getting push token:', error);
-        
+
         if (__DEV__) {
           toast.error('Push notifications not available in dev build');
         } else {
           toast.error('Failed to enable notifications');
         }
-        
+
         setNotifications(false);
       }
     } else {
@@ -130,7 +203,7 @@ export default function SettingsScreen() {
             ACCOUNT
           </Text>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => router.push('/profile/edit')}
             className="mb-3 flex-row items-center gap-4 rounded-2xl bg-card p-4"
           >
@@ -146,7 +219,7 @@ export default function SettingsScreen() {
             <Icon as={ChevronRight} size={20} className="text-muted-foreground" />
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => router.push('/profile/security')}
             className="flex-row items-center gap-4 rounded-2xl bg-card p-4"
           >
@@ -205,13 +278,18 @@ export default function SettingsScreen() {
             />
           </View>
 
-          <TouchableOpacity className="flex-row items-center gap-4 rounded-2xl bg-card p-4">
+          <TouchableOpacity 
+            onPress={handlePress}
+            className="flex-row items-center gap-4 rounded-2xl bg-card p-4"
+          >
             <View className="h-12 w-12 items-center justify-center rounded-full bg-purple-100">
               <Icon as={Globe} size={24} className="text-purple-600" />
             </View>
             <View className="flex-1">
               <Text className="font-semibold">Language</Text>
-              <Text className="text-sm text-muted-foreground">English US</Text>
+              <Text className="text-sm text-muted-foreground">
+                {LANGUAGES.find(lang => lang.code === currentLang)?.nativeName || 'English'}
+              </Text>
             </View>
             <Icon as={ChevronRight} size={20} className="text-muted-foreground" />
           </TouchableOpacity>
@@ -223,7 +301,7 @@ export default function SettingsScreen() {
             SUPPORT
           </Text>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => router.push('/profile/help')}
             className="mb-3 flex-row items-center gap-4 rounded-2xl bg-card p-4"
           >
@@ -239,7 +317,7 @@ export default function SettingsScreen() {
             <Icon as={ChevronRight} size={20} className="text-muted-foreground" />
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => router.push('/profile/terms')}
             className="flex-row items-center gap-4 rounded-2xl bg-card p-4"
           >
@@ -267,6 +345,52 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <LanguageModal 
+        showModal={showModal}
+        setShowModal={setShowModal}
+        currentLang={currentLang}
+        handleLanguageChange={handleLanguageChange}
+      />
     </View>
   );
+}
+
+const LanguageModal = ({ showModal, setShowModal, currentLang, handleLanguageChange }: { showModal: boolean; currentLang: string; setShowModal: (value: boolean) => void; handleLanguageChange: (code: string) => void; }) => {
+  return (<Modal
+    visible={showModal}
+    transparent
+    animationType="slide"
+    onRequestClose={() => setShowModal(false)}
+  >
+    <View className="flex-1 bg-black/50 justify-end">
+      <View className="rounded-t-3xl bg-background p-6 max-h-[80%]">
+        <View className="flex-row items-center justify-between mb-4">
+          <Text className="text-2xl font-bold">Select Language</Text>
+          <TouchableOpacity onPress={() => setShowModal(false)}>
+            <Icon as={X} size={24} className="text-foreground" />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {LANGUAGES.map((language) => (
+            <TouchableOpacity
+              key={language.code}
+              onPress={() => handleLanguageChange(language.code)}
+              className="flex-row items-center justify-between rounded-xl bg-card p-4 mb-2"
+              activeOpacity={0.7}
+            >
+              <View>
+                <Text className="font-semibold">{language.nativeName}</Text>
+                <Text className="text-sm text-muted-foreground">{language.name}</Text>
+              </View>
+              {currentLang === language.code && (
+                <Icon as={Check} size={20} className="text-purple-600" />
+              )}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    </View>
+  </Modal>)
 }

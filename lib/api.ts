@@ -96,6 +96,13 @@ class ApiClient {
     });
   }
 
+  async updateLanguage(language: string) {
+    return this.request('/users/language', {
+      method: 'PUT',
+      body: JSON.stringify({ language }),
+    });
+  }
+
   async getUserByUsername(username: string) {
     return this.request(`/users/username/${username}`);
   }

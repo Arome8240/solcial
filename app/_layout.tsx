@@ -24,6 +24,7 @@ import * as Notifications from 'expo-notifications';
 import * as Linking from 'expo-linking';
 import * as SplashScreen from 'expo-splash-screen';
 import {KeyboardProvider} from "react-native-keyboard-controller"
+import { useLanguage } from '@/hooks/useLanguage';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -60,6 +61,9 @@ function RootLayoutContent() {
   const pathname = usePathname();
   const notificationListener = useRef<Notifications.EventSubscription | null>(null);
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
+  
+  // Initialize language preference
+  useLanguage();
 
   // Load saved theme preference on mount
   useEffect(() => {

@@ -11,6 +11,7 @@ export interface User {
   followersCount: number;
   followingCount: number;
   postsCount: number;
+  language?: string;
   createdAt: string;
 }
 
