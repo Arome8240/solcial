@@ -3,7 +3,7 @@ import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { Coins, TrendingUp, TrendingDown } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { EmptyState } from './EmptyState';
+import { EmptyState } from '../common/EmptyState';
 
 interface PortfolioTabProps {
   portfolio: any;

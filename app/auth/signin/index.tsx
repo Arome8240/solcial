@@ -14,6 +14,10 @@ export default function SignInScreen() {
     router.push('/auth/email');
   };
 
+  const handleForgotPassword = () => {
+    router.push('/auth/forgot-password');
+  };
+
   return (
     <AuthLayout>
       <View className="flex-1 px-5 pt-16">
@@ -24,6 +28,7 @@ export default function SignInScreen() {
         <SignInForm
           onSubmit={handleSignIn}
           onSignUp={handleSignUp}
+          onForgotPassword={handleForgotPassword}
           isSubmitting={isSigningIn}
         />
       </View>

@@ -1,7 +1,7 @@
 import { View, ActivityIndicator } from 'react-native';
 import { CloudOff } from 'lucide-react-native';
 import { PostCard } from './PostCard';
-import { EmptyState } from './EmptyState';
+import { EmptyState } from '../common/EmptyState';
 import type { Post } from '@/types';
 
 interface LikesTabProps {

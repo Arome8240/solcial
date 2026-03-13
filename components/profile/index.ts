@@ -3,7 +3,7 @@ export { ProfileHeader } from './ProfileHeader';
 export { ProfileCard } from './ProfileCard';
 export { ProfileTabs } from './ProfileTabs';
 export { PostCard } from './PostCard';
-export { EmptyState } from './EmptyState';
+export { EmptyState } from '../common/EmptyState';
 export { PostsTab } from './PostsTab';
 export { PortfolioTab } from './PortfolioTab';
 export { RepliesTab } from './RepliesTab';

@@ -127,8 +127,9 @@ export default function SearchScreen() {
     if (users.length === 0 && searchQuery.length >= 2) {
       return (
         <EmptyState
+          icon={SearchIcon}
           message="No users found"
-          description="Try searching with a different keyword"
+          subtitle="Try searching with a different keyword"
         />
       );
     }
@@ -154,8 +155,9 @@ export default function SearchScreen() {
     if (posts.length === 0 && searchQuery.length >= 2) {
       return (
         <EmptyState
+          icon={SearchIcon}
           message="No posts found"
-          description="Try searching with a different keyword"
+          subtitle="Try searching with a different keyword"
         />
       );
     }
@@ -181,8 +183,9 @@ export default function SearchScreen() {
     if (tokens.length === 0 && searchQuery.length >= 2) {
       return (
         <EmptyState
+          icon={SearchIcon}
           message="No tokens found"
-          description="Try searching with a different keyword"
+          subtitle="Try searching with a different keyword"
         />
       );
     }
@@ -250,7 +253,7 @@ export default function SearchScreen() {
           <EmptyState
             icon={SearchIcon}
             message="Search for users, posts, or tokens"
-            description="Enter at least 2 characters to start searching"
+            subtitle="Enter at least 2 characters to start searching"
           />
         ) : (
           <>

@@ -7,6 +7,8 @@ const KEYS = {
   FIRST_TIME_USER: '@solcial:first_time_user',
   BIOMETRIC_ENABLED: '@solcial:biometric_enabled',
   BIOMETRIC_CREDENTIALS: '@solcial:biometric_credentials',
+  TWO_FA_ENABLED: '@solcial:2fa_enabled',
+  RECOVERY_CODES: '@solcial:recovery_codes',
 };
 
 export const storage = {
@@ -85,5 +87,28 @@ export const storage = {
 
   async removeBiometricCredentials() {
     await AsyncStorage.removeItem(KEYS.BIOMETRIC_CREDENTIALS);
+  },
+
+  // Two-Factor Authentication
+  async set2FAEnabled(enabled: boolean) {
+    await AsyncStorage.setItem(KEYS.TWO_FA_ENABLED, enabled ? 'true' : 'false');
+  },
+
+  async get2FAEnabled() {
+    const enabled = await AsyncStorage.getItem(KEYS.TWO_FA_ENABLED);
+    return enabled === 'true';
+  },
+
+  async saveRecoveryCodes(codes: string[]) {
+    await AsyncStorage.setItem(KEYS.RECOVERY_CODES, JSON.stringify(codes));
+  },
+
+  async getRecoveryCodes() {
+    const codes = await AsyncStorage.getItem(KEYS.RECOVERY_CODES);
+    return codes ? JSON.parse(codes) : null;
+  },
+
+  async removeRecoveryCodes() {
+    await AsyncStorage.removeItem(KEYS.RECOVERY_CODES);
   },
 };

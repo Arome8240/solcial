@@ -5,6 +5,7 @@ import { ArrowLeft, User, Bell, Lock, Shield, HelpCircle, LogOut } from 'lucide-
 import { router } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { BiometricSettings } from '@/components/settings';
+import { TwoFactorSettings } from '@/components/settings/TwoFactorSettings';
 
 export default function SettingsScreen() {
   const { logout } = useAuth();
@@ -63,6 +64,8 @@ export default function SettingsScreen() {
           
           <View className="gap-3">
             <BiometricSettings />
+
+            <TwoFactorSettings />
 
             <TouchableOpacity className="flex-row items-center justify-between rounded-2xl bg-card p-4">
               <View className="flex-row items-center gap-3">

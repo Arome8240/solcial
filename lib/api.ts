@@ -409,6 +409,55 @@ class ApiClient {
   async checkDetailedHealth() {
     return this.request('/health/detailed');
   }
+
+  // ==================== Two-Factor Authentication ====================
+  async setup2FA() {
+    return this.request('/auth/2fa/setup', {
+      method: 'POST',
+    });
+  }
+
+  async verify2FA(data: { code: string }) {
+    return this.request('/auth/2fa/verify', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async disable2FA() {
+    return this.request('/auth/2fa/disable', {
+      method: 'POST',
+    });
+  }
+
+  async verify2FALogin(data: { email: string; tempToken: string; code: string; isRecoveryCode: boolean }) {
+    return this.request('/auth/2fa/verify-login', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async resend2FACode(data: { email: string }) {
+    return this.request('/auth/2fa/resend', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // ==================== Password Recovery ====================
+  async requestPasswordReset(data: { email: string }) {
+    return this.request('/auth/password/reset-request', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async resetPassword(data: { token: string; password: string }) {
+    return this.request('/auth/password/reset', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 export const api = new ApiClient();

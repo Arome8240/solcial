@@ -3,7 +3,7 @@ import { Text } from '@/components/ui/text';
 import { CloudOff } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { ProfileAvatar } from './ProfileAvatar';
-import { EmptyState } from './EmptyState';
+import { EmptyState } from '../common/EmptyState';
 
 interface RepliesTabProps {
   comments: any[];

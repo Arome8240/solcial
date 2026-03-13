@@ -40,6 +40,10 @@ export function SignInForm({ onSubmit, onSignUp, onForgotPassword, isSubmitting 
     }
   };
 
+  const handleForgotPassword = () => {
+    onForgotPassword?.();
+  };
+
   const handleBiometricAuth = async () => {
     const credentials = await storage.getBiometricCredentials();
     if (credentials) {
@@ -68,7 +72,7 @@ export function SignInForm({ onSubmit, onSignUp, onForgotPassword, isSubmitting 
             secureTextEntry
           />
           {onForgotPassword && (
-            <Pressable className="mt-3" onPress={onForgotPassword}>
+            <Pressable className="mt-3" onPress={handleForgotPassword}>
               <Text className="text-sm font-medium text-purple-600">Forgot Password?</Text>
             </Pressable>
           )}
