@@ -1,5 +1,7 @@
 import { View, TextInput, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/ui/text';
+import { Icon } from '@/components/ui/icon';
+import { X } from 'lucide-react-native';
 import { useState } from 'react';
 import { toast } from 'sonner-native';
 
@@ -7,12 +9,16 @@ interface CommentInputProps {
   onSubmit: (content: string) => void;
   isSubmitting: boolean;
   placeholder?: string;
+  replyingTo?: string;
+  onCancelReply?: () => void;
 }
 
 export function CommentInput({
   onSubmit,
   isSubmitting,
   placeholder = 'Add a comment...',
+  replyingTo,
+  onCancelReply,
 }: CommentInputProps) {
   const [content, setContent] = useState('');
 
@@ -28,10 +34,22 @@ export function CommentInput({
 
   return (
     <View className="border-t border-border bg-background p-4">
+      {/* Reply Indicator */}
+      {replyingTo && (
+        <View className="mb-2 flex-row items-center justify-between rounded-lg bg-purple-50 px-3 py-2 dark:bg-purple-950/30">
+          <Text className="text-sm text-purple-600">
+            Replying to @{replyingTo}
+          </Text>
+          <TouchableOpacity onPress={onCancelReply}>
+            <Icon as={X} size={16} className="text-purple-600" />
+          </TouchableOpacity>
+        </View>
+      )}
+
       <TextInput
         value={content}
         onChangeText={setContent}
-        placeholder={placeholder}
+        placeholder={replyingTo ? `Reply to @${replyingTo}...` : placeholder}
         placeholderTextColor="#9ca3af"
         multiline
         maxLength={500}
@@ -47,7 +65,7 @@ export function CommentInput({
         }`}
       >
         <Text className="text-center font-semibold text-white">
-          {isSubmitting ? 'Posting...' : 'Post Comment'}
+          {isSubmitting ? 'Posting...' : replyingTo ? 'Post Reply' : 'Post Comment'}
         </Text>
       </TouchableOpacity>
     </View>

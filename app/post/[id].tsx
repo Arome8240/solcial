@@ -11,11 +11,13 @@ import { toast } from 'sonner-native';
 import {
   PostDetailCard,
   PostActions,
-  CommentCard,
+  CommentThread,
   CommentInput,
 } from '@/components/post';
 import { TipModal, BuyTokenModal } from '@/components/feed';
 import { LoadingSpinner, ErrorState } from '@/components/common';
+import { api } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
 
 export default function PostDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -25,6 +27,8 @@ export default function PostDetailsScreen() {
   const { buyToken, isBuyingToken, likePost, unlikePost, tipPost, isTippingPost } = usePosts();
   const [showTipModal, setShowTipModal] = useState(false);
   const [showBuyTokenModal, setShowBuyTokenModal] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
 
   const handleBuyToken = (amount: number) => {
     if (!post) return;
@@ -48,7 +52,35 @@ export default function PostDetailsScreen() {
   };
 
   const handleCreateComment = (content: string) => {
-    createComment({ content });
+    if (replyingTo) {
+      // Create a reply
+      createComment({ content, parentCommentId: replyingTo });
+      setReplyingTo(null);
+    } else {
+      // Create a top-level comment
+      createComment({ content });
+    }
+  };
+
+  const toggleReplies = (commentId: string) => {
+    setExpandedComments(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(commentId)) {
+        newSet.delete(commentId);
+      } else {
+        newSet.add(commentId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleReply = (commentId: string, username: string) => {
+    setReplyingTo(commentId);
+    toast.success(`Replying to @${username}`);
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null);
   };
 
   const navigateToProfile = (username: string) => {
@@ -147,14 +179,17 @@ export default function PostDetailsScreen() {
 
           {/* Comments List */}
           {(comments as Comment[]).map((comment: Comment) => (
-            <CommentCard
+            <CommentThread
               key={comment.id}
               comment={{
                 ...comment,
                 isLiked: false, // TODO: Add isLiked to Comment type from backend
               }}
               onLike={() => {}}
-              onAuthorPress={() => navigateToProfile(comment.author.username)}
+              onReply={handleReply}
+              onAuthorPress={navigateToProfile}
+              isExpanded={expandedComments.has(comment.id)}
+              onToggleExpand={() => toggleReplies(comment.id)}
             />
           ))}
         </ScrollView>
@@ -163,6 +198,8 @@ export default function PostDetailsScreen() {
         <CommentInput
           onSubmit={handleCreateComment}
           isSubmitting={isCreatingComment}
+          replyingTo={replyingTo ? (comments as Comment[]).find((c: Comment) => c.id === replyingTo)?.author.username : undefined}
+          onCancelReply={cancelReply}
         />
       </KeyboardAvoidingView>
 
