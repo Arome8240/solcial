@@ -304,7 +304,7 @@ const handleKeyboardHide: KeyboardEventListener = (event) => {
 
           {/* Comments List */}
           {(comments as Comment[]).map((comment: Comment) => (
-            <View key={comment.id} className="border-b border-border p-4">
+            <View key={comment.id} className="border-b border-border p-4 pb-8">
               <View className="flex-row gap-3">
                 <TouchableOpacity onPress={() => navigateToProfile(comment.author.username)}>
                   {comment.author.avatar ? (

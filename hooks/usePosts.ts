@@ -55,14 +55,51 @@ export function usePosts() {
     mutationFn: async (postId: string) => {
       const response = await api.likePost(postId);
       if (response.error) throw new Error(response.error);
-      
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    onMutate: async (postId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['posts'] });
+
+      // Snapshot previous values
+      const previousFeed = queryClient.getQueryData(['posts', 'feed']);
+      const previousPost = queryClient.getQueryData(['posts', postId]);
+
+      // Optimistically update feed
+      queryClient.setQueryData(['posts', 'feed'], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page: Post[]) =>
+            page.map((post: Post) =>
+              post.id === postId
+                ? { ...post, isLiked: true, likesCount: post.likesCount + 1 }
+                : post
+            )
+          ),
+        };
+      });
+
+      // Optimistically update single post
+      queryClient.setQueryData(['posts', postId], (old: any) => {
+        if (!old) return old;
+        return { ...old, isLiked: true, likesCount: old.likesCount + 1 };
+      });
+
+      return { previousFeed, previousPost };
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
+    onError: (err, postId, context) => {
+      // Rollback on error
+      if (context?.previousFeed) {
+        queryClient.setQueryData(['posts', 'feed'], context.previousFeed);
+      }
+      if (context?.previousPost) {
+        queryClient.setQueryData(['posts', postId], context.previousPost);
+      }
+      toast.error('Failed to like post');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
   });
 
@@ -73,11 +110,49 @@ export function usePosts() {
       if (response.error) throw new Error(response.error);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    onMutate: async (postId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['posts'] });
+
+      // Snapshot previous values
+      const previousFeed = queryClient.getQueryData(['posts', 'feed']);
+      const previousPost = queryClient.getQueryData(['posts', postId]);
+
+      // Optimistically update feed
+      queryClient.setQueryData(['posts', 'feed'], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page: Post[]) =>
+            page.map((post: Post) =>
+              post.id === postId
+                ? { ...post, isLiked: false, likesCount: Math.max(0, post.likesCount - 1) }
+                : post
+            )
+          ),
+        };
+      });
+
+      // Optimistically update single post
+      queryClient.setQueryData(['posts', postId], (old: any) => {
+        if (!old) return old;
+        return { ...old, isLiked: false, likesCount: Math.max(0, old.likesCount - 1) };
+      });
+
+      return { previousFeed, previousPost };
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
+    onError: (err, postId, context) => {
+      // Rollback on error
+      if (context?.previousFeed) {
+        queryClient.setQueryData(['posts', 'feed'], context.previousFeed);
+      }
+      if (context?.previousPost) {
+        queryClient.setQueryData(['posts', postId], context.previousPost);
+      }
+      toast.error('Failed to unlike post');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
     },
   });
 
