@@ -12,6 +12,7 @@ import * as Clipboard from 'expo-clipboard';
 import { toast } from 'sonner-native';
 import { uploadMultipleImages } from '@/lib/upload';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import {
   BalanceCard,
   MiniAppsCard,
@@ -24,6 +25,7 @@ import {
 import { LoadingSpinner, ErrorState } from '@/components/common';
 
 export default function FeedScreen() {
+  const { t } = useTranslation();
   const { posts, isLoadingFeed, fetchNextPage, hasNextPage, isFetchingNextPage, refetchFeed, createPost, isCreatingPost, likePost, unlikePost, tipPost, isTippingPost, buyToken, isBuyingToken } = usePosts();
   const { balance, walletAddress, isLoadingBalance, refetchBalance } = useWallet();
   const { unreadCount } = useNotifications();
@@ -48,9 +50,9 @@ export default function FeedScreen() {
       setIsUploadingImages(true);
       try {
         imageUrls = await uploadMultipleImages(data.images);
-        toast.success('Images uploaded!');
+        toast.success(t('feed.imagesUploaded'));
       } catch (error) {
-        toast.error('Failed to upload images');
+        toast.error(t('feed.failedToUploadImages'));
         setIsUploadingImages(false);
         return;
       }
@@ -102,13 +104,13 @@ export default function FeedScreen() {
   const copyAddress = async () => {
     if (walletAddress) {
       await Clipboard.setStringAsync(walletAddress);
-      toast.success('Address copied!');
+      toast.success(t('feed.addressCopied'));
     }
   };
 
   const handleRefreshBalance = async () => {
     await refetchBalance();
-    toast.success('Balance refreshed!');
+    toast.success(t('feed.balanceRefreshed'));
   };
 
   const navigateToProfile = (username: string) => {
@@ -149,13 +151,13 @@ export default function FeedScreen() {
 
         {/* Feed Header */}
         <View className="mt-6 flex-row items-center justify-between px-4">
-          <Text className="text-xl font-bold">Feed</Text>
+          <Text className="text-xl font-bold">{t('common.feed')}</Text>
           <TouchableOpacity 
             onPress={() => router.push('/explore')}
             className="flex-row items-center gap-1"
           >
             <Icon as={Search} size={20} className="text-purple-600" />
-            <Text className="font-semibold text-purple-600">Explore</Text>
+            <Text className="font-semibold text-purple-600">{t('feed.explore')}</Text>
           </TouchableOpacity>
         </View>
 

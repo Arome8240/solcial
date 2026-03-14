@@ -5,6 +5,7 @@ import { Heart, MessageCircle, DollarSign, Coins, User } from 'lucide-react-nati
 import { router } from 'expo-router';
 import { formatDistanceToNow } from 'date-fns';
 import type { Post } from '@/types';
+import { useTranslation } from 'react-i18next';
 
 interface FeedPostCardProps {
   post: Post;
@@ -21,6 +22,8 @@ export function FeedPostCard({
   onBuyToken,
   onNavigateToProfile,
 }: FeedPostCardProps) {
+  const { t } = useTranslation();
+  
   const formatTime = (date: string) => {
     try {
       return formatDistanceToNow(new Date(date), { addSuffix: false }).replace('about ', '');
@@ -115,7 +118,7 @@ export function FeedPostCard({
             >
               <Icon as={DollarSign} size={18} className="text-green-600" />
               <Text className="text-sm text-green-600">
-                Tip ({post.tipsCount || 0})
+                {t('common.tip')} ({post.tipsCount || 0})
               </Text>
             </TouchableOpacity>
 
@@ -125,7 +128,7 @@ export function FeedPostCard({
                 className="flex-row items-center gap-1 rounded-full bg-purple-100 dark:bg-purple-950 px-3 py-1"
               >
                 <Icon as={Coins} size={16} className="text-purple-600 dark:text-purple-400" />
-                <Text className="text-xs font-medium text-purple-600 dark:text-purple-400">Buy</Text>
+                <Text className="text-xs font-medium text-purple-600 dark:text-purple-400">{t('feed.buy')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -134,7 +137,7 @@ export function FeedPostCard({
           {post.totalTipsAmount > 0 && (
             <View className="mt-2 rounded-lg bg-green-50 dark:bg-green-950 p-2">
               <Text className="text-xs text-green-700 dark:text-green-300">
-                💰 Received {post.totalTipsAmount.toFixed(4)} SOL in tips
+                💰 {t('feed.receivedTips', { amount: post.totalTipsAmount.toFixed(4) })}
               </Text>
             </View>
           )}

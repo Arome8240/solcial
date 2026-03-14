@@ -4,6 +4,7 @@ import { Icon } from '@/components/ui/icon';
 import { Eye, EyeOff, Copy, RefreshCw, Bell, ArrowUpRight, ArrowDownLeft, Circle } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { Badge } from '@/components/common/Badge';
+import { useTranslation } from 'react-i18next';
 
 interface BalanceCardProps {
   balance: number;
@@ -26,6 +27,8 @@ export function BalanceCard({
   onCopyAddress,
   onRefresh,
 }: BalanceCardProps) {
+  const { t } = useTranslation();
+  
   return (
     <View className="overflow-hidden rounded-b-3xl bg-purple-600 shadow-lg">
       <ImageBackground
@@ -37,7 +40,7 @@ export function BalanceCard({
           <View className="flex-row items-start justify-between">
             <View className="flex-1">
               <View className="flex-row items-center gap-2">
-                <Text className="text-sm text-purple-200">Total Balance</Text>
+                <Text className="text-sm text-purple-200">{t('wallet.totalBalance')}</Text>
                 <TouchableOpacity onPress={onToggleBalance} className="rounded-full p-1">
                   <Icon as={showBalance ? Eye : EyeOff} size={16} className="text-purple-200" />
                 </TouchableOpacity>
@@ -88,7 +91,7 @@ export function BalanceCard({
               className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-white py-3.5 shadow-sm"
             >
               <Icon as={ArrowUpRight} size={18} className="text-purple-600" />
-              <Text className="font-semibold text-purple-600">Send</Text>
+              <Text className="font-semibold text-purple-600">{t('common.send')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -96,14 +99,14 @@ export function BalanceCard({
               className="flex-1 flex-row items-center justify-center gap-2 rounded-xl bg-purple-700 py-3.5 shadow-sm"
             >
               <Icon as={ArrowDownLeft} size={18} className="text-white" />
-              <Text className="font-semibold text-white">Receive</Text>
+              <Text className="font-semibold text-white">{t('common.receive')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Network Badge */}
           <View className="mt-4 flex-row items-center gap-2 self-start rounded-full bg-white/10 px-3 py-1.5">
             <Icon as={Circle} size={8} className="text-green-400" fill="#4ade80" />
-            <Text className="text-xs font-medium text-white">Solana Devnet</Text>
+            <Text className="text-xs font-medium text-white">{t('wallet.solanaDevnet')}</Text>
           </View>
         </View>
       </ImageBackground>

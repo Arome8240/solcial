@@ -2,6 +2,7 @@ import { Modal, View, TouchableOpacity, TextInput } from 'react-native';
 import { Text } from '@/components/ui/text';
 import { useState } from 'react';
 import { toast } from 'sonner-native';
+import { useTranslation } from 'react-i18next';
 
 interface TipModalProps {
   visible: boolean;
@@ -18,12 +19,13 @@ export function TipModal({
   recipientUsername,
   isSubmitting,
 }: TipModalProps) {
+  const { t } = useTranslation();
   const [amount, setAmount] = useState('');
 
   const handleSubmit = () => {
     const tipAmount = parseFloat(amount);
     if (!amount || tipAmount <= 0) {
-      toast.error('Invalid amount');
+      toast.error(t('errors.invalidAmount'));
       return;
     }
     onSubmit(tipAmount);
@@ -34,13 +36,13 @@ export function TipModal({
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View className="flex-1 items-center justify-center bg-black/50 p-4">
         <View className="w-full max-w-sm rounded-2xl bg-background p-6">
-          <Text className="text-xl font-bold">Tip Post</Text>
+          <Text className="text-xl font-bold">{t('common.tip')} {t('common.post')}</Text>
           <Text className="mt-2 text-sm text-muted-foreground">
-            Send SOL to @{recipientUsername}
+            {t('common.send')} SOL {t('common.to')} @{recipientUsername}
           </Text>
 
           <View className="mt-4">
-            <Text className="mb-2 text-sm font-medium">Amount (SOL)</Text>
+            <Text className="mb-2 text-sm font-medium">{t('wallet.amount')} (SOL)</Text>
             <TextInput
               value={amount}
               onChangeText={setAmount}
@@ -55,7 +57,7 @@ export function TipModal({
               onPress={onClose}
               className="flex-1 rounded-xl border border-border py-3"
             >
-              <Text className="text-center font-semibold">Cancel</Text>
+              <Text className="text-center font-semibold">{t('common.cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={handleSubmit}
@@ -63,7 +65,7 @@ export function TipModal({
               className="flex-1 rounded-xl bg-green-600 py-3"
             >
               <Text className="text-center font-semibold text-white">
-                {isSubmitting ? 'Sending...' : 'Send Tip'}
+                {isSubmitting ? t('wallet.sending') : t('common.send')} {t('common.tip')}
               </Text>
             </TouchableOpacity>
           </View>

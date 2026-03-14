@@ -1,9 +1,11 @@
 import { View } from 'react-native';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthLayout, AuthHeader, SignInForm } from '@/components/auth';
 
 export default function SignInScreen() {
+  const { t } = useTranslation();
   const { signin, isSigningIn } = useAuth();
 
   const handleSignIn = (data: { email: string; password: string }) => {
@@ -22,8 +24,8 @@ export default function SignInScreen() {
     <AuthLayout>
       <View className="flex-1 px-5 pt-16">
         <AuthHeader
-          title="Welcome Back!"
-          subtitle="Sign In into your account"
+          title={t('auth.welcomeBack')}
+          subtitle={t('auth.signInSubtitle')}
         />
         <SignInForm
           onSubmit={handleSignIn}

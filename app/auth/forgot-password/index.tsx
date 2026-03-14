@@ -4,6 +4,7 @@ import { Icon } from '@/components/ui/icon';
 import { ArrowLeft, Mail } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
@@ -11,13 +12,14 @@ import { toast } from 'sonner-native';
 import { AuthLayout, AuthHeader } from '@/components/auth';
 
 export default function ForgotPasswordScreen() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
   const handleSendReset = async () => {
     if (!email.trim()) {
-      toast.error('Please enter your email');
+      toast.error(t('auth.pleaseEnterEmail'));
       return;
     }
 
@@ -25,9 +27,9 @@ export default function ForgotPasswordScreen() {
     try {
       await api.requestPasswordReset({ email });
       setEmailSent(true);
-      toast.success('Password reset email sent');
+      toast.success(t('auth.passwordResetEmailSent'));
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to send reset email');
+      toast.error(error.response?.data?.message || t('auth.failedToSendResetEmail'));
       console.error('Password reset error:', error);
     } finally {
       setIsSending(false);
@@ -44,13 +46,13 @@ export default function ForgotPasswordScreen() {
         {!emailSent ? (
           <>
             <AuthHeader
-              title="Forgot Password?"
-              subtitle="Enter your email address and we'll send you a link to reset your password"
+              title={t('auth.forgotPassword')}
+              subtitle={t('auth.resetPasswordDesc')}
             />
 
             <View className="gap-6">
               <Input
-                label="Email"
+                label={t('auth.email')}
                 placeholder="john@example.com"
                 value={email}
                 onChangeText={setEmail}
@@ -69,7 +71,7 @@ export default function ForgotPasswordScreen() {
                 {isSending ? (
                   <ActivityIndicator color="white" />
                 ) : (
-                  <Text className="text-base font-medium text-white">Send Reset Link</Text>
+                  <Text className="text-base font-medium text-white">{t('auth.sendResetLink')}</Text>
                 )}
               </Button>
             </View>
@@ -80,15 +82,15 @@ export default function ForgotPasswordScreen() {
               <View className="h-20 w-20 items-center justify-center rounded-full bg-green-100 dark:bg-green-900 mb-4">
                 <Icon as={Mail} size={40} className="text-green-600 dark:text-green-300" />
               </View>
-              <Text className="text-2xl font-bold text-center mb-2">Check Your Email</Text>
+              <Text className="text-2xl font-bold text-center mb-2">{t('auth.checkYourEmail')}</Text>
               <Text className="text-center text-muted-foreground">
-                We've sent a password reset link to {email}
+                {t('auth.resetLinkSent')} {email}
               </Text>
             </View>
 
             <View className="rounded-2xl bg-card p-4 mb-6">
               <Text className="text-sm text-muted-foreground">
-                Didn't receive the email? Check your spam folder or try again in a few minutes.
+                {t('auth.didntReceiveEmail')}
               </Text>
             </View>
 
@@ -97,7 +99,7 @@ export default function ForgotPasswordScreen() {
                 onPress={() => router.push('/auth/signin')}
                 className="h-14 rounded-2xl bg-purple-600 active:bg-purple-700"
               >
-                <Text className="text-base font-medium text-white">Back to Sign In</Text>
+                <Text className="text-base font-medium text-white">{t('auth.backToSignIn')}</Text>
               </Button>
 
               <TouchableOpacity
@@ -105,7 +107,7 @@ export default function ForgotPasswordScreen() {
                 className="mt-4"
               >
                 <Text className="text-center text-sm font-medium text-purple-600">
-                  Try different email
+                  {t('auth.tryDifferentEmail')}
                 </Text>
               </TouchableOpacity>
             </View>

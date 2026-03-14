@@ -1,22 +1,24 @@
 import { View } from 'react-native';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { storage } from '@/lib/storage';
 import { toast } from 'sonner-native';
 import { AuthHeader, VerificationInput } from '@/components/auth';
 
 export default function VerifyScreen() {
+  const { t } = useTranslation();
   const { verifyEmail, isVerifying, resendCode, isResending } = useAuth();
 
   const handleVerify = async (code: string) => {
     if (code.length !== 6) {
-      toast.error('Please enter the complete code');
+      toast.error(t('auth.enterCompleteCode'));
       return;
     }
 
     const user = await storage.getUser();
     if (!user?.tempEmail) {
-      toast.error('Email not found. Please sign up again');
+      toast.error(t('auth.emailNotFound'));
       router.replace('/auth/email');
       return;
     }
@@ -27,7 +29,7 @@ export default function VerifyScreen() {
   const handleResend = async () => {
     const user = await storage.getUser();
     if (!user?.tempEmail) {
-      toast.error('Email not found');
+      toast.error(t('auth.emailNotFound'));
       return;
     }
 
@@ -41,8 +43,8 @@ export default function VerifyScreen() {
   return (
     <View className="flex-1 bg-background px-5 pt-16">
       <AuthHeader
-        title="Verify Your Account"
-        subtitle="A six-digit code was sent to your email, enter it below to confirm your account."
+        title={t('auth.verifyYourAccount')}
+        subtitle={t('auth.verificationCodeSent')}
       />
       <VerificationInput
         onVerify={handleVerify}

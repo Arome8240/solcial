@@ -4,12 +4,14 @@ import { Icon } from '@/components/ui/icon';
 import { ArrowLeft, Shield } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '@/lib/api';
 import { storage } from '@/lib/storage';
 import { toast } from 'sonner-native';
 import { AuthHeader } from '@/components/auth';
 
 export default function TwoFactorVerifyScreen() {
+  const { t } = useTranslation();
   const { email, tempToken } = useLocalSearchParams<{ email: string; tempToken: string }>();
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
@@ -40,7 +42,7 @@ export default function TwoFactorVerifyScreen() {
     const verificationCode = useRecoveryCode ? recoveryCode : code.join('');
     
     if (verificationCode.length < 6) {
-      toast.error('Please enter a valid code');
+      toast.error(t('auth.pleaseEnterValidCode'));
       return;
     }
 
@@ -56,13 +58,13 @@ export default function TwoFactorVerifyScreen() {
       if (response.data?.token) {
         await storage.saveToken(response.data.token);
         await storage.saveUser(response.data.user);
-        toast.success('Signed in successfully');
+        toast.success(t('auth.signedInSuccessfully'));
         router.replace('/(tabs)/feed');
       } else {
-        toast.error('Invalid code');
+        toast.error(t('auth.invalidCode'));
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Verification failed');
+      toast.error(error.response?.data?.message || t('auth.verificationFailed'));
       console.error('2FA verification error:', error);
     } finally {
       setIsVerifying(false);
@@ -72,9 +74,9 @@ export default function TwoFactorVerifyScreen() {
   const handleResendCode = async () => {
     try {
       await api.resend2FACode({ email });
-      toast.success('New code sent to your authenticator app');
+      toast.success(t('auth.newCodeSent'));
     } catch (error) {
-      toast.error('Failed to resend code');
+      toast.error(t('auth.failedToResendCode'));
     }
   };
 
@@ -90,10 +92,10 @@ export default function TwoFactorVerifyScreen() {
             <Icon as={Shield} size={32} className="text-purple-600 dark:text-purple-300" />
           </View>
           <AuthHeader
-            title="Two-Factor Authentication"
+            title={t('auth.twoFactorAuthentication')}
             subtitle={useRecoveryCode 
-              ? "Enter your recovery code" 
-              : "Enter the 6-digit code from your authenticator app"
+              ? t('auth.enterRecoveryCode')
+              : t('auth.enterAuthenticatorCode')
             }
           />
         </View>
@@ -126,7 +128,7 @@ export default function TwoFactorVerifyScreen() {
           </>
         ) : (
           <View className="mb-8">
-            <Text className="mb-2 text-sm font-medium">Recovery Code</Text>
+            <Text className="mb-2 text-sm font-medium">{t('auth.recoveryCode')}</Text>
             <TextInput
               value={recoveryCode}
               onChangeText={setRecoveryCode}
@@ -149,20 +151,20 @@ export default function TwoFactorVerifyScreen() {
           {isVerifying ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-base font-medium text-white">Verify</Text>
+            <Text className="text-base font-medium text-white">{t('auth.verify')}</Text>
           )}
         </TouchableOpacity>
 
         <Pressable onPress={() => setUseRecoveryCode(!useRecoveryCode)}>
           <Text className="text-center text-sm font-medium text-purple-600">
-            {useRecoveryCode ? 'Use authenticator code' : 'Use recovery code instead'}
+            {useRecoveryCode ? t('auth.useAuthenticatorCode') : t('auth.useRecoveryCodeInstead')}
           </Text>
         </Pressable>
 
         {!useRecoveryCode && (
           <Pressable onPress={handleResendCode} className="mt-4">
             <Text className="text-center text-sm text-muted-foreground">
-              Lost access to your authenticator?
+              {t('auth.lostAccessToAuthenticator')}
             </Text>
           </Pressable>
         )}

@@ -17,7 +17,9 @@
     "build:android": "eas build --platform android",
     "build:ios": "eas build --platform ios",
     "submit:android": "eas submit --platform android",
-    "submit:ios": "eas submit --platform ios"
+    "submit:ios": "eas submit --platform ios",
+    "validate:translations": "ts-node scripts/validate-translations.ts",
+    "generate:translations": "ts-node scripts/generate-translations.ts"
   },
   "dependencies": {
     "@expo-google-fonts/geist": "^0.4.1",

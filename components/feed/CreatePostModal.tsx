@@ -4,6 +4,7 @@ import { Icon } from '@/components/ui/icon';
 import { X, ImagePlus, Coins } from 'lucide-react-native';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
+import { useTranslation } from 'react-i18next';
 
 interface CreatePostModalProps {
   visible: boolean;
@@ -26,6 +27,7 @@ export function CreatePostModal({
   isSubmitting,
   isUploadingImages,
 }: CreatePostModalProps) {
+  const { t } = useTranslation();
   const [content, setContent] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [isTokenized, setIsTokenized] = useState(false);
@@ -76,14 +78,14 @@ export function CreatePostModal({
             <TouchableOpacity onPress={onClose}>
               <Icon as={X} size={24} className="text-foreground" />
             </TouchableOpacity>
-            <Text className="text-lg font-bold">Create Post</Text>
+            <Text className="text-lg font-bold">{t('feed.createPost')}</Text>
             <TouchableOpacity
               onPress={handleSubmit}
               disabled={!content.trim() || isSubmitting || isUploadingImages}
               className={`rounded-full px-4 py-2 ${content.trim() && !isUploadingImages ? 'bg-purple-600' : 'bg-gray-300'}`}
             >
               <Text className={`font-semibold ${content.trim() && !isUploadingImages ? 'text-white' : 'text-gray-500'}`}>
-                {isUploadingImages ? 'Uploading...' : isSubmitting ? 'Posting...' : 'Post'}
+                {isUploadingImages ? t('feed.uploading') : isSubmitting ? t('feed.posting') : t('common.post')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -93,7 +95,7 @@ export function CreatePostModal({
             <TextInput
               value={content}
               onChangeText={setContent}
-              placeholder="What's happening?"
+              placeholder={t('feed.whatsHappening')}
               placeholderTextColor="#9ca3af"
               multiline
               autoFocus
@@ -123,7 +125,7 @@ export function CreatePostModal({
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-2">
                   <Icon as={Coins} size={20} className="text-purple-600" />
-                  <Text className="font-semibold">Tokenize Post</Text>
+                  <Text className="font-semibold">{t('feed.tokenizePost')}</Text>
                 </View>
                 <Switch
                   value={isTokenized}
@@ -136,7 +138,7 @@ export function CreatePostModal({
               {isTokenized && (
                 <View className="mt-4 gap-3">
                   <View>
-                    <Text className="mb-1 text-sm text-muted-foreground">Token Supply</Text>
+                    <Text className="mb-1 text-sm text-muted-foreground">{t('feed.tokenSupply')}</Text>
                     <TextInput
                       value={tokenSupply}
                       onChangeText={setTokenSupply}
@@ -146,7 +148,7 @@ export function CreatePostModal({
                     />
                   </View>
                   <View>
-                    <Text className="mb-1 text-sm text-muted-foreground">Price per Token (SOL)</Text>
+                    <Text className="mb-1 text-sm text-muted-foreground">{t('feed.pricePerToken')}</Text>
                     <TextInput
                       value={tokenPrice}
                       onChangeText={setTokenPrice}
@@ -157,7 +159,7 @@ export function CreatePostModal({
                   </View>
                   <View className="rounded-lg bg-purple-50 dark:bg-purple-950 p-3">
                     <Text className="text-xs text-purple-700 dark:text-purple-300">
-                      💡 Users can buy tokens of your post. Token value may increase based on demand!
+                      💡 {t('feed.tokenTip')}
                     </Text>
                   </View>
                 </View>
@@ -172,7 +174,7 @@ export function CreatePostModal({
             >
               <Icon as={ImagePlus} size={24} className="text-muted-foreground" />
               <Text className="text-muted-foreground">
-                {images.length >= 4 ? 'Max 4 images' : 'Add Images'}
+                {images.length >= 4 ? t('feed.maxImages') : t('feed.addImages')}
               </Text>
             </TouchableOpacity>
           </ScrollView>
