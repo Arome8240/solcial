@@ -36,7 +36,7 @@ export default function SettingsScreen() {
   const [showModal, setShowModal] = useState(false);
   const [currentLang, setCurrentLang] = useState('en');
   const { logout, user } = useAuth();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   useEffect(() => {
     checkNotificationStatus();
@@ -101,15 +101,15 @@ export default function SettingsScreen() {
 
   const handleLogout = () => {
     Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
+      t('auth.signOut'),
+      t('settings.logoutConfirm'),
       [
         {
-          text: 'Cancel',
+          text: t('common.cancel'),
           style: 'cancel',
         },
         {
-          text: 'Logout',
+          text: t('auth.signOut'),
           style: 'destructive',
           onPress: () => logout(),
         },
@@ -194,13 +194,13 @@ export default function SettingsScreen() {
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
         {/* Header */}
         <View className="px-4 pt-12">
-          <Text className="text-3xl font-bold">Settings</Text>
+          <Text className="text-3xl font-bold">{t('settings.settings')}</Text>
         </View>
 
         {/* Account Section */}
         <View className="mt-6 px-4">
           <Text className="mb-3 text-xs font-semibold uppercase text-muted-foreground">
-            ACCOUNT
+            {t('settings.account')}
           </Text>
 
           <TouchableOpacity
@@ -211,9 +211,9 @@ export default function SettingsScreen() {
               <Icon as={Grid} size={24} className="text-purple-600" />
             </View>
             <View className="flex-1">
-              <Text className="font-semibold">Edit Profile</Text>
+              <Text className="font-semibold">{t('settings.editProfile')}</Text>
               <Text className="text-sm text-muted-foreground">
-                Update your name, bio, and avatar
+                {t('settings.editProfileDesc')}
               </Text>
             </View>
             <Icon as={ChevronRight} size={20} className="text-muted-foreground" />
@@ -227,9 +227,9 @@ export default function SettingsScreen() {
               <Icon as={Users} size={24} className="text-purple-600" />
             </View>
             <View className="flex-1">
-              <Text className="font-semibold">Security & Privacy</Text>
+              <Text className="font-semibold">{t('settings.securityPrivacy')}</Text>
               <Text className="text-sm text-muted-foreground">
-                Password, 2FA, and wallet security
+                {t('settings.securityPrivacyDesc')}
               </Text>
             </View>
             <Icon as={ChevronRight} size={20} className="text-muted-foreground" />
@@ -239,7 +239,7 @@ export default function SettingsScreen() {
         {/* Preferences Section */}
         <View className="mt-6 px-4">
           <Text className="mb-3 text-xs font-semibold uppercase text-muted-foreground">
-            PREFERENCES
+            {t('settings.preferences')}
           </Text>
 
           <View className="mb-3 flex-row items-center gap-4 rounded-2xl bg-card p-4">
@@ -247,9 +247,9 @@ export default function SettingsScreen() {
               <Icon as={Bell} size={24} className="text-purple-600" />
             </View>
             <View className="flex-1">
-              <Text className="font-semibold">Notifications</Text>
+              <Text className="font-semibold">{t('settings.notifications')}</Text>
               <Text className="text-sm text-muted-foreground">
-                {notifications ? 'Push notifications enabled' : 'Push notifications disabled'}
+                {notifications ? t('settings.notificationsEnabled') : t('settings.notificationsDisabled')}
               </Text>
             </View>
             <Switch
@@ -265,9 +265,9 @@ export default function SettingsScreen() {
               <Icon as={Moon} size={24} className="text-purple-600" />
             </View>
             <View className="flex-1">
-              <Text className="font-semibold">Dark Mode</Text>
+              <Text className="font-semibold">{t('settings.darkMode')}</Text>
               <Text className="text-sm text-muted-foreground">
-                {theme === 'dark' ? 'Dark theme enabled' : 'Light theme enabled'}
+                {theme === 'dark' ? t('settings.darkModeEnabled') : t('settings.darkModeDisabled')}
               </Text>
             </View>
             <Switch
@@ -286,7 +286,7 @@ export default function SettingsScreen() {
               <Icon as={Globe} size={24} className="text-purple-600" />
             </View>
             <View className="flex-1">
-              <Text className="font-semibold">Language</Text>
+              <Text className="font-semibold">{t('settings.language')}</Text>
               <Text className="text-sm text-muted-foreground">
                 {LANGUAGES.find(lang => lang.code === currentLang)?.nativeName || 'English'}
               </Text>
@@ -298,7 +298,7 @@ export default function SettingsScreen() {
         {/* Support Section */}
         <View className="mt-6 px-4 pb-6">
           <Text className="mb-3 text-xs font-semibold uppercase text-muted-foreground">
-            SUPPORT
+            {t('settings.support')}
           </Text>
 
           <TouchableOpacity
@@ -309,9 +309,9 @@ export default function SettingsScreen() {
               <Icon as={HelpCircle} size={24} className="text-purple-600" />
             </View>
             <View className="flex-1">
-              <Text className="font-semibold">Help & Support</Text>
+              <Text className="font-semibold">{t('settings.helpSupport')}</Text>
               <Text className="text-sm text-muted-foreground">
-                FAQs, contact us, tutorials
+                {t('settings.helpSupportDesc')}
               </Text>
             </View>
             <Icon as={ChevronRight} size={20} className="text-muted-foreground" />
@@ -325,9 +325,9 @@ export default function SettingsScreen() {
               <Icon as={FileText} size={24} className="text-purple-600" />
             </View>
             <View className="flex-1">
-              <Text className="font-semibold">Terms & Privacy</Text>
+              <Text className="font-semibold">{t('settings.termsPrivacy')}</Text>
               <Text className="text-sm text-muted-foreground">
-                Legal information and policies
+                {t('settings.termsPrivacyDesc')}
               </Text>
             </View>
             <Icon as={ChevronRight} size={20} className="text-muted-foreground" />
@@ -341,7 +341,7 @@ export default function SettingsScreen() {
             className="flex-row items-center justify-center gap-2 rounded-2xl bg-purple-600 py-4"
           >
             <Icon as={LogOut} size={20} className="text-white" />
-            <Text className="text-lg font-semibold text-white">Logout</Text>
+            <Text className="text-lg font-semibold text-white">{t('auth.signOut')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

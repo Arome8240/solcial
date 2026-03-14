@@ -18,6 +18,7 @@ import { TipModal, BuyTokenModal } from '@/components/feed';
 import { LoadingSpinner, ErrorState } from '@/components/common';
 import { api } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 export default function PostDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -135,18 +136,11 @@ export default function PostDetailsScreen() {
         </TouchableOpacity>
       </View>
 
-      <KeyboardAvoidingView
+      <KeyboardAwareScrollView
         className="flex-1"
-        behavior={Platform.OS === 'ios' ? "padding" : "height"}
-        keyboardVerticalOffset={100}
+       bottomOffset={100} showsVerticalScrollIndicator={false}
       >
-        <ScrollView 
-          className="flex-1"
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Post Detail Card */}
-          <PostDetailCard post={post} />
+      <PostDetailCard post={post} />
 
           {/* Post Actions */}
           <PostActions
@@ -192,7 +186,6 @@ export default function PostDetailsScreen() {
               onToggleExpand={() => toggleReplies(comment.id)}
             />
           ))}
-        </ScrollView>
 
         {/* Comment Input */}
         <CommentInput
@@ -201,7 +194,7 @@ export default function PostDetailsScreen() {
           replyingTo={replyingTo ? (comments as Comment[]).find((c: Comment) => c.id === replyingTo)?.author.username : undefined}
           onCancelReply={cancelReply}
         />
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
 
       {/* Tip Modal */}
       <TipModal
