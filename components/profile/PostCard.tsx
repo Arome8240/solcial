@@ -3,12 +3,15 @@ import { Text } from '@/components/ui/text';
 import { router } from 'expo-router';
 import { ProfileAvatar } from './ProfileAvatar';
 import type { Post } from '@/types';
+import { useTranslation } from 'react-i18next';
 
 interface PostCardProps {
   post: Post;
 }
 
 export function PostCard({ post }: PostCardProps) {
+  const { t } = useTranslation();
+  
   return (
     <TouchableOpacity 
       onPress={() => router.push(`/post/${post.id}`)}
@@ -48,10 +51,10 @@ export function PostCard({ post }: PostCardProps) {
         </View>
       )}
       <View className="flex-row gap-4">
-        <Text className="text-sm text-muted-foreground">{post.likesCount || 0} likes</Text>
-        <Text className="text-sm text-muted-foreground">{post.commentsCount || 0} comments</Text>
+        <Text className="text-sm text-muted-foreground">{post.likesCount || 0} {t('profile.likesCount')}</Text>
+        <Text className="text-sm text-muted-foreground">{post.commentsCount || 0} {t('profile.commentsCount')}</Text>
         {post.isTokenized && (
-          <Text className="text-sm text-purple-600 font-semibold">🪙 Tokenized</Text>
+          <Text className="text-sm text-purple-600 font-semibold">🪙 {t('profile.tokenized')}</Text>
         )}
       </View>
     </TouchableOpacity>

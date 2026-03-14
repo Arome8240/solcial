@@ -130,15 +130,15 @@ This implementation plan systematically completes internationalization across th
     - Add number formatting for token prices
     - _Requirements: 3.7, 11.4_
 
-- [ ] 5. Phase 2: Profile Screens Translation Integration
-  - [ ] 5.1 Integrate translations in Profile View screen
+- [x] 5. Phase 2: Profile Screens Translation Integration
+  - [x] 5.1 Integrate translations in Profile View screen
     - Import useTranslation hook in app/(tabs)/profile/index.tsx and components/profile/ProfileHeader.tsx
     - Replace hardcoded strings with t() calls for profile statistics labels (followers, following, posts)
     - Add translations for action buttons (follow, unfollow, edit, share)
     - Add pluralization for follower/following counts
     - _Requirements: 4.1, 12.4_
 
-  - [ ] 5.2 Integrate translations in Profile tabs
+  - [x] 5.2 Integrate translations in Profile tabs
     - Import useTranslation hook in components/profile/PostCard.tsx, components/profile/RepliesTab.tsx, components/profile/PortfolioTab.tsx
     - Replace hardcoded strings with t() calls for tab labels and empty state messages
     - Add translations for portfolio value labels

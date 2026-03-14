@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import * as Clipboard from 'expo-clipboard';
 import { toast } from 'sonner-native';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserPosts, useUserComments, useUserLikes } from '@/hooks/usePosts';
 import { usePortfolio } from '@/hooks/usePortfolio';
@@ -20,9 +21,10 @@ import { RepliesTab } from '@/components/profile/RepliesTab';
 import { LikesTab } from '@/components/profile/LikesTab';
 import { ProfileMenu } from '@/components/profile/ProfileMenu';
 
-const tabs = ['Posts', 'Portfolio', 'Replies', 'Likes'];
-
 export default function ProfileScreen() {
+  const { t } = useTranslation();
+  const tabs = [t('profile.posts'), t('profile.portfolio'), t('profile.replies'), t('profile.likes')];
+  
   const { username: queryUsername } = useLocalSearchParams<{ username?: string }>();
   const { user: currentUser, isLoadingUser } = useAuth();
   const typedCurrentUser = currentUser as User | undefined;
@@ -52,7 +54,7 @@ export default function ProfileScreen() {
   const { createChat, isCreatingChat } = useChats();
   const queryClient = useQueryClient();
   
-  const [activeTab, setActiveTab] = useState('Posts');
+  const [activeTab, setActiveTab] = useState(t('profile.posts'));
   const [showMenu, setShowMenu] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -106,7 +108,7 @@ export default function ProfileScreen() {
   const copyAddress = async () => {
     if (displayUser?.walletAddress) {
       await Clipboard.setStringAsync(displayUser.walletAddress);
-      toast.success('Address copied to clipboard');
+      toast.success(t('wallet.addressCopied'));
     }
   };
 
@@ -158,11 +160,11 @@ export default function ProfileScreen() {
           onTabChange={setActiveTab}
         />
 
-        {activeTab === 'Posts' && (
+        {activeTab === t('profile.posts') && (
           <PostsTab posts={posts} isLoading={isLoadingPosts} />
         )}
 
-        {activeTab === 'Portfolio' && (
+        {activeTab === t('profile.portfolio') && (
           <PortfolioTab 
             portfolio={portfolio}
             isLoading={isLoadingPortfolio}
@@ -171,11 +173,11 @@ export default function ProfileScreen() {
           />
         )}
 
-        {activeTab === 'Replies' && (
+        {activeTab === t('profile.replies') && (
           <RepliesTab comments={comments} isLoading={isLoadingComments} />
         )}
 
-        {activeTab === 'Likes' && (
+        {activeTab === t('profile.likes') && (
           <LikesTab posts={likedPosts} isLoading={isLoadingLikes} />
         )}
       </ScrollView>

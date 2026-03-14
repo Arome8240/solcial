@@ -4,6 +4,7 @@ import { CloudOff } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { ProfileAvatar } from './ProfileAvatar';
 import { EmptyState } from '../common/EmptyState';
+import { useTranslation } from 'react-i18next';
 
 interface RepliesTabProps {
   comments: any[];
@@ -11,6 +12,8 @@ interface RepliesTabProps {
 }
 
 export function RepliesTab({ comments, isLoading }: RepliesTabProps) {
+  const { t } = useTranslation();
+  
   if (isLoading) {
     return (
       <View className="items-center py-20">
@@ -20,7 +23,7 @@ export function RepliesTab({ comments, isLoading }: RepliesTabProps) {
   }
 
   if (!comments || comments.length === 0) {
-    return <EmptyState icon={CloudOff} message="No comments yet" />;
+    return <EmptyState icon={CloudOff} message={t('profile.noCommentsYet')} />;
   }
 
   return (
@@ -41,7 +44,7 @@ export function RepliesTab({ comments, isLoading }: RepliesTabProps) {
             <View className="flex-1">
               <Text className="font-semibold">{comment.author?.name || comment.author?.username}</Text>
               <Text className="text-xs text-muted-foreground">
-                Replied to @{comment.post?.author?.username}
+                {t('profile.repliedTo')} @{comment.post?.author?.username}
               </Text>
             </View>
           </View>

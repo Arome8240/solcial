@@ -4,6 +4,7 @@ import { Icon } from '@/components/ui/icon';
 import { Coins, TrendingUp, TrendingDown } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { EmptyState } from '../common/EmptyState';
+import { useTranslation } from 'react-i18next';
 
 interface PortfolioTabProps {
   portfolio: any;
@@ -13,6 +14,8 @@ interface PortfolioTabProps {
 }
 
 export function PortfolioTab({ portfolio, isLoading, isOwnProfile, onNavigateToProfile }: PortfolioTabProps) {
+  const { t } = useTranslation();
+  
   if (isLoading) {
     return (
       <View className="items-center py-20">
@@ -25,8 +28,8 @@ export function PortfolioTab({ portfolio, isLoading, isOwnProfile, onNavigateToP
     return (
       <EmptyState 
         icon={Coins} 
-        message="No token holdings yet"
-        subtitle={isOwnProfile ? "Buy post tokens to start building your portfolio" : undefined}
+        message={t('profile.noTokenHoldings')}
+        subtitle={isOwnProfile ? t('profile.buyPostTokens') : undefined}
       />
     );
   }
@@ -35,7 +38,7 @@ export function PortfolioTab({ portfolio, isLoading, isOwnProfile, onNavigateToP
     <View className="px-4 py-4">
       {/* Portfolio Summary */}
       <View className="mb-4 rounded-2xl bg-purple-600 dark:bg-purple-700 p-6">
-        <Text className="text-sm text-white/80">Total Portfolio Value</Text>
+        <Text className="text-sm text-white/80">{t('profile.totalPortfolioValue')}</Text>
         <Text className="mt-1 text-3xl font-bold text-white">
           {portfolio.totalValue.toFixed(4)} SOL
         </Text>
@@ -54,15 +57,15 @@ export function PortfolioTab({ portfolio, isLoading, isOwnProfile, onNavigateToP
         </View>
         <View className="mt-2 flex-row gap-4">
           <View>
-            <Text className="text-xs text-white/60">Invested</Text>
+            <Text className="text-xs text-white/60">{t('profile.invested')}</Text>
             <Text className="text-sm font-semibold text-white">
               {portfolio.totalInvested.toFixed(4)} SOL
             </Text>
           </View>
           <View>
-            <Text className="text-xs text-white/60">Holdings</Text>
+            <Text className="text-xs text-white/60">{t('profile.holdings')}</Text>
             <Text className="text-sm font-semibold text-white">
-              {portfolio.holdings.length} posts
+              {portfolio.holdings.length} {t('profile.postsCount')}
             </Text>
           </View>
         </View>
@@ -82,7 +85,7 @@ export function PortfolioTab({ portfolio, isLoading, isOwnProfile, onNavigateToP
               </Text>
               <TouchableOpacity onPress={() => onNavigateToProfile(holding.post.author.username)}>
                 <Text className="mt-1 text-sm text-muted-foreground">
-                  by @{holding.post.author.username}
+                  {t('profile.by')} @{holding.post.author.username}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -102,19 +105,19 @@ export function PortfolioTab({ portfolio, isLoading, isOwnProfile, onNavigateToP
           
           <View className="mt-3 flex-row gap-4">
             <View>
-              <Text className="text-xs text-muted-foreground">Tokens</Text>
+              <Text className="text-xs text-muted-foreground">{t('wallet.tokens')}</Text>
               <Text className="font-semibold">{holding.amount}</Text>
             </View>
             <View>
-              <Text className="text-xs text-muted-foreground">Avg Price</Text>
+              <Text className="text-xs text-muted-foreground">{t('profile.avgPrice')}</Text>
               <Text className="font-semibold">{holding.purchasePrice.toFixed(4)}</Text>
             </View>
             <View>
-              <Text className="text-xs text-muted-foreground">Current</Text>
+              <Text className="text-xs text-muted-foreground">{t('profile.current')}</Text>
               <Text className="font-semibold">{holding.currentPrice.toFixed(4)}</Text>
             </View>
             <View>
-              <Text className="text-xs text-muted-foreground">Value</Text>
+              <Text className="text-xs text-muted-foreground">{t('profile.value')}</Text>
               <Text className="font-semibold">{holding.currentValue.toFixed(4)} SOL</Text>
             </View>
           </View>
