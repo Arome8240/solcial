@@ -122,7 +122,11 @@
     "numberOfTokens": "トークン数",
     "total": "合計",
     "buying": "購入中...",
-    "sending": "送信中..."
+    "sending": "送信中...",
+    "yourAssets": "あなたの資産",
+    "viewAll": "すべて表示",
+    "postTokens": "投稿トークン",
+    "tokensCount": "トークン"
   },
   "feed": {
     "feed": "Feed",

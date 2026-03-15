@@ -122,7 +122,11 @@
     "numberOfTokens": "Количество токенов",
     "total": "Итого",
     "buying": "Покупка...",
-    "sending": "Отправка..."
+    "sending": "Отправка...",
+    "yourAssets": "Ваши активы",
+    "viewAll": "Посмотреть все",
+    "postTokens": "Токены постов",
+    "tokensCount": "токенов"
   },
   "feed": {
     "feed": "Feed",

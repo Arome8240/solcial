@@ -122,7 +122,11 @@
     "numberOfTokens": "Numero di token",
     "total": "Totale",
     "buying": "Acquisto...",
-    "sending": "Invio..."
+    "sending": "Invio...",
+    "yourAssets": "I tuoi asset",
+    "viewAll": "Vedi tutto",
+    "postTokens": "Token dei post",
+    "tokensCount": "token"
   },
   "feed": {
     "feed": "Feed",

@@ -122,7 +122,11 @@
     "numberOfTokens": "عدد الرموز",
     "total": "المجموع",
     "buying": "جارٍ الشراء...",
-    "sending": "جارٍ الإرسال..."
+    "sending": "جارٍ الإرسال...",
+    "yourAssets": "أصولك",
+    "viewAll": "عرض الكل",
+    "postTokens": "رموز المنشورات",
+    "tokensCount": "رموز"
   },
   "feed": {
     "feed": "Feed",

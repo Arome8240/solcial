@@ -3,6 +3,7 @@ import { Text } from '@/components/ui/text';
 import { Icon } from '@/components/ui/icon';
 import { ArrowUpRight, ArrowDownLeft, PieChart, Coins, TrendingUp, TrendingDown } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useWallet } from '@/hooks/useWallet';
 import { useTokenHoldings } from '@/hooks/usePortfolio';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +14,7 @@ import { TOKENS } from '@/lib/tokens';
 import { TransactionCard } from '@/components/wallet';
 
 export default function WalletScreen() {
+  const { t } = useTranslation();
   const { balance, walletAddress, isLoadingBalance, refetchBalance, transactions, isLoadingTransactions } = useWallet();
   const { user } = useAuth();
   const userId = (user as User)?.id || '';
@@ -47,7 +49,7 @@ export default function WalletScreen() {
         {/* Header */}
         <View className="bg-purple-600 px-4 pb-8 pt-12">
           <View className="flex-row items-center justify-between">
-            <Text className="text-2xl font-bold text-white">Wallet</Text>
+            <Text className="text-2xl font-bold text-white">{t('wallet.wallet')}</Text>
             <TouchableOpacity>
               <Icon as={PieChart} size={24} className="text-white" />
             </TouchableOpacity>
@@ -55,7 +57,7 @@ export default function WalletScreen() {
 
           {/* Balance Card */}
           <View className="mt-6 items-center">
-            <Text className="text-sm text-purple-200">Total Balance</Text>
+            <Text className="text-sm text-purple-200">{t('wallet.totalBalance')}</Text>
             {isLoadingBalance || isLoadingPrices ? (
               <ActivityIndicator size="large" color="#ffffff" className="mt-2" />
             ) : (
@@ -80,14 +82,14 @@ export default function WalletScreen() {
               className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl bg-white py-4"
             >
               <Icon as={ArrowUpRight} size={20} className="text-purple-600" />
-              <Text className="font-semibold text-purple-600">Send</Text>
+              <Text className="font-semibold text-purple-600">{t('wallet.send')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push('/wallet/receive')}
               className="flex-1 flex-row items-center justify-center gap-2 rounded-2xl bg-purple-700 py-4"
             >
               <Icon as={ArrowDownLeft} size={20} className="text-white" />
-              <Text className="font-semibold text-white">Receive</Text>
+              <Text className="font-semibold text-white">{t('wallet.receive')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -95,7 +97,7 @@ export default function WalletScreen() {
         {/* Your Assets */}
         <View className="mt-6 px-4">
           <View className="flex-row items-center justify-between">
-            <Text className="text-xl font-bold">Your Assets</Text>
+            <Text className="text-xl font-bold">{t('wallet.yourAssets')}</Text>
           </View>
 
           <View className="mt-4 gap-3">
@@ -137,7 +139,7 @@ export default function WalletScreen() {
             ) : holdings.length > 0 ? (
               <>
                 <View className="mt-2">
-                  <Text className="text-sm font-semibold text-muted-foreground">Post Tokens</Text>
+                  <Text className="text-sm font-semibold text-muted-foreground">{t('wallet.postTokens')}</Text>
                 </View>
                 {holdings.map((holding) => (
                   <TouchableOpacity
@@ -154,7 +156,7 @@ export default function WalletScreen() {
                           {holding.post.content.slice(0, 30)}...
                         </Text>
                         <Text className="text-sm text-muted-foreground">
-                          {holding.amount} tokens
+                          {holding.amount} {t('wallet.tokensCount')}
                         </Text>
                       </View>
                     </View>
@@ -177,7 +179,7 @@ export default function WalletScreen() {
                 ))}
                 <View className="mt-2 rounded-2xl bg-purple-50 p-4">
                   <Text className="text-center text-sm text-purple-700">
-                    Total Token Value: {totalValue.toFixed(4)} SOL
+                    {t('profile.totalPortfolioValue')}: {totalValue.toFixed(4)} SOL
                   </Text>
                 </View>
               </>
@@ -188,10 +190,10 @@ export default function WalletScreen() {
         {/* Recent Activity */}
         <View className="mt-6 px-4 pb-6">
           <View className="flex-row items-center justify-between">
-            <Text className="text-xl font-bold">Recent Activity</Text>
+            <Text className="text-xl font-bold">{t('wallet.recentActivity')}</Text>
             {transactions.length > 0 && (
               <TouchableOpacity onPress={() => router.push('/wallet/history')}>
-                <Text className="text-sm font-semibold text-purple-600">View All</Text>
+                <Text className="text-sm font-semibold text-purple-600">{t('wallet.viewAll')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -203,7 +205,7 @@ export default function WalletScreen() {
               </View>
             ) : transactions.length === 0 ? (
               <View className="items-center py-10">
-                <Text className="text-muted-foreground">No transactions yet</Text>
+                <Text className="text-muted-foreground">{t('wallet.noTransactions')}</Text>
               </View>
             ) : (
               transactions.slice(0, 5).map((tx: Transaction) => (

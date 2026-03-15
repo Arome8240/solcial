@@ -122,7 +122,11 @@
     "numberOfTokens": "代币数量",
     "total": "总计",
     "buying": "购买中...",
-    "sending": "发送中..."
+    "sending": "发送中...",
+    "yourAssets": "您的资产",
+    "viewAll": "查看全部",
+    "postTokens": "帖子代币",
+    "tokensCount": "代币"
   },
   "feed": {
     "feed": "Feed",

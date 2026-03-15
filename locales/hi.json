@@ -122,7 +122,11 @@
     "numberOfTokens": "टोकन की संख्या",
     "total": "कुल",
     "buying": "खरीद रहे हैं...",
-    "sending": "भेज रहे हैं..."
+    "sending": "भेज रहे हैं...",
+    "yourAssets": "आपकी संपत्ति",
+    "viewAll": "सभी देखें",
+    "postTokens": "पोस्ट टोकन",
+    "tokensCount": "टोकन"
   },
   "feed": {
     "feed": "Feed",

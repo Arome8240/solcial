@@ -156,8 +156,8 @@ This implementation plan systematically completes internationalization across th
     - Add translations for copy and reveal functionality
     - _Requirements: 4.5_
 
-- [ ] 6. Phase 2: Wallet Screens Translation Integration
-  - [ ] 6.1 Integrate translations in Wallet Balance screen
+- [x] 6. Phase 2: Wallet Screens Translation Integration
+  - [x] 6.1 Integrate translations in Wallet Balance screen
     - Import useTranslation hook in app/(tabs)/wallet/index.tsx and components/wallet/TokenCard.tsx
     - Replace hardcoded strings with t() calls for balance display labels, token names, portfolio value
     - Add number formatting for token amounts using locale conventions
