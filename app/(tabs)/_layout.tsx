@@ -24,7 +24,7 @@ export default function TabsLayout() {
   const effectiveTheme = theme === 'system' ? systemTheme : theme;
   const isDark = effectiveTheme === 'dark';
   
-  const tabBarBg = isDark ? '#1f2937' : '#ffffff';
+  const tabBarBg = isDark ? '#121212' : '#ffffff';
   const tabBarBorderColor = isDark ? '#374151' : '#e5e7eb';
 
   return (
